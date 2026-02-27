@@ -1,0 +1,20 @@
+# DCO (Developer Certificate of Origin) check for pull requests
+# Ensures every commit is signed off per CONTRIBUTING.md
+name: DCO
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  dco:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: DCO check
+        uses: cncf/dco@v2
+        with:
+          path: "."
