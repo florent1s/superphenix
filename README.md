@@ -1,10 +1,39 @@
-# Superphenix
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/SPX_white.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/SPX_black.svg">
+    <img alt="Zensical" src="assets/SPX_white.svg" width="290" height="240">
+  </picture>
+</p>
 
-<div align="center">
-  <img src="assets/logo.svg" alt="Superphenix logo" width="300">
-</div>
+<p align="center">
+  <strong>
+    Full cloud infrastructure on Kubernetes. Run VMs, networking, storage, and automation as declarative, GitOps-driven systems—all on a standard Kubernetes control plane.
+  </strong>
+</p>
 
-**Full cloud infrastructure on Kubernetes.** Run VMs, networking, storage, and automation as declarative, GitOps-driven systems—all on a standard Kubernetes control plane.
+<p align="center">
+  <a href="https://github.com/super-phenix/superphenix/releases"><img
+    src="https://img.shields.io/github/v/release/super-phenix/superphenix.svg"
+    alt="Releases"
+  /></a>
+  <a href="https://github.com/super-phenix/superphenix/actions"><img
+    src="https://github.com/zensical/zensical/actions/workflows/build.yml/badge.svg"
+    alt="Build"
+  /></a>
+</p>
+
+<p align="center">
+  <a href="https://superphenix.net"><strong>Home</strong></a>
+  -
+  <a href="https://docs.superphenix.net"><strong>Documentation</strong></a>
+  -
+  <a href="https://docs.superphenix.net/get-started"><strong>Get started</strong></a>
+  -
+  <a href="https://docs.superphenix.net/roadmap"><strong>Roadmap</strong></a>
+  -
+  <a href="https://rayshift.net"><strong>Enterprise support</strong></a>
+</p>
 
 Superphenix lets you build sovereign cloud infrastructure entirely on Kubernetes: IaaS, PaaS, and software-defined everything, with a single API surface and GitOps from day one.
 
@@ -29,19 +58,6 @@ Legacy virtualization stacks create vendor lock-in, rising licensing costs, and 
 | **Software-defined networking** | Network fabric managed as code; tenant isolation and routing built in |
 | **GitOps & automation** | Reproducible, auditable, versioned infrastructure |
 | **Observability** | Know your stack inside out |
-
-## Quick start
-
-*TBD*
-
-## Documentation
-
-- [Contributing](CONTRIBUTING.md)
-- [Governance](GOVERNANCE.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security policy](SECURITY.md)
-- [Adopters](ADOPTERS.md) — organizations using Superphenix
-- [Roadmap](ROADMAP.md) — direction and priorities
 
 ## Community
 
