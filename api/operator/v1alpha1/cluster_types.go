@@ -1,51 +1,103 @@
 package v1alpha1
 
 import (
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// DeploymentMode defines whether the cluster is hyperconverged or decoupled
+// +kubebuilder:validation:Enum=Hyperconverged;Decoupled
+type DeploymentMode string
+
+const (
+	// Hyperconverged - Storage and virtualization run on the same cluster
+	DeploymentModeHyperconverged DeploymentMode = "Hyperconverged"
+
+	// Decoupled - Storage and virtualization run on separate clusters
+	DeploymentModeDecoupled DeploymentMode = "Decoupled"
+)
+
+// ClusterType defines the type of cluster when in Decoupled mode
+// +kubebuilder:validation:Enum=Storage;Virtualization
+type ClusterType string
+
+const (
+	// ClusterTypeStorage - Dedicated storage cluster
+	ClusterTypeStorage ClusterType = "Storage"
+
+	// ClusterTypeVirtualization - Dedicated virtualization/hypervisor cluster
+	ClusterTypeVirtualization ClusterType = "Virtualization"
+)
 
 // ClusterSpec defines the desired state of Cluster
 type ClusterSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	// The following markers will use OpenAPI v3 schema to validate the value
-	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
+	// Name is the human-readable name of the cluster
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
 
-	// foo is an example field of Cluster. Edit cluster_types.go to remove/update
+	// DeploymentMode defines whether the cluster is hyperconverged or decoupled
+	// +kubebuilder:validation:Required
+	DeploymentMode DeploymentMode `json:"deploymentMode"`
+
+	// Type specifies the cluster type (Storage or Virtualization) when DeploymentMode is Decoupled.
+	// This field is required when DeploymentMode is Decoupled and ignored when Hyperconverged.
 	// +optional
-	Foo *string `json:"foo,omitempty"`
+	Type *ClusterType `json:"type,omitempty"`
+
+	// Region is the geographic region where this cluster is located
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	Region string `json:"region"`
+
+	// AvailabilityZone is the availability zone identifier within the region
+	// An AZ is a Kubernetes cluster where the full Superphenix stack is deployed
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	AvailabilityZone string `json:"availabilityZone"`
+
+	// NetworkConfiguration is a YAML dict of unknown values that will be passed to the network configuration chart
+	// +optional
+	NetworkConfiguration *apiextensionsv1.JSON `json:"networkConfiguration,omitempty"`
+
+	// SystemConfiguration is a YAML dict of unknown values that will be passed to the system configuration chart
+	// +optional
+	SystemConfiguration *apiextensionsv1.JSON `json:"systemConfiguration,omitempty"`
 }
 
 // ClusterStatus defines the observed state of Cluster.
 type ClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Phase represents the current phase of the cluster lifecycle
+	// +optional
+	Phase string `json:"phase,omitempty"`
 
-	// For Kubernetes API conventions, see:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
-
-	// conditions represent the current state of the Cluster resource.
-	// Each condition has a unique type and reflects the status of a specific aspect of the resource.
-	//
+	// Conditions represent the current state of the Cluster resource.
 	// Standard condition types include:
-	// - "Available": the resource is fully functional
-	// - "Progressing": the resource is being created or updated
-	// - "Degraded": the resource failed to reach or maintain its desired state
-	//
-	// The status of each condition is one of True, False, or Unknown.
+	// - "Ready": the cluster is fully operational
+	// - "Progressing": the cluster is being provisioned or updated
+	// - "Degraded": the cluster has encountered issues
 	// +listType=map
 	// +listMapKey=type
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// ObservedGeneration reflects the generation of the most recently observed Cluster.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:printcolumn:name="Mode",type=string,JSONPath=`.spec.deploymentMode`
+// +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.type`
+// +kubebuilder:printcolumn:name="Region",type=string,JSONPath=`.spec.region`
+// +kubebuilder:printcolumn:name="AZ",type=string,JSONPath=`.spec.availabilityZone`
+// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
+// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
-// Cluster is the Schema for the clusters API
+// Cluster represents a Superphenix cluster deployment.
+// A cluster is an availability zone (AZ) where the full Superphenix stack is deployed.
 type Cluster struct {
 	metav1.TypeMeta `json:",inline"`
 
