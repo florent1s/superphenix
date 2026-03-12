@@ -4,19 +4,31 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.20.1
-  name: clusterconnections.operator.superphenix.net
+  name: clusters.operator.superphenix.net
 spec:
   group: operator.superphenix.net
   names:
-    kind: ClusterConnection
-    listKind: ClusterConnectionList
-    plural: clusterconnections
-    singular: clusterconnection
-  scope: Namespaced
+    kind: Cluster
+    listKind: ClusterList
+    plural: clusters
+    singular: cluster
+  scope: Cluster
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.url
-      name: URL
+    - jsonPath: .spec.deploymentMode
+      name: Mode
+      type: string
+    - jsonPath: .spec.type
+      name: Type
+      type: string
+    - jsonPath: .spec.region
+      name: Region
+      type: string
+    - jsonPath: .spec.availabilityZone
+      name: AZ
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
@@ -24,7 +36,9 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ClusterConnection represents a connection to a remote cluster.
+        description: |-
+          Cluster represents a Superphenix cluster deployment.
+          A cluster is an availability zone (AZ) where the full Superphenix stack is deployed.
         properties:
           apiVersion:
             description: |-
@@ -44,35 +58,96 @@ spec:
           metadata:
             type: object
           spec:
-            description: ClusterConnectionSpec defines the desired state of ClusterConnection
+            description: spec defines the desired state of Cluster
             properties:
-              secretRef:
-                description: SecretRef is a reference to a secret containing the connection
-                  credentials
+              availabilityZone:
+                description: |-
+                  AvailabilityZone is the availability zone identifier within the region
+                  An AZ is a Kubernetes cluster where the full Superphenix stack is deployed
+                minLength: 1
+                type: string
+              connection:
+                description: Connection defines the parameters to connect to the remote
+                  cluster.
                 properties:
-                  name:
-                    description: Name of the secret
+                  mode:
+                    description: Mode specifies the connection mode (Remote or Local).
+                    default: Remote
+                    enum:
+                    - Remote
+                    - Local
                     type: string
-                  namespace:
-                    description: Namespace of the secret. If empty, the namespace
-                      of the ClusterConnection is used.
+                  secretRef:
+                    description: SecretRef is a reference to a secret containing the
+                      connection credentials. This is required when Mode is Remote
+                      and ignored when Mode is Local.
+                    properties:
+                      name:
+                        description: Name of the secret
+                        type: string
+                      namespace:
+                        description: Namespace of the secret. If empty, the namespace
+                          of the Cluster is used.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  url:
+                    description: URL is the address of the remote cluster API server.
+                      This is required when Mode is Remote and ignored when Mode is
+                      Local.
                     type: string
                 required:
-                - name
+                - mode
                 type: object
-              url:
-                description: URL is the address of the remote cluster API server
+              deploymentMode:
+                description: DeploymentMode defines whether the cluster is hyperconverged
+                  or decoupled
+                enum:
+                - Hyperconverged
+                - Decoupled
+                type: string
+              name:
+                description: Name is the human-readable name of the cluster
+                minLength: 1
+                type: string
+              networkConfiguration:
+                description: NetworkConfiguration is a YAML dict of unknown values
+                  that will be passed to the network configuration chart
+                x-kubernetes-preserve-unknown-fields: true
+              region:
+                description: Region is the geographic region where this cluster is
+                  located
+                minLength: 1
+                type: string
+              systemConfiguration:
+                description: SystemConfiguration is a YAML dict of unknown values
+                  that will be passed to the system configuration chart
+                x-kubernetes-preserve-unknown-fields: true
+              type:
+                description: |-
+                  Type specifies the cluster type (Storage or Virtualization) when DeploymentMode is Decoupled.
+                  This field can only be set when DeploymentMode is Decoupled and is ignored otherwise.
+                enum:
+                - Storage
+                - Virtualization
                 type: string
             required:
-            - secretRef
-            - url
+            - availabilityZone
+            - connection
+            - name
+            - region
             type: object
           status:
-            description: ClusterConnectionStatus defines the observed state of ClusterConnection
+            description: status defines the observed state of Cluster
             properties:
               conditions:
-                description: Conditions represent the current state of the ClusterConnection
-                  resource.
+                description: |-
+                  Conditions represent the current state of the Cluster resource.
+                  Standard condition types include:
+                  - "Ready": the cluster is fully operational
+                  - "Progressing": the cluster is being provisioned or updated
+                  - "Degraded": the cluster has encountered issues
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -133,9 +208,12 @@ spec:
                 x-kubernetes-list-type: map
               observedGeneration:
                 description: ObservedGeneration reflects the generation of the most
-                  recently observed ClusterConnection.
+                  recently observed Cluster.
                 format: int64
                 type: integer
+              phase:
+                description: Phase represents the current phase of the cluster lifecycle
+                type: string
             type: object
         required:
         - spec

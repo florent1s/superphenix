@@ -1,0 +1,73 @@
+replicaCount: 1
+
+image:
+  repository: harbor.agc.dpk-agc-cl04.agoracalyce.net/superphenix-operator/superphenix-operator
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Operator configuration
+config:
+  isManagementCluster: true
+  argocd:
+    chart:
+      url: https://argoproj.github.io/argo-helm
+      version: 8.6.3
+    valuesConfigMap:
+      name: superphenix-mgmt-argocd-config
+    # Arbitrary values to be put in the ConfigMap under the "values" key
+    values: {}
+    ha:
+      enabled: false
+
+# Metrics and Health
+metrics:
+  bindAddress: "0" # Disable by default
+  secure: true
+
+health:
+  probeBindAddress: ":8081"
+
+leaderElection:
+  enabled: false

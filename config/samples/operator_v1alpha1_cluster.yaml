@@ -19,3 +19,7 @@ spec:
     timezone: UTC
     ntp:
       - pool.ntp.org
+  connection:
+    url: https://remote-cluster-api:6443
+    secretRef:
+      name: remote-cluster-creds

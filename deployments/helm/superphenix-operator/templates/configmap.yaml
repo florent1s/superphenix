@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.config.argocd.valuesConfigMap.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "superphenix-operator.labels" . | nindent 4 }}
+data:
+  values: |
+    {{- toYaml .Values.config.argocd.values | nindent 4 }}

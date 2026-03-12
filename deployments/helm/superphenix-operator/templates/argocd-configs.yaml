@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superphenix-mgmt-argocd-default-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "superphenix-operator.labels" . | nindent 4 }}
+data:
+  values.yaml: |
+    # Global ArgoCD configuration
+    global:
+      # Domain used for ingresses, certificates, SSO, notifications, etc.
+      domain: superphenix.net
+
+      # Restrict network flow in and out of ArgoCD
+      networkPolicy:
+        create: true
+
+    # ArgoCD configuration
+    configs:
+      # ConfigMap configuration
+      cm:
+        # Permit using the shell from inside the ArgoCD interface
+        exec.enabled: true
+
+        # Generate status badges for applications
+        statusbadge.enabled: true
+
+        # Optimized tracking of the resources
+        application.resourceTrackingMethod: annotation
+
+        # We need this ID when tracking with annotations to distinguish between multiple ArgoCD instances
+        # when one cluster is managed by multiple ArgoCDs
+        installationID: "controller.superphenix.net"
+
+      # Parameters injected to ArgoCD
+      params:
+        # The default behavior of the ApplicationSet controller is unsatisfactory when it comes to globbing, patch it
+        # https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Git-File-Globbing/
+        applicationsetcontroller.enable.new.git.file.globbing: "true"
+
+      # Override ArgoCD style to differentiate this ArgoCD from others
+      styles: |
+        .sidebar {
+          background-color: #000;
+        }
+
+    controller:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # ArgoCD will fail to sync if it's installing an instance of ArgoCD
+          # before the Prometheus ServiceMonitor CRD is installed on the cluster
+          # We simply skip the dry-run in that case
+          annotations:
+            argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+
+    dex:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # ArgoCD will fail to sync if it's installing an instance of ArgoCD
+          # before the Prometheus ServiceMonitor CRD is installed on the cluster
+          # We simply skip the dry-run in that case
+          annotations:
+            argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+
+    server:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # ArgoCD will fail to sync if it's installing an instance of ArgoCD
+          # before the Prometheus ServiceMonitor CRD is installed on the cluster
+          # We simply skip the dry-run in that case
+          annotations:
+            argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+      ingress:
+        enabled: true
+        hostname: "superphenix.net"
+        tls: true
+        annotations:
+          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+
+    repoServer:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # ArgoCD will fail to sync if it's installing an instance of ArgoCD
+          # before the Prometheus ServiceMonitor CRD is installed on the cluster
+          # We simply skip the dry-run in that case
+          annotations:
+            argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+
+    applicationSet:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # ArgoCD will fail to sync if it's installing an instance of ArgoCD
+          # before the Prometheus ServiceMonitor CRD is installed on the cluster
+          # We simply skip the dry-run in that case
+          annotations:
+            argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+
+    notifications:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # ArgoCD will fail to sync if it's installing an instance of ArgoCD
+          # before the Prometheus ServiceMonitor CRD is installed on the cluster
+          # We simply skip the dry-run in that case
+          annotations:
+            argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superphenix-mgmt-argocd-ha-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "superphenix-operator.labels" . | nindent 4 }}
+data:
+  values.yaml: |
+    controller:
+      dynamicClusterDistribution: true
+    server:
+      autoscaling:
+        enabled: true
+    repoServer:
+      autoscaling:
+        enabled: true
+    redis-ha:
+      enabled: true
+      exporter:
+        enabled: true
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # ArgoCD will fail to sync if it's installing an instance of ArgoCD
+          # before the Prometheus ServiceMonitor CRD is installed on the cluster
+          # We simply skip the dry-run in that case
+          annotations:
+            argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true

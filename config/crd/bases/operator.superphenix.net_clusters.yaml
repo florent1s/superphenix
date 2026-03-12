@@ -66,6 +66,40 @@ spec:
                   An AZ is a Kubernetes cluster where the full Superphenix stack is deployed
                 minLength: 1
                 type: string
+              connection:
+                description: Connection defines the parameters to connect to the remote
+                  cluster.
+                properties:
+                  mode:
+                    description: Mode specifies the connection mode (Remote or Local).
+                    default: Remote
+                    enum:
+                    - Remote
+                    - Local
+                    type: string
+                  secretRef:
+                    description: SecretRef is a reference to a secret containing the
+                      connection credentials. This is required when Mode is Remote
+                      and ignored when Mode is Local.
+                    properties:
+                      name:
+                        description: Name of the secret
+                        type: string
+                      namespace:
+                        description: Namespace of the secret. If empty, the namespace
+                          of the Cluster is used.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  url:
+                    description: URL is the address of the remote cluster API server.
+                      This is required when Mode is Remote and ignored when Mode is
+                      Local.
+                    type: string
+                required:
+                - mode
+                type: object
               deploymentMode:
                 description: DeploymentMode defines whether the cluster is hyperconverged
                   or decoupled
@@ -93,14 +127,14 @@ spec:
               type:
                 description: |-
                   Type specifies the cluster type (Storage or Virtualization) when DeploymentMode is Decoupled.
-                  This field is required when DeploymentMode is Decoupled and ignored when Hyperconverged.
+                  This field can only be set when DeploymentMode is Decoupled and is ignored otherwise.
                 enum:
                 - Storage
                 - Virtualization
                 type: string
             required:
             - availabilityZone
-            - deploymentMode
+            - connection
             - name
             - region
             type: object

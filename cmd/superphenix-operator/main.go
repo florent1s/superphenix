@@ -45,7 +45,15 @@ func main() {
 	var probeAddr string
 	var secureMetrics bool
 	var enableHTTP2 bool
+	var argocdChartURL string
+	var argocdChartVersion string
+	var argocdValuesConfigMapName string
+	var isManagementCluster bool
+	var operatorNamespace string
 	var tlsOpts []func(*tls.Config)
+	var argocdDefaultConfig string
+	var argocdHAConfig string
+	var haEnabled bool
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -63,6 +71,14 @@ func main() {
 	flag.StringVar(&metricsCertKey, "metrics-cert-key", "tls.key", "The name of the metrics server key file.")
 	flag.BoolVar(&enableHTTP2, "enable-http2", false,
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
+	flag.StringVar(&argocdChartURL, "argocd-chart-url", "https://argoproj.github.io/argo-helm", "The URL of the ArgoCD chart repository")
+	flag.StringVar(&argocdChartVersion, "argocd-chart-version", "8.6.3", "The version of the ArgoCD chart")
+	flag.StringVar(&argocdValuesConfigMapName, "argocd-values-configmap-name", "superphenix-mgmt-argocd-config", "The name of the ConfigMap containing ArgoCD values")
+	flag.StringVar(&argocdDefaultConfig, "argocd-default-config", "/etc/superphenix/argocd/default/values.yaml", "Path to the default ArgoCD configuration file")
+	flag.StringVar(&argocdHAConfig, "argocd-ha-config", "/etc/superphenix/argocd/ha/values.yaml", "Path to the HA ArgoCD configuration file")
+	flag.BoolVar(&haEnabled, "ha-enabled", false, "Whether to enable HA for ArgoCD")
+	flag.StringVar(&operatorNamespace, "operator-namespace", os.Getenv("OPERATOR_NAMESPACE"), "The namespace where the operator is deployed")
+	flag.BoolVar(&isManagementCluster, "is-management-cluster", false, "Whether this operator is running on a management cluster and should reconcile management components")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -169,12 +185,24 @@ func main() {
 		setupLog.Error(err, "Failed to create controller", "controller", "Cluster")
 		os.Exit(1)
 	}
-	if err := (&controller.ClusterConnectionReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "Failed to create controller", "controller", "ClusterConnection")
-		os.Exit(1)
+
+	if isManagementCluster {
+		setupLog.Info("Setting up management components reconciler")
+		if err := (&controller.ManagementReconciler{
+			Client:                    mgr.GetClient(),
+			Scheme:                    mgr.GetScheme(),
+			Config:                    mgr.GetConfig(),
+			ArgoCDChartURL:            argocdChartURL,
+			ArgoCDChartVersion:        argocdChartVersion,
+			OperatorNamespace:         operatorNamespace,
+			ArgoCDValuesConfigMapName: argocdValuesConfigMapName,
+			ArgoCDDefaultConfig:       argocdDefaultConfig,
+			ArgoCDHAConfig:            argocdHAConfig,
+			HAEnabled:                 haEnabled,
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "Failed to create management controller")
+			os.Exit(1)
+		}
 	}
 	// +kubebuilder:scaffold:builder
 

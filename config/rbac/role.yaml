@@ -7,15 +7,31 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - namespaces
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - get
   - list
   - watch
 - apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
   - operator.superphenix.net
   resources:
-  - clusterconnections
   - clusters
   verbs:
   - create
@@ -28,14 +44,12 @@ rules:
 - apiGroups:
   - operator.superphenix.net
   resources:
-  - clusterconnections/finalizers
   - clusters/finalizers
   verbs:
   - update
 - apiGroups:
   - operator.superphenix.net
   resources:
-  - clusterconnections/status
   - clusters/status
   verbs:
   - get

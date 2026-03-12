@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superphenix-operator
+  labels:
+    {{- include "superphenix-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "superphenix-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "superphenix-operator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "superphenix-operator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /manager
+          args:
+            - --health-probe-bind-address={{ .Values.health.probeBindAddress }}
+            - --metrics-bind-address={{ .Values.metrics.bindAddress }}
+            - --metrics-secure={{ .Values.metrics.secure }}
+            - --argocd-chart-url={{ .Values.config.argocd.chart.url }}
+            - --argocd-chart-version={{ .Values.config.argocd.chart.version }}
+            - --argocd-values-configmap-name={{ .Values.config.argocd.valuesConfigMap.name }}
+            - --operator-namespace=$(OPERATOR_NAMESPACE)
+            - --argocd-default-config=/etc/superphenix/argocd/default/values.yaml
+            - --argocd-ha-config=/etc/superphenix/argocd/ha/values.yaml
+            {{- if .Values.config.argocd.ha.enabled }}
+            - --ha-enabled=true
+            {{- end }}
+            {{- if .Values.config.isManagementCluster }}
+            - --is-management-cluster
+            {{- end }}
+            {{- if .Values.leaderElection.enabled }}
+            - --leader-elect
+            {{- end }}
+          env:
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ (split ":" .Values.health.probeBindAddress)._1 | default "8081" | int }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ (split ":" .Values.health.probeBindAddress)._1 | default "8081" | int }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: argocd-default-config
+              mountPath: /etc/superphenix/argocd/default
+              readOnly: true
+            - name: argocd-ha-config
+              mountPath: /etc/superphenix/argocd/ha
+              readOnly: true
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: argocd-default-config
+          configMap:
+            name: superphenix-mgmt-argocd-default-config
+        - name: argocd-ha-config
+          configMap:
+            name: superphenix-mgmt-argocd-ha-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
