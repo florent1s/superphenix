@@ -29,6 +29,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+const (
+	ManagementArgoCDName = "superphenix-mgmt-argocd"
+)
+
 // ManagementReconciler handles the reconciliation of management components.
 // It implements reconcile.Reconciler to handle ConfigMap updates.
 type ManagementReconciler struct {
@@ -189,8 +193,8 @@ func (r *ManagementReconciler) ensureInitialHelmInstall(ctx context.Context) err
 	// Check if already installed
 	histClient := action.NewHistory(actionConfig)
 	histClient.Max = 1
-	if _, err := histClient.Run("superphenix-mgmt-argocd"); err == nil {
-		log.Info("ArgoCD Helm release 'superphenix-mgmt-argocd' already exists, skipping initial install")
+	if _, err := histClient.Run(ManagementArgoCDName); err == nil {
+		log.Info("ArgoCD Helm release for ArgoCD management already exists, skipping initial install")
 		return nil
 	}
 
@@ -205,7 +209,7 @@ func (r *ManagementReconciler) ensureInitialHelmInstall(ctx context.Context) err
 	log.Info("Performing initial default ArgoCD Helm install")
 
 	clientInstall := action.NewInstall(actionConfig)
-	clientInstall.ReleaseName = "superphenix-mgmt-argocd"
+	clientInstall.ReleaseName = ManagementArgoCDName
 	clientInstall.Namespace = r.OperatorNamespace
 	clientInstall.RepoURL = r.ArgoCDChartURL
 	clientInstall.Version = r.ArgoCDChartVersion
@@ -257,7 +261,7 @@ func (r *ManagementReconciler) ensureArgoCDSelfManaged(ctx context.Context) erro
 			"apiVersion": "argoproj.io/v1alpha1",
 			"kind":       "Application",
 			"metadata": map[string]interface{}{
-				"name":      "superphenix-mgmt-argocd",
+				"name":      ManagementArgoCDName,
 				"namespace": r.OperatorNamespace,
 			},
 			"spec": map[string]interface{}{
@@ -292,7 +296,7 @@ func (r *ManagementReconciler) ensureArgoCDSelfManaged(ctx context.Context) erro
 		Kind:    "Application",
 	})
 
-	err = r.Get(ctx, types.NamespacedName{Name: "superphenix-mgmt-argocd", Namespace: r.OperatorNamespace}, existingApp)
+	err = r.Get(ctx, types.NamespacedName{Name: ManagementArgoCDName, Namespace: r.OperatorNamespace}, existingApp)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			log.Info("Creating ArgoCD Application for self-management")
@@ -314,19 +318,25 @@ func (r *ManagementReconciler) ensureArgoCDSelfManaged(ctx context.Context) erro
 	return nil
 }
 
-func deepMerge(dst, src map[string]interface{}) {
-	for k, v := range src {
-		if v == nil {
-			delete(dst, k)
+// mapDeepMerge merges two maps, with the source taking precedence over the destination.
+// If a value is nil (null in YAML), the destination key is dropped entirely.
+func mapDeepMerge(destination, source map[string]interface{}) {
+	for key, value := range source {
+		// Drop keys (in YAML, null means we want the value gone, especially in Helm chart values)
+		if value == nil {
+			delete(destination, key)
 			continue
 		}
-		if srcMap, ok := v.(map[string]interface{}); ok {
-			if dstMap, ok := dst[k].(map[string]interface{}); ok {
-				deepMerge(dstMap, srcMap)
+
+		// If the value is a map itself, do a recursive merge, otherwise replace the value.
+		if srcMap, ok := value.(map[string]interface{}); ok {
+			if dstMap, ok := destination[key].(map[string]interface{}); ok {
+				mapDeepMerge(dstMap, srcMap)
 				continue
 			}
 		}
-		dst[k] = v
+
+		destination[key] = value
 	}
 }
 
@@ -363,7 +373,7 @@ func (r *ManagementReconciler) mergeArgoCDValues(ctx context.Context) (map[strin
 				return nil, fmt.Errorf("failed to unmarshal HA ArgoCD values: %w", err)
 			}
 			// Merge HA values
-			deepMerge(mergedVals, haVals)
+			mapDeepMerge(mergedVals, haVals)
 		}
 	}
 
@@ -392,7 +402,7 @@ func (r *ManagementReconciler) mergeArgoCDValues(ctx context.Context) (map[strin
 					return nil, fmt.Errorf("failed to unmarshal YAML from ConfigMap key 'values': %w", err)
 				}
 				// Deep merge CM values
-				deepMerge(mergedVals, cmVals)
+				mapDeepMerge(mergedVals, cmVals)
 			} else {
 				log.Info("ArgoCD values ConfigMap found but key 'values' is missing",
 					"Name", r.ArgoCDValuesConfigMapName,

@@ -21,6 +21,9 @@ const (
 	ReasonInvalidSecret = "InvalidSecret"
 	// ReasonConnectionConfigError is used when the connection configuration is invalid or missing.
 	ReasonConnectionConfigError = "ConnectionConfigError"
+
+	// ReasonInvalidVersion is used when the requested version change is invalid.
+	ReasonInvalidVersion = "InvalidVersion"
 )
 
 // DeploymentMode defines whether the cluster is hyperconverged or decoupled.
@@ -69,6 +72,11 @@ type ClusterSpec struct {
 	// +kubebuilder:validation:MinLength=1
 	AvailabilityZone string `json:"availabilityZone"`
 
+	// Name is the name of the cluster.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
 	// NetworkConfiguration is a YAML dict of unknown values that will be passed to the network configuration chart.
 	// +optional
 	NetworkConfiguration *apiextensionsv1.JSON `json:"networkConfiguration,omitempty"`
@@ -76,6 +84,12 @@ type ClusterSpec struct {
 	// SystemConfiguration is a YAML dict of unknown values that will be passed to the system configuration chart.
 	// +optional
 	SystemConfiguration *apiextensionsv1.JSON `json:"systemConfiguration,omitempty"`
+
+	// Version is the Superphenix version for this cluster.
+	// It must follow semantic versioning.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern=`^v?([0-9]+)(\.[0-9]+)?(\.[0-9]+)?(-([0-9A-Za-z\-.]+))?(\+([0-9A-Za-z\-.]+))?$`
+	Version string `json:"version"`
 
 	// Connection defines the parameters to connect to the remote cluster.
 	// +kubebuilder:validation:Required
@@ -129,6 +143,10 @@ type ClusterStatus struct {
 	// +optional
 	Phase string `json:"phase,omitempty"`
 
+	// CurrentVersion is the actual Superphenix version currently running on the cluster.
+	// +optional
+	CurrentVersion string `json:"currentVersion,omitempty"`
+
 	// Conditions represent the current state of the Cluster resource.
 	// Standard condition types include:
 	// - "Ready": the cluster is fully operational
@@ -151,6 +169,7 @@ type ClusterStatus struct {
 // +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.type`
 // +kubebuilder:printcolumn:name="Region",type=string,JSONPath=`.spec.region`
 // +kubebuilder:printcolumn:name="AZ",type=string,JSONPath=`.spec.availabilityZone`
+// +kubebuilder:printcolumn:name="Version",type=string,JSONPath=`.status.version`
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
