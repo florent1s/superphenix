@@ -43,7 +43,6 @@ var _ = Describe("Cluster Controller", func() {
 						Region:           "us-east-1",
 						AvailabilityZone: "us-east-1a",
 						Version:          "1.0.0",
-						Name:             resourceName,
 						Connection: &operatorv1alpha1.ClusterConnectionSpec{
 							Mode: operatorv1alpha1.ConnectionModeLocal,
 						},
@@ -150,7 +149,6 @@ var _ = Describe("Cluster Controller", func() {
 					Region:           "us-east-1",
 					AvailabilityZone: "us-east-1a",
 					Version:          "1.0.0",
-					Name:             mgmtClusterName,
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 						URL:  "https://remote-cluster:6443",
@@ -207,7 +205,6 @@ var _ = Describe("Cluster Controller", func() {
 					Region:           "us-east-1",
 					AvailabilityZone: "us-east-1a",
 					Version:          "1.0.0",
-					Name:             resourceName,
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 					},
@@ -264,7 +261,6 @@ var _ = Describe("Cluster Controller", func() {
 					Region:           "us-east-1",
 					AvailabilityZone: "us-east-1a",
 					Version:          "1.0.0",
-					Name:             resourceName,
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 						URL:  "https://localhost:6443",
@@ -342,7 +338,6 @@ var _ = Describe("Cluster Controller", func() {
 					Region:           "us-east-1",
 					AvailabilityZone: "us-east-1a",
 					Version:          "1.0.0",
-					Name:             resourceName,
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 						URL:  "https://localhost:6443",
@@ -417,7 +412,6 @@ var _ = Describe("Cluster Controller", func() {
 					Region:           "us-east-1",
 					AvailabilityZone: "us-east-1a",
 					Version:          "1.0.0",
-					Name:             resourceName,
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},

@@ -72,11 +72,6 @@ type ClusterSpec struct {
 	// +kubebuilder:validation:MinLength=1
 	AvailabilityZone string `json:"availabilityZone"`
 
-	// Name is the name of the cluster.
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MinLength=1
-	Name string `json:"name"`
-
 	// NetworkConfiguration is a YAML dict of unknown values that will be passed to the network configuration chart.
 	// +optional
 	NetworkConfiguration *apiextensionsv1.JSON `json:"networkConfiguration,omitempty"`

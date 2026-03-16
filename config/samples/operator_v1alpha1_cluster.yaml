@@ -6,7 +6,6 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: cluster-sample
 spec:
-  name: cluster-sample
   deploymentMode: Hyperconverged
   region: us-east-1
   availabilityZone: us-east-1a
