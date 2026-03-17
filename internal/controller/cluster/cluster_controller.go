@@ -1,4 +1,4 @@
-package controller
+package cluster
 
 import (
 	"context"
@@ -12,27 +12,39 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/Masterminds/semver/v3"
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
 
 const (
+	// FinalizerName is the name of the finalizer used to clean up the cluster when it is deleted.
 	FinalizerName = "operator.superphenix.net/finalizer"
-	ClusterLabel  = "operator.superphenix.net/cluster-name"
+	// ClusterLabel is the label used to identify the cluster in ArgoCD.
+	ClusterLabel = "operator.superphenix.net/cluster-name"
 )
 
-// ClusterReconciler reconciles a Cluster object
+var (
+	errConfig        = fmt.Errorf("configuration error")
+	errInvalidSecret = fmt.Errorf("invalid secret")
+)
+
+// ClusterReconciler reconciles a Cluster object.
 type ClusterReconciler struct {
 	client.Client
 	Scheme            *runtime.Scheme
 	OperatorNamespace string
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *ClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&operatorv1alpha1.Cluster{}).
+		Named("cluster").
+		Complete(r)
 }
 
 // +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters,verbs=get;list;watch;create;update;patch;delete
@@ -95,19 +107,7 @@ func (r *ClusterReconciler) reconcileCluster(ctx context.Context, cluster *opera
 	// Reconcile ArgoCD connection secret
 	if err := r.reconcileArgoCDSecret(ctx, cluster); err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD connection secret")
-		reason := operatorv1alpha1.ReasonConnectionConfigError
-		if apierrors.IsNotFound(err) || (err != nil && (errors.Is(err, apierrors.NewNotFound(corev1.Resource("secret"), "")) || apierrors.IsNotFound(errors.Unwrap(err)))) {
-			reason = operatorv1alpha1.ReasonSecretNotFound
-		}
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error())
-	}
-
-	// Validate version upgrade/downgrade
-	if err := r.validateVersion(ctx, cluster); err != nil {
-		log.Error(err, "Invalid version change")
-		r.updateStatus(ctx, cluster, "Ready", metav1.ConditionFalse, operatorv1alpha1.ReasonInvalidVersion, err.Error())
-		// Refresh object to avoid conflict on next update
-		_ = r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, cluster)
+		// The status condition is already set inside reconcileArgoCDSecret
 		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
@@ -115,6 +115,13 @@ func (r *ClusterReconciler) reconcileCluster(ctx context.Context, cluster *opera
 	result, err := r.reconcileHealth(ctx, cluster)
 	if err != nil || !result.IsZero() {
 		return result, err
+	}
+
+	// Validate version upgrade/downgrade
+	if err := r.validateUpgradePath(ctx, cluster); err != nil {
+		log.Error(err, "Invalid version change")
+		r.updateStatus(ctx, cluster, "Ready", metav1.ConditionFalse, operatorv1alpha1.ReasonInvalidVersion, err.Error())
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
 	// Update current version in status if everything else is healthy
@@ -143,6 +150,8 @@ func (r *ClusterReconciler) reconcileCluster(ctx context.Context, cluster *opera
 	return ctrl.Result{RequeueAfter: 5 * time.Minute}, nil
 }
 
+// reconcileArgoCDSecret ensures the secret used by ArgoCD to connect to the clusters is up to date
+// with the connection configuration from the Cluster CRD.
 func (r *ClusterReconciler) reconcileArgoCDSecret(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
 	log := logf.FromContext(ctx)
 
@@ -182,7 +191,7 @@ func (r *ClusterReconciler) reconcileArgoCDSecret(ctx context.Context, cluster *
 
 		// Fetch the connection secret to get credentials
 		if cluster.Spec.Connection.SecretRef == nil {
-			return errors.New("connection.secretRef is required when Mode is Remote")
+			return fmt.Errorf("%w: connection.secretRef is required when Mode is Remote", errConfig)
 		}
 		connSecretName := cluster.Spec.Connection.SecretRef.Name
 		connSecretNamespace := cluster.Spec.Connection.SecretRef.Namespace
@@ -197,6 +206,9 @@ func (r *ClusterReconciler) reconcileArgoCDSecret(ctx context.Context, cluster *
 		}
 
 		connData := r.extractConnectionData(connSecret)
+		if connData.bearerToken == "" && connData.username == "" && connData.password == "" {
+			return fmt.Errorf("%w: secret must contain either a bearerToken or a username/password pair", errInvalidSecret)
+		}
 
 		// Build ArgoCD cluster config
 		config := map[string]interface{}{}
@@ -222,7 +234,16 @@ func (r *ClusterReconciler) reconcileArgoCDSecret(ctx context.Context, cluster *
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to create or update ArgoCD secret: %w", err)
+		reason := operatorv1alpha1.ReasonConnectionConfigError
+		if apierrors.IsNotFound(err) || (errors.Is(err, apierrors.NewNotFound(corev1.Resource("secret"), "")) || apierrors.IsNotFound(errors.Unwrap(err))) {
+			reason = operatorv1alpha1.ReasonSecretNotFound
+		} else if errors.Is(err, errConfig) {
+			reason = operatorv1alpha1.ReasonConnectionConfigError
+		} else if errors.Is(err, errInvalidSecret) {
+			reason = operatorv1alpha1.ReasonInvalidSecret
+		}
+		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error())
+		return err
 	}
 
 	log.Info("Successfully reconciled ArgoCD connection secret", "Secret.Name", secretName, "Secret.Namespace", r.OperatorNamespace)
@@ -286,137 +307,17 @@ func (r *ClusterReconciler) extractConnectionData(secret *corev1.Secret) *connec
 	return data
 }
 
-// reconcileHealth checks the connectivity of the cluster (local or remote) and updates its status.
-// If the cluster is unreachable, it returns a Requeue result.
-func (r *ClusterReconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alpha1.Cluster) (ctrl.Result, error) {
-	log := logf.FromContext(ctx)
-
-	var config *rest.Config
-	var err error
-
-	config, err = r.getRESTConfigForCluster(ctx, cluster)
-	if err != nil {
-		log.Error(err, "Failed to build REST config for cluster")
-		// The status condition is already set inside getRESTConfigForCluster
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
-	}
-
-	if err := r.checkReachability(config); err != nil {
-		log.Error(err, "Cluster unreachable")
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionFailed, err.Error())
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
-	}
-
-	log.Info("Cluster is reachable")
-	r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeConnected, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionSuccess, "Successfully connected to cluster")
-
-	return ctrl.Result{}, nil
-}
-
-// getRESTConfigForCluster generates the configuration to connect to a Kubernetes cluster
-func (r *ClusterReconciler) getRESTConfigForCluster(ctx context.Context, cluster *operatorv1alpha1.Cluster) (*rest.Config, error) {
-	log := logf.FromContext(ctx)
-
-	if cluster.Spec.Connection == nil {
-		err := fmt.Errorf("%w: connection configuration is missing", errConfig)
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
-		return nil, err
-	}
-
-	if cluster.Spec.Connection.Mode == operatorv1alpha1.ConnectionModeLocal {
-		log.Info("Using local connection mode")
-		config, err := ctrl.GetConfig()
-		if err != nil {
-			r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionFailed, err.Error())
-			return nil, err
+func (r *ClusterReconciler) setCondition(conditions *[]metav1.Condition, newCondition metav1.Condition) {
+	for i, c := range *conditions {
+		if c.Type == newCondition.Type {
+			if c.Status == newCondition.Status && c.Reason == newCondition.Reason && c.Message == newCondition.Message {
+				return
+			}
+			(*conditions)[i] = newCondition
+			return
 		}
-		return config, nil
 	}
-
-	// For remote mode, we need URL and SecretRef
-	if cluster.Spec.Connection.URL == "" {
-		err := fmt.Errorf("%w: connection URL must be provided in Remote mode", errConfig)
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
-		return nil, err
-	}
-	if cluster.Spec.Connection.SecretRef == nil {
-		err := fmt.Errorf("%w: secret reference must be provided in Remote mode", errConfig)
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
-		return nil, err
-	}
-
-	// Fetch the Secret
-	secretName := cluster.Spec.Connection.SecretRef.Name
-	secretNamespace := cluster.Spec.Connection.SecretRef.Namespace
-	if secretNamespace == "" {
-		secretNamespace = cluster.Namespace
-	}
-
-	secret := &corev1.Secret{}
-	err := r.Get(ctx, types.NamespacedName{Name: secretName, Namespace: secretNamespace}, secret)
-	if err != nil {
-		reason := operatorv1alpha1.ReasonConnectionFailed
-		if apierrors.IsNotFound(err) {
-			reason = operatorv1alpha1.ReasonSecretNotFound
-		}
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error())
-		return nil, err
-	}
-
-	log.Info("Successfully fetched secret", "Secret.Name", secret.Name, "Secret.Namespace", secret.Namespace)
-
-	// Build REST config from secret
-	config, err := r.buildRESTConfig(cluster.Spec.Connection.URL, secret)
-	if err != nil {
-		reason := operatorv1alpha1.ReasonConnectionFailed
-		if isInvalidSecretError(err) {
-			reason = operatorv1alpha1.ReasonInvalidSecret
-		}
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error())
-		return nil, err
-	}
-	return config, nil
-}
-
-func (r *ClusterReconciler) buildRESTConfig(url string, secret *corev1.Secret) (*rest.Config, error) {
-	config := &rest.Config{
-		Host: url,
-	}
-
-	connData := r.extractConnectionData(secret)
-
-	if !connData.hasAuth {
-		return nil, fmt.Errorf("%w: secret must contain authentication credentials (username/password or bearerToken)", errInvalidSecret)
-	}
-
-	config.Username = connData.username
-	config.Password = connData.password
-	config.BearerToken = connData.bearerToken
-
-	// TLS Config
-	config.TLSClientConfig = rest.TLSClientConfig{
-		CAData:     connData.caData,
-		CertData:   connData.certData,
-		KeyData:    connData.keyData,
-		Insecure:   connData.insecure,
-		ServerName: connData.serverName,
-	}
-
-	return config, nil
-}
-
-func (r *ClusterReconciler) checkReachability(config *rest.Config) error {
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
-	if err != nil {
-		return err
-	}
-
-	_, err = discoveryClient.ServerVersion()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	*conditions = append(*conditions, newCondition)
 }
 
 func (r *ClusterReconciler) updateStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, condType string, status metav1.ConditionStatus, reason, message string) {
@@ -468,83 +369,4 @@ func (r *ClusterReconciler) cleanupCluster(ctx context.Context, cluster *operato
 	log.Info("Cleaning up external resources for Cluster", "Name", cluster.Name)
 
 	return nil
-}
-
-func (r *ClusterReconciler) setCondition(conditions *[]metav1.Condition, newCondition metav1.Condition) {
-	for i, c := range *conditions {
-		if c.Type == newCondition.Type {
-			if c.Status == newCondition.Status && c.Reason == newCondition.Reason && c.Message == newCondition.Message {
-				return
-			}
-			(*conditions)[i] = newCondition
-			return
-		}
-	}
-	*conditions = append(*conditions, newCondition)
-}
-
-var (
-	errConfig        = fmt.Errorf("configuration error")
-	errInvalidSecret = fmt.Errorf("invalid secret")
-
-	// supportedPreviousVersions maps the target version to a semver constraint for the previous version.
-	// For example, to upgrade to "1.1.0", the current version might need to be ">= 1.0.0".
-	supportedPreviousVersions = map[string]string{
-		"1.1.0": ">= 1.0.0",
-		"1.2.0": ">= 1.1.0",
-		"2.0.0": ">= 1.2.0",
-	}
-)
-
-func isConfigError(err error) bool {
-	return errors.Is(err, errConfig)
-}
-
-func isInvalidSecretError(err error) bool {
-	return errors.Is(err, errInvalidSecret)
-}
-
-func (r *ClusterReconciler) validateVersion(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
-	specVersion := cluster.Spec.Version
-	statusVersion := cluster.Status.CurrentVersion
-
-	// If no version is specified, or the running cluster isn't installed yet (no version), we can't validate.
-	if specVersion == "" || statusVersion == "" {
-		return nil
-	}
-
-	newVersion, err := semver.NewVersion(specVersion)
-	if err != nil {
-		return fmt.Errorf("invalid version format in spec (%q): %w", specVersion, err)
-	}
-
-	oldVersion, err := semver.NewVersion(statusVersion)
-	if err != nil {
-		return fmt.Errorf("invalid version format in status (%q): %w", statusVersion, err)
-	}
-
-	// Check if we have a specific constraint for this target version
-	constraintStr, ok := supportedPreviousVersions[newVersion.String()]
-	if !ok {
-		return fmt.Errorf("upgrade to %s is not supported (no entry in supported versions table)", specVersion)
-	}
-
-	constraint, err := semver.NewConstraint(constraintStr)
-	if err != nil {
-		return fmt.Errorf("invalid semver constraint for version %s: %w", specVersion, err)
-	}
-
-	if !constraint.Check(oldVersion) {
-		return fmt.Errorf("upgrade to %s is not supported from version %s (must satisfy: %s)", specVersion, cluster.Status.CurrentVersion, constraintStr)
-	}
-
-	return nil
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *ClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&operatorv1alpha1.Cluster{}).
-		Named("cluster").
-		Complete(r)
 }

@@ -20,7 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
-	controller "github.com/super-phenix/superphenix/internal/controller/superphenix-operator"
+	"github.com/super-phenix/superphenix/internal/controller/cluster"
+	"github.com/super-phenix/superphenix/internal/controller/management"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -178,7 +179,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&controller.ClusterReconciler{
+	if err := (&cluster.ClusterReconciler{
 		Client:            mgr.GetClient(),
 		Scheme:            mgr.GetScheme(),
 		OperatorNamespace: operatorNamespace,
@@ -189,7 +190,7 @@ func main() {
 
 	if isManagementCluster {
 		setupLog.Info("Setting up management components reconciler")
-		if err := (&controller.ManagementReconciler{
+		if err := (&management.ManagementReconciler{
 			Client:                    mgr.GetClient(),
 			Scheme:                    mgr.GetScheme(),
 			Config:                    mgr.GetConfig(),
