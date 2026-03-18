@@ -71,9 +71,12 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 	return map[string]interface{}{
 		"project": "default",
 		"source": map[string]interface{}{
-			"repoURL":        "https://github.com/super-phenix/superphenix-apps.git",
-			"path":           "clusters/" + cluster.Name,
+			"repoURL":        "https://github.com/super-phenix/superphenix.git",
+			"path":           "charts/superphenix",
 			"targetRevision": "HEAD",
+			"helm": map[string]interface{}{
+				"valuesObject": r.generateApplicationValues(cluster),
+			},
 		},
 		"destination": map[string]interface{}{
 			"name":      "in-cluster",
@@ -91,4 +94,9 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			},
 		},
 	}
+}
+
+// generateApplicationValues generates the values for the cluster application Helm chart.
+func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster) map[string]interface{} {
+	return map[string]interface{}{}
 }

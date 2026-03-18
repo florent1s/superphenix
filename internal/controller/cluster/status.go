@@ -24,8 +24,17 @@ func (r *Reconciler) setCondition(conditions *[]metav1.Condition, newCondition m
 }
 
 func (r *Reconciler) updateStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, condType string, status metav1.ConditionStatus, reason, message string) {
+	r.updateStatusWithPhase(ctx, cluster, condType, status, reason, message, "")
+}
+
+func (r *Reconciler) updateStatusWithPhase(ctx context.Context, cluster *operatorv1alpha1.Cluster, condType string, status metav1.ConditionStatus, reason, message string, phase string) {
 	log := logf.FromContext(ctx)
 	patch := client.MergeFrom(cluster.DeepCopy())
+
+	if phase != "" {
+		cluster.Status.Phase = phase
+	}
+
 	condition := metav1.Condition{
 		Type:               condType,
 		Status:             status,

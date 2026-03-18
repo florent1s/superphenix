@@ -226,6 +226,11 @@ spec:
                 type: integer
               phase:
                 description: Phase represents the current phase of the cluster lifecycle.
+                enum:
+                - Deployed
+                - Deploying
+                - OutOfSync
+                - Error
                 type: string
             type: object
         required:

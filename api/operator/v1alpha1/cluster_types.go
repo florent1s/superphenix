@@ -135,6 +135,7 @@ type SecretReference struct {
 // ClusterStatus defines the observed state of Cluster.
 type ClusterStatus struct {
 	// Phase represents the current phase of the cluster lifecycle.
+	// +kubebuilder:validation:Enum=Deployed;Deploying;OutOfSync;Error
 	// +optional
 	Phase string `json:"phase,omitempty"`
 

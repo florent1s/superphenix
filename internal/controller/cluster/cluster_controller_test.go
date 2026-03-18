@@ -76,11 +76,14 @@ var _ = Describe("Cluster Controller", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Verifying that it's marked as reachable")
+			By("Verifying that it's marked as reachable and Deployed")
 			updatedCluster := &operatorv1alpha1.Cluster{}
 			Eventually(func() bool {
 				err := k8sClient.Get(ctx, typeNamespacedName, updatedCluster)
 				if err != nil {
+					return false
+				}
+				if updatedCluster.Status.Phase != "Deployed" {
 					return false
 				}
 				for _, condition := range updatedCluster.Status.Conditions {
@@ -124,7 +127,20 @@ var _ = Describe("Cluster Controller", func() {
 			destination, found, err := unstructured.NestedMap(spec, "destination")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
-			Expect(destination["server"]).To(Equal("https://kubernetes.default.svc"))
+			Expect(destination["name"]).To(Equal("in-cluster"))
+
+			source, found, err := unstructured.NestedMap(spec, "source")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			Expect(source["repoURL"]).To(Equal("https://github.com/super-phenix/superphenix.git"))
+			Expect(source["path"]).To(Equal("charts/superphenix"))
+
+			helm, found, err := unstructured.NestedMap(source, "helm")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			_, found, err = unstructured.NestedMap(helm, "valuesObject")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
 
 			By("Reconciling with updated connection info")
 			updatedCluster.Spec.Connection.URL = "https://new-url:6443"
@@ -197,21 +213,24 @@ var _ = Describe("Cluster Controller", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Verifying status reports SecretNotFound (as secret doesn't exist)")
+			By("Verifying status reports SecretNotFound and Error phase")
 			updatedMgmtCluster := &operatorv1alpha1.Cluster{}
-			err = k8sClient.Get(ctx, mgmtClusterNamespacedName, updatedMgmtCluster)
-			Expect(err).NotTo(HaveOccurred())
-
-			var unreachableCondition *metav1.Condition
-			for i := range updatedMgmtCluster.Status.Conditions {
-				if updatedMgmtCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeUnreachable {
-					unreachableCondition = &updatedMgmtCluster.Status.Conditions[i]
-					break
+			Eventually(func() bool {
+				err = k8sClient.Get(ctx, mgmtClusterNamespacedName, updatedMgmtCluster)
+				if err != nil {
+					return false
 				}
-			}
-			Expect(unreachableCondition).NotTo(BeNil())
-			Expect(unreachableCondition.Status).To(Equal(metav1.ConditionTrue))
-			Expect(unreachableCondition.Reason).To(Equal(operatorv1alpha1.ReasonSecretNotFound))
+				if updatedMgmtCluster.Status.Phase != "Error" {
+					return false
+				}
+				for i := range updatedMgmtCluster.Status.Conditions {
+					if updatedMgmtCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeUnreachable {
+						return updatedMgmtCluster.Status.Conditions[i].Status == metav1.ConditionTrue &&
+							updatedMgmtCluster.Status.Conditions[i].Reason == operatorv1alpha1.ReasonSecretNotFound
+					}
+				}
+				return false
+			}, 10, 0.5).Should(BeTrue())
 		})
 
 		It("should report ConnectionConfigError when connection is missing fields", func() {

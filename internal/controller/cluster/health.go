@@ -35,7 +35,7 @@ func (r *Reconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alp
 
 	if err := r.checkReachability(config); err != nil {
 		log.Error(err, "Cluster unreachable")
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionFailed, err.Error())
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionFailed, err.Error(), "Error")
 		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
@@ -51,7 +51,7 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 
 	if cluster.Spec.Connection == nil {
 		err := fmt.Errorf("%w: connection configuration is missing", errConfig)
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error(), "Error")
 		return nil, err
 	}
 
@@ -59,7 +59,7 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 		log.Info("Using local connection mode")
 		config, err := ctrl.GetConfig()
 		if err != nil {
-			r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionFailed, err.Error())
+			r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionFailed, err.Error(), "Error")
 			return nil, err
 		}
 		return config, nil
@@ -68,12 +68,12 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 	// For remote mode, we need URL and SecretRef
 	if cluster.Spec.Connection.URL == "" {
 		err := fmt.Errorf("%w: connection URL must be provided in Remote mode", errConfig)
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error(), "Error")
 		return nil, err
 	}
 	if cluster.Spec.Connection.SecretRef == nil {
 		err := fmt.Errorf("%w: secret reference must be provided in Remote mode", errConfig)
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionConfigError, err.Error(), "Error")
 		return nil, err
 	}
 
@@ -91,7 +91,7 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 		if apierrors.IsNotFound(err) {
 			reason = operatorv1alpha1.ReasonSecretNotFound
 		}
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error())
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error(), "Error")
 		return nil, err
 	}
 
@@ -104,7 +104,7 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 		if errors.Is(err, errInvalidSecret) {
 			reason = operatorv1alpha1.ReasonInvalidSecret
 		}
-		r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error())
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error(), "Error")
 		return nil, err
 	}
 	return config, nil
