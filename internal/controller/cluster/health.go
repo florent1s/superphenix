@@ -118,7 +118,7 @@ func (r *Reconciler) buildRESTConfig(url string, secret *corev1.Secret) (*rest.C
 	connData := r.extractConnectionData(secret)
 
 	if !connData.hasAuth {
-		return nil, fmt.Errorf("%w: secret must contain authentication credentials (username/password or bearerToken)", errInvalidSecret)
+		return nil, fmt.Errorf("%w: secret must contain authentication credentials (username/password, bearerToken or certData/keyData)", errInvalidSecret)
 	}
 
 	config.Username = connData.username

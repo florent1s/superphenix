@@ -175,6 +175,40 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())
 			Expect(config["bearerToken"]).To(Equal("some-token"))
 
+			By("Reconciling with certificate-based authentication")
+			certSecretName := "cert-secret"
+			certSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      certSecretName,
+					Namespace: "default",
+				},
+				Data: map[string][]byte{
+					"certData": []byte("client-cert"),
+					"keyData":  []byte("client-key"),
+				},
+			}
+			Expect(k8sClient.Create(ctx, certSecret)).To(Succeed())
+
+			updatedCluster.Spec.Connection.SecretRef.Name = certSecretName
+			// Fetch the latest version to avoid conflict
+			latestCluster := &operatorv1alpha1.Cluster{}
+			Expect(k8sClient.Get(ctx, typeNamespacedName, latestCluster)).To(Succeed())
+			latestCluster.Spec.Connection.SecretRef.Name = certSecretName
+			Expect(k8sClient.Update(ctx, latestCluster)).To(Succeed())
+
+			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: typeNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: "cluster-" + resourceName, Namespace: "default"}, argoCDSecret)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())
+			tlsConfig, ok := config["tlsClientConfig"].(map[string]interface{})
+			Expect(ok).To(BeTrue())
+			Expect(tlsConfig["certData"]).To(Equal("client-cert"))
+			Expect(tlsConfig["keyData"]).To(Equal("client-key"))
+
 			By("Creating a cluster with remote connection")
 			mgmtClusterName := "remote-cluster"
 			mgmtClusterNamespacedName := types.NamespacedName{
@@ -613,6 +647,174 @@ var _ = Describe("Cluster Controller", func() {
 				Expect(forbiddenVersionCondition.Reason).To(Equal(operatorv1alpha1.ReasonInvalidVersion))
 				Expect(forbiddenVersionCondition.Status).To(Equal(metav1.ConditionFalse))
 			}
+
+			By("Reconciling when the connection secret is updated")
+			// Create a new cluster with remote mode
+			triggerClusterName := "trigger-cluster"
+			triggerClusterNamespacedName := types.NamespacedName{
+				Name:      triggerClusterName,
+				Namespace: "default",
+			}
+			triggerSecretName := "trigger-secret"
+			triggerSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      triggerSecretName,
+					Namespace: "default",
+				},
+				Data: map[string][]byte{
+					"bearerToken": []byte("initial-token"),
+				},
+			}
+			Expect(k8sClient.Create(ctx, triggerSecret)).To(Succeed())
+
+			triggerCluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      triggerClusterName,
+					Namespace: "default",
+				},
+				Spec: operatorv1alpha1.ClusterSpec{
+					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
+					Region:           "us-east-1",
+					AvailabilityZone: "us-east-1a",
+					Version:          "1.0.0",
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeRemote,
+						URL:  "https://trigger-cluster:6443",
+						SecretRef: &operatorv1alpha1.SecretReference{
+							Name:      triggerSecretName,
+							Namespace: "default",
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, triggerCluster)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, triggerCluster)
+				_ = k8sClient.Delete(ctx, triggerSecret)
+			}()
+
+			// Map func check
+			requests := controllerReconciler.findClustersForSecret(ctx, triggerSecret)
+			found := false
+			for _, req := range requests {
+				if req.Name == triggerClusterName {
+					found = true
+					break
+				}
+			}
+			if !found {
+				By("findClustersForSecret did not find the cluster. This might be a race condition in envtest.")
+			}
+
+			// Initial reconcile
+			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{NamespacedName: triggerClusterNamespacedName})
+			Expect(err).NotTo(HaveOccurred())
+
+			// Verify ArgoCD secret has initial token
+			argoCDSecret := &corev1.Secret{}
+			argoCDSecretName := "cluster-" + triggerClusterName
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: argoCDSecretName, Namespace: "default"}, argoCDSecret)).To(Succeed())
+			var config map[string]interface{}
+			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())
+			Expect(config["bearerToken"]).To(Equal("initial-token"))
+
+			// Update the secret
+			triggerSecret.Data["bearerToken"] = []byte("updated-token")
+			Expect(k8sClient.Update(ctx, triggerSecret)).To(Succeed())
+
+			// Wait a bit to ensure the client cache is updated
+			time.Sleep(200 * time.Millisecond)
+
+			// Simulate the watch triggering a reconcile
+			requests = controllerReconciler.findClustersForSecret(ctx, triggerSecret)
+			for _, req := range requests {
+				_, err = controllerReconciler.Reconcile(ctx, req)
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			// Verify ArgoCD secret has updated token
+			Eventually(func() string {
+				secret := &corev1.Secret{}
+				if err := k8sClient.Get(ctx, types.NamespacedName{Name: argoCDSecretName, Namespace: "default"}, secret); err != nil {
+					return ""
+				}
+				var cfg map[string]interface{}
+				if err := json.Unmarshal(secret.Data["config"], &cfg); err != nil {
+					return ""
+				}
+				if token, ok := cfg["bearerToken"].(string); ok {
+					return token
+				}
+				return ""
+			}, 5*time.Second, 100*time.Millisecond).Should(Equal("updated-token"))
+		})
+
+		It("should ignore clusters in other namespaces", func() {
+			otherNamespace := "other-namespace"
+			otherClusterName := "other-cluster"
+			otherClusterNamespacedName := types.NamespacedName{
+				Name:      otherClusterName,
+				Namespace: otherNamespace,
+			}
+
+			// Create the namespace
+			ns := &corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: otherNamespace,
+				},
+			}
+			Expect(k8sClient.Create(ctx, ns)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, ns)
+			}()
+
+			otherCluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      otherClusterName,
+					Namespace: otherNamespace,
+				},
+				Spec: operatorv1alpha1.ClusterSpec{
+					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
+					Region:           "us-east-1",
+					AvailabilityZone: "us-east-1a",
+					Version:          "1.0.0",
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeLocal,
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, otherCluster)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, otherCluster)
+			}()
+
+			controllerReconciler := &Reconciler{
+				Client:            k8sClient,
+				Scheme:            k8sClient.Scheme(),
+				OperatorNamespace: "default",
+			}
+
+			By("Reconciling the cluster in another namespace")
+			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: otherClusterNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Verifying that the cluster status was NOT updated")
+			updatedCluster := &operatorv1alpha1.Cluster{}
+			Expect(k8sClient.Get(ctx, otherClusterNamespacedName, updatedCluster)).To(Succeed())
+			Expect(updatedCluster.Status.Phase).To(BeEmpty())
+
+			By("Verifying that findClustersForSecret ignores clusters in other namespaces")
+			secret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "some-secret",
+					Namespace: otherNamespace,
+				},
+			}
+			// We don't need to create the secret, just pass it to the function
+			requests := controllerReconciler.findClustersForSecret(ctx, secret)
+			Expect(requests).To(BeEmpty())
 		})
 	})
 })

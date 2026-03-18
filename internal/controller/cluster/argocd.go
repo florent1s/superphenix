@@ -85,8 +85,8 @@ func (r *Reconciler) reconcileArgoCDSecret(ctx context.Context, cluster *operato
 		}
 
 		connData := r.extractConnectionData(connSecret)
-		if connData.bearerToken == "" && connData.username == "" && connData.password == "" {
-			return fmt.Errorf("%w: secret must contain either a bearerToken or a username/password pair", errInvalidSecret)
+		if connData.bearerToken == "" && connData.username == "" && connData.password == "" && (len(connData.certData) == 0 || len(connData.keyData) == 0) {
+			return fmt.Errorf("%w: secret must contain either a bearerToken, a username/password pair or certData/keyData", errInvalidSecret)
 		}
 
 		// Build ArgoCD cluster config
@@ -156,6 +156,9 @@ func (r *Reconciler) extractConnectionData(secret *corev1.Secret) *connectionDat
 	if certData, ok := secret.Data["certData"]; ok {
 		data.certData = certData
 		data.tlsClientConfig["certData"] = string(certData)
+		if len(data.certData) > 0 && len(secret.Data["keyData"]) > 0 {
+			data.hasAuth = true
+		}
 	}
 	if keyData, ok := secret.Data["keyData"]; ok {
 		data.keyData = keyData
