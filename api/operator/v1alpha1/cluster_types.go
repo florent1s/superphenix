@@ -27,8 +27,28 @@ const (
 
 	// ConditionTypeArgoCDInstalled represents the status of ArgoCD CRDs installation.
 	ConditionTypeArgoCDInstalled = "ArgoCDInstalled"
+	// ReasonArgoCDCRDInstalled is used when the ArgoCD CRDs are successfully installed.
+	ReasonArgoCDCRDInstalled = "ArgoCDCRDInstalled"
 	// ReasonArgoCDCRDMissing is used when the ArgoCD CRDs are not installed in the cluster.
 	ReasonArgoCDCRDMissing = "ArgoCDCRDMissing"
+
+	// ConditionTypeReady represents the status when the cluster is fully operational.
+	ConditionTypeReady = "Ready"
+	// ReasonReconcileSuccess is used when the cluster is fully reconciled.
+	ReasonReconcileSuccess = "ReconcileSuccess"
+	// ReasonHealthCheckFailed is used when the health check fails.
+	ReasonHealthCheckFailed = "HealthCheckFailed"
+	// ReasonApplicationReconcileFailed is used when the ArgoCD application reconciliation fails.
+	ReasonApplicationReconcileFailed = "ApplicationReconcileFailed"
+	// ReasonAppProjectReconcileFailed is used when the ArgoCD project reconciliation fails.
+	ReasonAppProjectReconcileFailed = "AppProjectReconcileFailed"
+
+	// ConditionTypePaused represents the status when the cluster synchronization is paused.
+	ConditionTypePaused = "Paused"
+	// ReasonPaused is used when the cluster synchronization is paused.
+	ReasonPaused = "Paused"
+	// ReasonResumed is used when the cluster synchronization is resumed.
+	ReasonResumed = "Resumed"
 )
 
 // DeploymentMode defines whether the cluster is hyperconverged or decoupled.
@@ -94,6 +114,12 @@ type ClusterSpec struct {
 	// Connection defines the parameters to connect to the remote cluster.
 	// +kubebuilder:validation:Required
 	Connection *ClusterConnectionSpec `json:"connection"`
+
+	// PauseSync allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
+	// When set to true, an ArgoCD sync window is added to the cluster's project to prevent any automated or manual sync.
+	// +optional
+	// +kubebuilder:default=false
+	PauseSync bool `json:"pauseSync,omitempty"`
 }
 
 // ConnectionMode defines how the operator connects to the cluster.
@@ -140,7 +166,7 @@ type SecretReference struct {
 // ClusterStatus defines the observed state of Cluster.
 type ClusterStatus struct {
 	// Phase represents the current phase of the cluster lifecycle.
-	// +kubebuilder:validation:Enum=Deployed;Deploying;OutOfSync;Error
+	// +kubebuilder:validation:Enum=Deployed;Deploying;OutOfSync;Error;Paused
 	// +optional
 	Phase string `json:"phase,omitempty"`
 

@@ -155,7 +155,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		r.updateArgoCDCondition(ctx, cluster, metav1.ConditionFalse, operatorv1alpha1.ReasonArgoCDCRDMissing, err.Error())
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	}
-	r.updateArgoCDCondition(ctx, cluster, metav1.ConditionTrue, "ArgoCDCRDInstalled", "ArgoCD CRDs are installed")
+	r.updateArgoCDCondition(ctx, cluster, metav1.ConditionTrue, operatorv1alpha1.ReasonArgoCDCRDInstalled, "ArgoCD CRDs are installed")
 
 	// Handle the reconciling logic for the cluster
 	return r.reconcileCluster(ctx, cluster)
@@ -206,7 +206,7 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 	k8sVersion, result, err := r.reconcileHealth(ctx, cluster)
 	if err != nil || !result.IsZero() {
 		if err != nil {
-			r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "HealthCheckFailed", err.Error(), "Error")
+			r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonHealthCheckFailed, err.Error(), "Error")
 		}
 
 		// Even if the cluster is unreachable, we still try to reconcile the ArgoCD AppProject and Application

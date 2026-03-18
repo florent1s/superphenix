@@ -32,12 +32,48 @@ func (r *Reconciler) reconcileAppProject(ctx context.Context, cluster *operatorv
 
 	if err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD AppProject")
-		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "AppProjectReconcileFailed", err.Error(), "Error")
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonAppProjectReconcileFailed, err.Error(), "Error")
 		return err
+	}
+
+	// Check if the sync window is present to update the Paused status
+	if cluster.Spec.PauseSync {
+		r.updatePausedStatus(ctx, cluster, project)
+	} else {
+		// Ensure we remove the Paused condition/phase if it was set
+		r.removePausedStatus(ctx, cluster)
 	}
 
 	log.Info("Successfully reconciled ArgoCD AppProject", "AppProject.Name", project.GetName())
 	return nil
+}
+
+func (r *Reconciler) updatePausedStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, project *unstructured.Unstructured) {
+	spec, found, _ := unstructured.NestedMap(project.Object, "spec")
+	if !found {
+		return
+	}
+
+	windows, found, _ := unstructured.NestedSlice(spec, "syncWindows")
+	if found && len(windows) > 0 {
+		// Sync window is present, we can set the phase to Paused
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypePaused, metav1.ConditionTrue, operatorv1alpha1.ReasonPaused, "Synchronization is paused via ArgoCD sync window", "Paused")
+	}
+}
+
+func (r *Reconciler) removePausedStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster) {
+	// Only remove if it's currently Paused to avoid unnecessary status updates
+	isPaused := false
+	for _, c := range cluster.Status.Conditions {
+		if c.Type == operatorv1alpha1.ConditionTypePaused && c.Status == metav1.ConditionTrue {
+			isPaused = true
+			break
+		}
+	}
+
+	if isPaused || cluster.Status.Phase == "Paused" {
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypePaused, metav1.ConditionFalse, operatorv1alpha1.ReasonResumed, "Synchronization is resumed", "Deployed")
+	}
 }
 
 // initAppProject creates the template of the cluster AppProject.
@@ -68,7 +104,7 @@ func (r *Reconciler) buildAppProjectSpec(cluster *operatorv1alpha1.Cluster) map[
 		destName = "in-cluster"
 	}
 
-	return map[string]interface{}{
+	spec := map[string]interface{}{
 		"description": "Project for cluster " + cluster.Name,
 		"sourceRepos": []interface{}{"*"},
 		"destinations": []interface{}{
@@ -90,4 +126,19 @@ func (r *Reconciler) buildAppProjectSpec(cluster *operatorv1alpha1.Cluster) map[
 			},
 		},
 	}
+
+	if cluster.Spec.PauseSync {
+		spec["syncWindows"] = []interface{}{
+			map[string]interface{}{
+				"kind":       "deny",
+				"schedule":   "0 0 * * *", // We use a dummy schedule as we want it to be always active
+				"duration":   "24h",       // Cover the whole day
+				"manualSync": false,
+				"clusters":   []interface{}{destName},
+				"namespaces": []interface{}{"*"},
+			},
+		}
+	}
+
+	return spec
 }

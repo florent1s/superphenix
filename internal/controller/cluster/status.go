@@ -110,17 +110,23 @@ func (r *Reconciler) updateClusterVersion(ctx context.Context, cluster *operator
 		latest := &operatorv1alpha1.Cluster{}
 		if err := r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, latest); err == nil {
 			latest.Status.CurrentVersion = cluster.Spec.Version
-			latest.Status.Phase = "Deployed"
+			if cluster.Status.Phase != "Paused" {
+				latest.Status.Phase = "Deployed"
+			}
 			if err := r.Status().Update(ctx, latest); err != nil {
 				log.Error(err, "Failed to update cluster status with new version")
 				return ctrl.Result{RequeueAfter: time.Minute}, err
 			}
 			// Update the local object as well so following logic sees the change
 			cluster.Status.CurrentVersion = cluster.Spec.Version
-			cluster.Status.Phase = "Deployed"
+			if cluster.Status.Phase != "Paused" {
+				cluster.Status.Phase = "Deployed"
+			}
 		} else {
 			cluster.Status.CurrentVersion = cluster.Spec.Version
-			cluster.Status.Phase = "Deployed"
+			if cluster.Status.Phase != "Paused" {
+				cluster.Status.Phase = "Deployed"
+			}
 			if err := r.Status().Update(ctx, cluster); err != nil {
 				log.Error(err, "Failed to update cluster status with new version")
 				return ctrl.Result{RequeueAfter: time.Minute}, err
@@ -128,8 +134,8 @@ func (r *Reconciler) updateClusterVersion(ctx context.Context, cluster *operator
 		}
 	} else {
 		// If version is already correct and we reached here, it's Deployed
-		if cluster.Status.Phase != "Deployed" {
-			r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionTrue, "ReconcileSuccess", "Cluster is fully reconciled", "Deployed")
+		if cluster.Status.Phase != "Deployed" && cluster.Status.Phase != "Paused" {
+			r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionTrue, operatorv1alpha1.ReasonReconcileSuccess, "Cluster is fully reconciled", "Deployed")
 		}
 	}
 	return ctrl.Result{}, nil

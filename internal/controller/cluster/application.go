@@ -33,7 +33,7 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 
 	if err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD Application")
-		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "ApplicationReconcileFailed", err.Error(), "Error")
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonApplicationReconcileFailed, err.Error(), "Error")
 		return err
 	}
 

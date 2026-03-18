@@ -120,6 +120,12 @@ spec:
                 description: NetworkConfiguration is a YAML dict of unknown values
                   that will be passed to the network configuration chart.
                 x-kubernetes-preserve-unknown-fields: true
+              pauseSync:
+                default: false
+                description: |-
+                  PauseSync allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
+                  When set to true, an ArgoCD sync window is added to the cluster's project to prevent any automated or manual sync.
+                type: boolean
               region:
                 description: Region is the geographic region where this cluster is
                   located.
@@ -237,6 +243,7 @@ spec:
                 - Deploying
                 - OutOfSync
                 - Error
+                - Paused
                 type: string
             type: object
         required:

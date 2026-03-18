@@ -668,9 +668,9 @@ var _ = Describe("Cluster Controller", func() {
 			// If we can't find it by Reason, maybe it's because it wasn't set or Status was empty during Get.
 			// Reconcile might have failed and the Status() update inside it might not be visible yet or failed silently.
 			if invalidVersionCondition == nil {
-				// Check for "Ready" condition
+				// Check for ConditionTypeReady condition
 				for i := range updatedCluster.Status.Conditions {
-					if updatedCluster.Status.Conditions[i].Type == "Ready" {
+					if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeReady {
 						invalidVersionCondition = &updatedCluster.Status.Conditions[i]
 						break
 					}
@@ -710,7 +710,7 @@ var _ = Describe("Cluster Controller", func() {
 			}
 			if forbiddenVersionCondition == nil {
 				for i := range updatedCluster.Status.Conditions {
-					if updatedCluster.Status.Conditions[i].Type == "Ready" {
+					if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeReady {
 						forbiddenVersionCondition = &updatedCluster.Status.Conditions[i]
 						break
 					}

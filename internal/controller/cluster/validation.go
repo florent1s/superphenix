@@ -28,7 +28,7 @@ func (r *Reconciler) validate(ctx context.Context, cluster *operatorv1alpha1.Clu
 	// Validate version upgrade/downgrade
 	if err := r.validateUpgradePath(ctx, cluster); err != nil {
 		log.Error(err, "Validation failed")
-		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, operatorv1alpha1.ReasonInvalidVersion, err.Error(), "Error")
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonInvalidVersion, err.Error(), "Error")
 		return err
 	}
 
