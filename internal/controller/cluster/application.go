@@ -11,7 +11,9 @@ import (
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
 
-// reconcileApplication ensures an ArgoCD Application exists for the cluster.
+// reconcileApplication ensures an ArgoCD Application exists for each cluster.
+// This application is used as the root of all the deployments done on each cluster.
+// It uses the App of Apps pattern to deploy in cascade the entire Superphenix stack.
 func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
 	log := logf.FromContext(ctx)
 
@@ -37,50 +39,45 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 	return nil
 }
 
+// initApplication creates the template of the cluster application.
 func (r *Reconciler) initApplication(cluster *operatorv1alpha1.Cluster) *unstructured.Unstructured {
 	app := &unstructured.Unstructured{}
+	app.SetName(cluster.Name)
+	app.SetNamespace(r.OperatorNamespace)
 	app.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "argoproj.io",
 		Version: "v1alpha1",
 		Kind:    "Application",
 	})
-	app.SetName(cluster.Name)
-	app.SetNamespace(r.OperatorNamespace)
+
+	// The application will clean up its children's resources on deletion using this finalizer
+	app.SetFinalizers([]string{"resources-finalizer.argocd.argoproj.io"})
+
 	return app
 }
 
+// setApplicationOwnership ensures the application is owned by the Cluster CRD.
 func (r *Reconciler) setApplicationOwnership(cluster *operatorv1alpha1.Cluster, app *unstructured.Unstructured) error {
-	// Set ownership reference back to the Cluster CRD
+	// Set the ownership reference back to the Cluster CRD
 	if err := controllerutil.SetControllerReference(cluster, app, r.Scheme); err != nil {
 		return err
 	}
 
-	// Set finalizer for cascade delete
-	finalizers := app.GetFinalizers()
-	hasFinalizer := false
-	for _, f := range finalizers {
-		if f == "resources-finalizer.argocd.argoproj.io" {
-			hasFinalizer = true
-			break
-		}
-	}
-	if !hasFinalizer {
-		app.SetFinalizers(append(finalizers, "resources-finalizer.argocd.argoproj.io"))
-	}
 	return nil
 }
 
+// buildApplicationSpec creates the specs of the cluster application.
 func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map[string]interface{} {
 	return map[string]interface{}{
 		"project": "default",
 		"source": map[string]interface{}{
-			"repoURL":        "https://github.com/super-phenix/superphenix-apps.git", // Placeholder, might need to be configurable
+			"repoURL":        "https://github.com/super-phenix/superphenix-apps.git",
 			"path":           "clusters/" + cluster.Name,
 			"targetRevision": "HEAD",
 		},
 		"destination": map[string]interface{}{
-			"server":    "https://kubernetes.default.svc", // Local management cluster
-			"namespace": "argocd",                         // Standard ArgoCD namespace, or maybe r.OperatorNamespace?
+			"name":      "in-cluster",
+			"namespace": r.OperatorNamespace,
 		},
 		"syncPolicy": map[string]interface{}{
 			"automated": map[string]interface{}{

@@ -34,6 +34,18 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - argoproj.io
+  resources:
+  - applications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - operator.superphenix.net
   resources:
   - clusters
