@@ -3,6 +3,7 @@ package cluster
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -32,6 +33,7 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 
 	if err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD Application")
+		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "ApplicationReconcileFailed", err.Error(), "Error")
 		return err
 	}
 

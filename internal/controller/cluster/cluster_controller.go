@@ -179,64 +179,24 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		return result, err
 	}
 
-	// Update Kubernetes version in status if it changed
-	if cluster.Status.KubernetesVersion != k8sVersion {
-		log.Info("Updating Kubernetes version", "oldVersion", cluster.Status.KubernetesVersion, "newVersion", k8sVersion)
-		// Refresh object to avoid conflict
-		latest := &operatorv1alpha1.Cluster{}
-		if err := r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, latest); err == nil {
-			latest.Status.KubernetesVersion = k8sVersion
-			if err := r.Status().Update(ctx, latest); err != nil {
-				log.Error(err, "Failed to update cluster status with kubernetes version")
-				return ctrl.Result{RequeueAfter: time.Minute}, err
-			}
-			// Update the local object as well
-			cluster.Status.KubernetesVersion = k8sVersion
-		}
+	// Update the Kubernetes version in status if it changed
+	if result, err := r.updateKubernetesVersion(ctx, cluster, k8sVersion); err != nil || !result.IsZero() {
+		return result, err
 	}
 
 	// Validate cluster configuration
 	if err := r.validate(ctx, cluster); err != nil {
-		log.Error(err, "Validation failed")
-		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, operatorv1alpha1.ReasonInvalidVersion, err.Error(), "Error")
 		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
 	// Reconcile ArgoCD Application
 	if err := r.reconcileApplication(ctx, cluster); err != nil {
-		log.Error(err, "Failed to reconcile ArgoCD Application")
-		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "ApplicationReconcileFailed", err.Error(), "Error")
 		return ctrl.Result{RequeueAfter: time.Minute}, err
 	}
 
-	// Update the current version in status if everything else is healthy
-	if cluster.Status.CurrentVersion != cluster.Spec.Version {
-		log.Info("Updating current version", "oldVersion", cluster.Status.CurrentVersion, "newVersion", cluster.Spec.Version)
-		// Refresh object to avoid conflict
-		latest := &operatorv1alpha1.Cluster{}
-		if err := r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, latest); err == nil {
-			latest.Status.CurrentVersion = cluster.Spec.Version
-			latest.Status.Phase = "Deployed"
-			if err := r.Status().Update(ctx, latest); err != nil {
-				log.Error(err, "Failed to update cluster status with new version")
-				return ctrl.Result{RequeueAfter: time.Minute}, err
-			}
-			// Update the local object as well so following logic sees the change
-			cluster.Status.CurrentVersion = cluster.Spec.Version
-			cluster.Status.Phase = "Deployed"
-		} else {
-			cluster.Status.CurrentVersion = cluster.Spec.Version
-			cluster.Status.Phase = "Deployed"
-			if err := r.Status().Update(ctx, cluster); err != nil {
-				log.Error(err, "Failed to update cluster status with new version")
-				return ctrl.Result{RequeueAfter: time.Minute}, err
-			}
-		}
-	} else {
-		// If version is already correct and we reached here, it's Deployed
-		if cluster.Status.Phase != "Deployed" {
-			r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionTrue, "ReconcileSuccess", "Cluster is fully reconciled", "Deployed")
-		}
+	// Update the current version and phase in status if everything else is healthy
+	if result, err := r.updateClusterVersion(ctx, cluster); err != nil || !result.IsZero() {
+		return result, err
 	}
 
 	// Reconcile again in 5 minutes to ensure the cluster stays in sync
