@@ -20,7 +20,7 @@ import (
 
 // reconcileHealth checks the connectivity of the cluster (local or remote) and updates its status.
 // If the cluster is unreachable, it returns a Requeue result.
-func (r *Reconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alpha1.Cluster) (ctrl.Result, error) {
+func (r *Reconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alpha1.Cluster) (string, ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 
 	var config *rest.Config
@@ -30,19 +30,20 @@ func (r *Reconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alp
 	if err != nil {
 		log.Error(err, "Failed to build REST config for cluster")
 		// The status condition is already set inside getRESTConfigForCluster
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
+		return "", ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
-	if err := r.checkReachability(config); err != nil {
+	version, err := r.checkReachability(config)
+	if err != nil {
 		log.Error(err, "Cluster unreachable")
 		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionFailed, err.Error(), "Error")
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
+		return "", ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
-	log.Info("Cluster is reachable")
+	log.Info("Cluster is reachable", "version", version)
 	r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeConnected, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionSuccess, "Successfully connected to cluster")
 
-	return ctrl.Result{}, nil
+	return version, ctrl.Result{}, nil
 }
 
 // getRESTConfigForCluster generates the configuration to connect to a Kubernetes cluster
@@ -141,12 +142,15 @@ func (r *Reconciler) buildRESTConfig(url string, secret *corev1.Secret) (*rest.C
 }
 
 // checkReachability tries to connect to the cluster's discovery API to check if it's alive.
-func (r *Reconciler) checkReachability(config *rest.Config) error {
+func (r *Reconciler) checkReachability(config *rest.Config) (string, error) {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	_, err = discoveryClient.ServerVersion()
-	return err
+	version, err := discoveryClient.ServerVersion()
+	if err != nil {
+		return "", err
+	}
+	return version.GitVersion, nil
 }

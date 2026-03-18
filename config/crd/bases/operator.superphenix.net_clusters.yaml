@@ -27,8 +27,11 @@ spec:
     - jsonPath: .spec.availabilityZone
       name: AZ
       type: string
-    - jsonPath: .status.version
+    - jsonPath: .status.currentVersion
       name: Version
+      type: string
+    - jsonPath: .status.kubernetesVersion
+      name: K8s Version
       type: string
     - jsonPath: .status.phase
       name: Phase
@@ -218,6 +221,9 @@ spec:
               currentVersion:
                 description: CurrentVersion is the actual Superphenix version currently
                   running on the cluster.
+                type: string
+              kubernetesVersion:
+                description: KubernetesVersion is the version of the Kubernetes cluster.
                 type: string
               observedGeneration:
                 description: ObservedGeneration reflects the generation of the most

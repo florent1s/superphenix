@@ -71,7 +71,7 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 	return map[string]interface{}{
 		"project": "default",
 		"source": map[string]interface{}{
-			"repoURL":        "https://github.com/super-phenix/superphenix.git",
+			"repoURL":        "git@github.com:super-phenix/superphenix.git",
 			"path":           "charts/superphenix",
 			"targetRevision": "HEAD",
 			"helm": map[string]interface{}{
@@ -79,7 +79,7 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			},
 		},
 		"destination": map[string]interface{}{
-			"name":      "in-cluster",
+			"name":      "cluster-remote",
 			"namespace": r.OperatorNamespace,
 		},
 		"syncPolicy": map[string]interface{}{

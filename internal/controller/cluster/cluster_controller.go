@@ -171,12 +171,28 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 	}
 
 	// Verify the cluster can be reached and administered
-	result, err := r.reconcileHealth(ctx, cluster)
+	k8sVersion, result, err := r.reconcileHealth(ctx, cluster)
 	if err != nil || !result.IsZero() {
 		if err != nil {
 			r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "HealthCheckFailed", err.Error(), "Error")
 		}
 		return result, err
+	}
+
+	// Update Kubernetes version in status if it changed
+	if cluster.Status.KubernetesVersion != k8sVersion {
+		log.Info("Updating Kubernetes version", "oldVersion", cluster.Status.KubernetesVersion, "newVersion", k8sVersion)
+		// Refresh object to avoid conflict
+		latest := &operatorv1alpha1.Cluster{}
+		if err := r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, latest); err == nil {
+			latest.Status.KubernetesVersion = k8sVersion
+			if err := r.Status().Update(ctx, latest); err != nil {
+				log.Error(err, "Failed to update cluster status with kubernetes version")
+				return ctrl.Result{RequeueAfter: time.Minute}, err
+			}
+			// Update the local object as well
+			cluster.Status.KubernetesVersion = k8sVersion
+		}
 	}
 
 	// Validate cluster configuration

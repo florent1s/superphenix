@@ -176,18 +176,24 @@ func (r *Reconciler) extractConnectionData(secret *corev1.Secret) *connectionDat
 	// TLS
 	if caData := getData("caData"); caData != nil {
 		data.caData = decode(caData)
-		data.tlsClientConfig["caData"] = string(data.caData)
+		if len(data.caData) > 0 {
+			data.tlsClientConfig["caData"] = base64.StdEncoding.EncodeToString(data.caData)
+		}
 	}
 	if certData := getData("certData"); certData != nil {
 		data.certData = decode(certData)
-		data.tlsClientConfig["certData"] = string(data.certData)
+		if len(data.certData) > 0 {
+			data.tlsClientConfig["certData"] = base64.StdEncoding.EncodeToString(data.certData)
+		}
 		if len(data.certData) > 0 && len(getData("keyData")) > 0 {
 			data.hasAuth = true
 		}
 	}
 	if keyData := getData("keyData"); keyData != nil {
 		data.keyData = decode(keyData)
-		data.tlsClientConfig["keyData"] = string(data.keyData)
+		if len(data.keyData) > 0 {
+			data.tlsClientConfig["keyData"] = base64.StdEncoding.EncodeToString(data.keyData)
+		}
 	}
 	if insecure := getData("insecure"); insecure != nil {
 		data.insecure = string(decode(insecure)) == "true"

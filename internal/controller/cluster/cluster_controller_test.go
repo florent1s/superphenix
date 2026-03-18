@@ -86,6 +86,9 @@ var _ = Describe("Cluster Controller", func() {
 				if updatedCluster.Status.Phase != "Deployed" {
 					return false
 				}
+				if updatedCluster.Status.KubernetesVersion == "" {
+					return false
+				}
 				for _, condition := range updatedCluster.Status.Conditions {
 					if condition.Type == operatorv1alpha1.ConditionTypeConnected && condition.Status == metav1.ConditionTrue {
 						return true
@@ -98,7 +101,7 @@ var _ = Describe("Cluster Controller", func() {
 			if updatedCluster.Spec.Connection.Mode == operatorv1alpha1.ConnectionModeRemote {
 				By("Verifying that the ArgoCD secret was created")
 				argoCDSecret := &corev1.Secret{}
-				err = k8sClient.Get(ctx, types.NamespacedName{Name: "cluster-" + resourceName, Namespace: "default"}, argoCDSecret)
+				err = k8sClient.Get(ctx, types.NamespacedName{Name: "argocd-secret-" + resourceName, Namespace: "default"}, argoCDSecret)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(argoCDSecret.Labels["argocd.argoproj.io/secret-type"]).To(Equal("cluster"))
 				Expect(argoCDSecret.OwnerReferences).To(HaveLen(1))
@@ -127,12 +130,12 @@ var _ = Describe("Cluster Controller", func() {
 			destination, found, err := unstructured.NestedMap(spec, "destination")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
-			Expect(destination["name"]).To(Equal("in-cluster"))
+			Expect(destination["name"]).To(Equal("cluster-remote"))
 
 			source, found, err := unstructured.NestedMap(spec, "source")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
-			Expect(source["repoURL"]).To(Equal("https://github.com/super-phenix/superphenix.git"))
+			Expect(source["repoURL"]).To(Equal("git@github.com:super-phenix/superphenix.git"))
 			Expect(source["path"]).To(Equal("charts/superphenix"))
 
 			helm, found, err := unstructured.NestedMap(source, "helm")
@@ -168,7 +171,7 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			argoCDSecret := &corev1.Secret{}
-			err = k8sClient.Get(ctx, types.NamespacedName{Name: "cluster-" + resourceName, Namespace: "default"}, argoCDSecret)
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: "argocd-secret-" + resourceName, Namespace: "default"}, argoCDSecret)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(argoCDSecret.Data["server"])).To(Equal("https://new-url:6443"))
 			var config map[string]interface{}
@@ -201,13 +204,13 @@ var _ = Describe("Cluster Controller", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = k8sClient.Get(ctx, types.NamespacedName{Name: "cluster-" + resourceName, Namespace: "default"}, argoCDSecret)
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: "argocd-secret-" + resourceName, Namespace: "default"}, argoCDSecret)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())
 			tlsConfig, ok := config["tlsClientConfig"].(map[string]interface{})
 			Expect(ok).To(BeTrue())
-			Expect(tlsConfig["certData"]).To(Equal("client-cert"))
-			Expect(tlsConfig["keyData"]).To(Equal("client-key"))
+			Expect(tlsConfig["certData"]).To(Equal("Y2xpZW50LWNlcnQ="))
+			Expect(tlsConfig["keyData"]).To(Equal("Y2xpZW50LWtleQ=="))
 
 			By("Reconciling with insecure flag set to true")
 			insecureSecretName := "insecure-secret"
@@ -233,7 +236,7 @@ var _ = Describe("Cluster Controller", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = k8sClient.Get(ctx, types.NamespacedName{Name: "cluster-" + resourceName, Namespace: "default"}, argoCDSecret)
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: "argocd-secret-" + resourceName, Namespace: "default"}, argoCDSecret)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())
 			tlsConfig, ok = config["tlsClientConfig"].(map[string]interface{})
@@ -743,7 +746,7 @@ var _ = Describe("Cluster Controller", func() {
 
 			// Verify ArgoCD secret has initial token
 			argoCDSecret := &corev1.Secret{}
-			argoCDSecretName := "cluster-" + triggerClusterName
+			argoCDSecretName := "argocd-secret-" + triggerClusterName
 			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: argoCDSecretName, Namespace: "default"}, argoCDSecret)).To(Succeed())
 			var config map[string]interface{}
 			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())

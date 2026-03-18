@@ -143,6 +143,10 @@ type ClusterStatus struct {
 	// +optional
 	CurrentVersion string `json:"currentVersion,omitempty"`
 
+	// KubernetesVersion is the version of the Kubernetes cluster.
+	// +optional
+	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+
 	// Conditions represent the current state of the Cluster resource.
 	// Standard condition types include:
 	// - "Ready": the cluster is fully operational
@@ -165,7 +169,8 @@ type ClusterStatus struct {
 // +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.type`
 // +kubebuilder:printcolumn:name="Region",type=string,JSONPath=`.spec.region`
 // +kubebuilder:printcolumn:name="AZ",type=string,JSONPath=`.spec.availabilityZone`
-// +kubebuilder:printcolumn:name="Version",type=string,JSONPath=`.status.version`
+// +kubebuilder:printcolumn:name="Version",type=string,JSONPath=`.status.currentVersion`
+// +kubebuilder:printcolumn:name="K8s Version",type=string,JSONPath=`.status.kubernetesVersion`
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
