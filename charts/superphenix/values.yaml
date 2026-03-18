@@ -1,0 +1,4 @@
+# Default values for superphenix chart.
+# This is a test example chart.
+
+testValue: "hardcoded-test-value"

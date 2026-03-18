@@ -2,9 +2,11 @@ package cluster
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -42,7 +44,7 @@ func (r *Reconciler) reconcileArgoCDSecret(ctx context.Context, cluster *operato
 	}
 
 	// The secret used by ArgoCD to connect to the cluster.
-	secretName := fmt.Sprintf("cluster-%s", cluster.Name)
+	secretName := fmt.Sprintf("argocd-secret-%s", cluster.Name)
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      secretName,
@@ -134,42 +136,65 @@ func (r *Reconciler) extractConnectionData(secret *corev1.Secret) *connectionDat
 		tlsClientConfig: make(map[string]interface{}),
 	}
 
+	decode := func(b []byte) []byte {
+		s := strings.TrimSpace(string(b))
+		if s == "true" || s == "false" {
+			return []byte(s)
+		}
+		decoded, err := base64.StdEncoding.DecodeString(s)
+		if err != nil {
+			return b
+		}
+		return decoded
+	}
+
+	// Helper to get data from either Data or StringData
+	getData := func(key string) []byte {
+		if val, ok := secret.Data[key]; ok {
+			return val
+		}
+		if val, ok := secret.StringData[key]; ok {
+			return []byte(val)
+		}
+		return nil
+	}
+
 	// Auth
-	if token, ok := secret.Data["bearerToken"]; ok {
-		data.bearerToken = string(token)
+	if token := getData("bearerToken"); token != nil {
+		data.bearerToken = string(decode(token))
 		data.hasAuth = true
 	}
-	if username, ok := secret.Data["username"]; ok {
-		data.username = string(username)
+	if username := getData("username"); username != nil {
+		data.username = string(decode(username))
 		data.hasAuth = true
 	}
-	if password, ok := secret.Data["password"]; ok {
-		data.password = string(password)
+	if password := getData("password"); password != nil {
+		data.password = string(decode(password))
 		data.hasAuth = true
 	}
 
 	// TLS
-	if caData, ok := secret.Data["caData"]; ok {
-		data.caData = caData
-		data.tlsClientConfig["caData"] = string(caData)
+	if caData := getData("caData"); caData != nil {
+		data.caData = decode(caData)
+		data.tlsClientConfig["caData"] = string(data.caData)
 	}
-	if certData, ok := secret.Data["certData"]; ok {
-		data.certData = certData
-		data.tlsClientConfig["certData"] = string(certData)
-		if len(data.certData) > 0 && len(secret.Data["keyData"]) > 0 {
+	if certData := getData("certData"); certData != nil {
+		data.certData = decode(certData)
+		data.tlsClientConfig["certData"] = string(data.certData)
+		if len(data.certData) > 0 && len(getData("keyData")) > 0 {
 			data.hasAuth = true
 		}
 	}
-	if keyData, ok := secret.Data["keyData"]; ok {
-		data.keyData = keyData
-		data.tlsClientConfig["keyData"] = string(keyData)
+	if keyData := getData("keyData"); keyData != nil {
+		data.keyData = decode(keyData)
+		data.tlsClientConfig["keyData"] = string(data.keyData)
 	}
-	if insecure, ok := secret.Data["insecure"]; ok {
-		data.insecure = string(insecure) == "true"
+	if insecure := getData("insecure"); insecure != nil {
+		data.insecure = string(decode(insecure)) == "true"
 		data.tlsClientConfig["insecure"] = data.insecure
 	}
-	if serverName, ok := secret.Data["serverName"]; ok {
-		data.serverName = string(serverName)
+	if serverName := getData("serverName"); serverName != nil {
+		data.serverName = string(decode(serverName))
 		data.tlsClientConfig["serverName"] = data.serverName
 	}
 

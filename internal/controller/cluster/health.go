@@ -127,11 +127,14 @@ func (r *Reconciler) buildRESTConfig(url string, secret *corev1.Secret) (*rest.C
 
 	// TLS Config
 	config.TLSClientConfig = rest.TLSClientConfig{
-		CAData:     connData.caData,
 		CertData:   connData.certData,
 		KeyData:    connData.keyData,
 		Insecure:   connData.insecure,
 		ServerName: connData.serverName,
+	}
+
+	if !connData.insecure {
+		config.TLSClientConfig.CAData = connData.caData
 	}
 
 	return config, nil

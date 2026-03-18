@@ -157,7 +157,7 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Data: map[string][]byte{
-					"bearerToken": []byte("some-token"),
+					"bearerToken": []byte("c29tZS10b2tlbg=="), // base64 for "some-token"
 				},
 			}
 			Expect(k8sClient.Create(ctx, newSecret)).To(Succeed())
@@ -183,8 +183,8 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Data: map[string][]byte{
-					"certData": []byte("client-cert"),
-					"keyData":  []byte("client-key"),
+					"certData": []byte("Y2xpZW50LWNlcnQ="), // base64 for "client-cert"
+					"keyData":  []byte("Y2xpZW50LWtleQ=="), // base64 for "client-key"
 				},
 			}
 			Expect(k8sClient.Create(ctx, certSecret)).To(Succeed())
@@ -208,6 +208,37 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(ok).To(BeTrue())
 			Expect(tlsConfig["certData"]).To(Equal("client-cert"))
 			Expect(tlsConfig["keyData"]).To(Equal("client-key"))
+
+			By("Reconciling with insecure flag set to true")
+			insecureSecretName := "insecure-secret"
+			insecureSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      insecureSecretName,
+					Namespace: "default",
+				},
+				Data: map[string][]byte{
+					"bearerToken": []byte("c29tZS10b2tlbg=="), // base64 for "some-token"
+					"insecure":    []byte("dHJ1ZQ=="),         // base64 for "true"
+				},
+			}
+			Expect(k8sClient.Create(ctx, insecureSecret)).To(Succeed())
+
+			// Fetch latest cluster to avoid conflict
+			Expect(k8sClient.Get(ctx, typeNamespacedName, latestCluster)).To(Succeed())
+			latestCluster.Spec.Connection.SecretRef.Name = insecureSecretName
+			Expect(k8sClient.Update(ctx, latestCluster)).To(Succeed())
+
+			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: typeNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: "cluster-" + resourceName, Namespace: "default"}, argoCDSecret)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())
+			tlsConfig, ok = config["tlsClientConfig"].(map[string]interface{})
+			Expect(ok).To(BeTrue())
+			Expect(tlsConfig["insecure"]).To(Equal(true))
 
 			By("Creating a cluster with remote connection")
 			mgmtClusterName := "remote-cluster"

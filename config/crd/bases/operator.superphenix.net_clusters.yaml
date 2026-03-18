@@ -12,7 +12,7 @@ spec:
     listKind: ClusterList
     plural: clusters
     singular: cluster
-  scope: Cluster
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - jsonPath: .spec.deploymentMode

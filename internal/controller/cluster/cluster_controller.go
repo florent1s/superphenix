@@ -35,6 +35,14 @@ var (
 	errInvalidSecret = fmt.Errorf("invalid secret")
 )
 
+// +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/finalizers,verbs=update
+// +kubebuilder:rbac:groups=argoproj.io,resources=applications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="*",resources="*",verbs="*"
+
 // Reconciler reconciles a Cluster object.
 type Reconciler struct {
 	client.Client
@@ -95,14 +103,6 @@ func (r *Reconciler) findClustersForSecret(ctx context.Context, secret client.Ob
 	return requests
 }
 
-// +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/finalizers,verbs=update
-// +kubebuilder:rbac:groups=argoproj.io,resources=applications,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch
-// +kubebuilder:rbac:groups="*",resources="*",verbs="*"
-
 // Reconcile is used to reconcile the state of Superphenix clusters with their definition.
 // It is called on creations, updates, deletions, and re-queuing.
 // This function handles retrieving the cluster object and the finalizer logic.
@@ -124,15 +124,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 
 	// Examine DeletionTimestamp to determine if the cluster is under deletion
-	if cluster.ObjectMeta.DeletionTimestamp.IsZero() {
-		// Add the finalizer if it doesn't exist to prevent the cluster from being deleted without cleaning up
-		if !controllerutil.ContainsFinalizer(cluster, FinalizerName) {
-			controllerutil.AddFinalizer(cluster, FinalizerName)
-			if err := r.Update(ctx, cluster); err != nil {
-				return ctrl.Result{RequeueAfter: time.Minute}, err
-			}
-		}
-	} else {
+	if !cluster.ObjectMeta.DeletionTimestamp.IsZero() {
 		// The cluster is being deleted and the finalizer is present, so clean it up
 		if controllerutil.ContainsFinalizer(cluster, FinalizerName) {
 			if err := r.cleanupCluster(ctx, cluster); err != nil {
@@ -146,6 +138,14 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		}
 
 		return ctrl.Result{}, nil
+	}
+
+	// Add the finalizer if it doesn't exist to prevent the cluster from being deleted without cleaning up
+	if !controllerutil.ContainsFinalizer(cluster, FinalizerName) {
+		controllerutil.AddFinalizer(cluster, FinalizerName)
+		if err := r.Update(ctx, cluster); err != nil {
+			return ctrl.Result{RequeueAfter: time.Minute}, err
+		}
 	}
 
 	// Handle the reconciling logic for the cluster
