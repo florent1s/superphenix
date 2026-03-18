@@ -179,7 +179,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&cluster.ClusterReconciler{
+	if err := (&cluster.Reconciler{
 		Client:            mgr.GetClient(),
 		Scheme:            mgr.GetScheme(),
 		OperatorNamespace: operatorNamespace,
@@ -190,7 +190,7 @@ func main() {
 
 	if isManagementCluster {
 		setupLog.Info("Setting up management components reconciler")
-		if err := (&management.ManagementReconciler{
+		if err := (&management.Reconciler{
 			Client:                    mgr.GetClient(),
 			Scheme:                    mgr.GetScheme(),
 			Config:                    mgr.GetConfig(),

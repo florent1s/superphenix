@@ -9,6 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -63,7 +65,7 @@ var _ = Describe("Cluster Controller", func() {
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &ClusterReconciler{
+			controllerReconciler := &Reconciler{
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
@@ -99,6 +101,30 @@ var _ = Describe("Cluster Controller", func() {
 				Expect(argoCDSecret.OwnerReferences).To(HaveLen(1))
 				Expect(argoCDSecret.OwnerReferences[0].Name).To(Equal(resourceName))
 			}
+
+			By("Verifying that the ArgoCD Application was created")
+			argoCDApp := &unstructured.Unstructured{}
+			argoCDApp.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "Application",
+			})
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: resourceName, Namespace: "default"}, argoCDApp)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(argoCDApp.GetName()).To(Equal(resourceName))
+			Expect(argoCDApp.GetOwnerReferences()).To(HaveLen(1))
+			Expect(argoCDApp.GetOwnerReferences()[0].Name).To(Equal(resourceName))
+			Expect(argoCDApp.GetFinalizers()).To(ContainElement("resources-finalizer.argocd.argoproj.io"))
+
+			spec, found, err := unstructured.NestedMap(argoCDApp.Object, "spec")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			Expect(spec["project"]).To(Equal("default"))
+
+			destination, found, err := unstructured.NestedMap(spec, "destination")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			Expect(destination["server"]).To(Equal("https://kubernetes.default.svc"))
 
 			By("Reconciling with updated connection info")
 			updatedCluster.Spec.Connection.URL = "https://new-url:6443"
@@ -216,7 +242,7 @@ var _ = Describe("Cluster Controller", func() {
 			}()
 
 			By("Reconciling the cluster")
-			controllerReconciler := &ClusterReconciler{
+			controllerReconciler := &Reconciler{
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
@@ -277,7 +303,7 @@ var _ = Describe("Cluster Controller", func() {
 			}()
 
 			By("Reconciling the cluster")
-			controllerReconciler := &ClusterReconciler{
+			controllerReconciler := &Reconciler{
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
@@ -354,7 +380,7 @@ var _ = Describe("Cluster Controller", func() {
 			}()
 
 			By("Reconciling the cluster")
-			controllerReconciler := &ClusterReconciler{
+			controllerReconciler := &Reconciler{
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
@@ -390,7 +416,7 @@ var _ = Describe("Cluster Controller", func() {
 		})
 
 		It("should validate version upgrades and downgrades", func() {
-			controllerReconciler := &ClusterReconciler{
+			controllerReconciler := &Reconciler{
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",

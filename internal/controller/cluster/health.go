@@ -20,7 +20,7 @@ import (
 
 // reconcileHealth checks the connectivity of the cluster (local or remote) and updates its status.
 // If the cluster is unreachable, it returns a Requeue result.
-func (r *ClusterReconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alpha1.Cluster) (ctrl.Result, error) {
+func (r *Reconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alpha1.Cluster) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 
 	var config *rest.Config
@@ -46,7 +46,7 @@ func (r *ClusterReconciler) reconcileHealth(ctx context.Context, cluster *operat
 }
 
 // getRESTConfigForCluster generates the configuration to connect to a Kubernetes cluster
-func (r *ClusterReconciler) getRESTConfigForCluster(ctx context.Context, cluster *operatorv1alpha1.Cluster) (*rest.Config, error) {
+func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *operatorv1alpha1.Cluster) (*rest.Config, error) {
 	log := logf.FromContext(ctx)
 
 	if cluster.Spec.Connection == nil {
@@ -110,7 +110,7 @@ func (r *ClusterReconciler) getRESTConfigForCluster(ctx context.Context, cluster
 	return config, nil
 }
 
-func (r *ClusterReconciler) buildRESTConfig(url string, secret *corev1.Secret) (*rest.Config, error) {
+func (r *Reconciler) buildRESTConfig(url string, secret *corev1.Secret) (*rest.Config, error) {
 	config := &rest.Config{
 		Host: url,
 	}
@@ -138,7 +138,7 @@ func (r *ClusterReconciler) buildRESTConfig(url string, secret *corev1.Secret) (
 }
 
 // checkReachability tries to connect to the cluster's discovery API to check if it's alive.
-func (r *ClusterReconciler) checkReachability(config *rest.Config) error {
+func (r *Reconciler) checkReachability(config *rest.Config) error {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		return err

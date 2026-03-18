@@ -33,9 +33,9 @@ const (
 	ManagementArgoCDName = "superphenix-mgmt-argocd"
 )
 
-// ManagementReconciler handles the reconciliation of management components.
+// Reconciler handles the reconciliation of management components.
 // It implements reconcile.Reconciler to handle ConfigMap updates.
-type ManagementReconciler struct {
+type Reconciler struct {
 	client.Client
 	Scheme                    *runtime.Scheme
 	Config                    *rest.Config
@@ -50,7 +50,7 @@ type ManagementReconciler struct {
 
 // Reconcile handles the reconciliation of management components on the management cluster.
 // It will handle the lifecycle of the entire management stack (ArgoCD, Console, API...)
-func (r *ManagementReconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
+func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	log := logf.FromContext(ctx)
 
 	// If a specific request is received, it should be for our ConfigMap
@@ -69,7 +69,7 @@ func (r *ManagementReconciler) Reconcile(ctx context.Context, req reconcile.Requ
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ManagementReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	b := builder.ControllerManagedBy(mgr).
 		Named("management-controller")
 
@@ -92,7 +92,7 @@ func (r *ManagementReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *ManagementReconciler) configMapPredicate() predicate.Predicate {
+func (r *Reconciler) configMapPredicate() predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			return e.ObjectNew.GetName() == r.ArgoCDValuesConfigMapName && e.ObjectNew.GetNamespace() == r.OperatorNamespace
@@ -112,7 +112,7 @@ func (r *ManagementReconciler) configMapPredicate() predicate.Predicate {
 // reconcileManagementArgoCD will deploy the management ArgoCD that will bootstrap the rest of the stack.
 // It performs an initial default Helm installation, then creates an ArgoCD Application to manage ArgoCD itself.
 // We want ArgoCD to manage itself as much as possible and handle its lifecycle through ArgoCD applications.
-func (r *ManagementReconciler) reconcileManagementArgoCD(ctx context.Context) error {
+func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
 	// Install ArgoCD through Helm. We want ArgoCD to manage itself, but the chicken-and-egg problem
@@ -131,7 +131,7 @@ func (r *ManagementReconciler) reconcileManagementArgoCD(ctx context.Context) er
 	return nil
 }
 
-func (r *ManagementReconciler) ensureInitialHelmInstall(ctx context.Context) error {
+func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
 	// We use a local Helm settings instance to avoid side effects and ensure
@@ -248,7 +248,7 @@ func (r *ManagementReconciler) ensureInitialHelmInstall(ctx context.Context) err
 	return nil
 }
 
-func (r *ManagementReconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
+func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
 	vals, err := r.mergeArgoCDValues(ctx)
@@ -340,7 +340,7 @@ func mapDeepMerge(destination, source map[string]interface{}) {
 	}
 }
 
-func (r *ManagementReconciler) mergeArgoCDValues(ctx context.Context) (map[string]interface{}, error) {
+func (r *Reconciler) mergeArgoCDValues(ctx context.Context) (map[string]interface{}, error) {
 	log := logf.FromContext(ctx)
 	mergedVals := make(map[string]interface{})
 

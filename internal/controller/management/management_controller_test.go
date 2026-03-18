@@ -31,7 +31,7 @@ var _ = Describe("Management Controller", func() {
 			}()
 
 			By("Manually calling reconcileManagementArgoCD")
-			mgmtReconciler := &ManagementReconciler{
+			mgmtReconciler := &Reconciler{
 				Client:             k8sClient,
 				Scheme:             k8sClient.Scheme(),
 				ArgoCDChartURL:     "https://argoproj.github.io/argo-helm",
@@ -113,7 +113,7 @@ var _ = Describe("Management Controller", func() {
 			Expect(os.WriteFile(defaultPath, []byte(defaultValues), 0644)).To(Succeed())
 			Expect(os.WriteFile(haPath, []byte(haValues), 0644)).To(Succeed())
 
-			mgmtReconciler := &ManagementReconciler{
+			mgmtReconciler := &Reconciler{
 				Client:                    k8sClient,
 				Scheme:                    k8sClient.Scheme(),
 				OperatorNamespace:         argoNamespace,
@@ -172,7 +172,7 @@ var _ = Describe("Management Controller", func() {
 			}
 			Expect(k8sClient.Create(ctx, cm)).To(Succeed())
 
-			mgmtReconciler := &ManagementReconciler{
+			mgmtReconciler := &Reconciler{
 				Client:                    k8sClient,
 				Scheme:                    k8sClient.Scheme(),
 				OperatorNamespace:         argoNamespace,
@@ -236,7 +236,7 @@ var _ = Describe("Management Controller", func() {
 			defaultValues := "server:\n  service:\n    type: ClusterIP\n  additional:\n    key: value"
 			Expect(os.WriteFile(defaultPath, []byte(defaultValues), 0644)).To(Succeed())
 
-			mgmtReconciler := &ManagementReconciler{
+			mgmtReconciler := &Reconciler{
 				Client:                    k8sClient,
 				Scheme:                    k8sClient.Scheme(),
 				OperatorNamespace:         argoNamespace,
@@ -294,7 +294,7 @@ var _ = Describe("Management Controller", func() {
 			defaultValues := "topLevel: someValue\notherKey: otherValue"
 			Expect(os.WriteFile(defaultPath, []byte(defaultValues), 0644)).To(Succeed())
 
-			mgmtReconciler := &ManagementReconciler{
+			mgmtReconciler := &Reconciler{
 				Client:                    k8sClient,
 				Scheme:                    k8sClient.Scheme(),
 				OperatorNamespace:         argoNamespace,

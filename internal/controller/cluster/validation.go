@@ -18,8 +18,18 @@ var (
 	}
 )
 
+// validate runs all the validation logic for the cluster.
+func (r *Reconciler) validate(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
+	// Validate version upgrade/downgrade
+	if err := r.validateUpgradePath(ctx, cluster); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // validateUpgradePath ensures the upgrade path is possible and safe.
-func (r *ClusterReconciler) validateUpgradePath(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
+func (r *Reconciler) validateUpgradePath(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
 	specVersion := cluster.Spec.Version
 	statusVersion := cluster.Status.CurrentVersion
 
