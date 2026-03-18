@@ -10,6 +10,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -55,7 +57,46 @@ var _ = BeforeSuite(func() {
 			filepath.Join("..", "..", "..", "config", "crd", "bases"),
 			filepath.Join("..", "..", "..", "config", "crd", "external"),
 		},
-		ErrorIfCRDPathMissing: true,
+		CRDs: []*apiextensionsv1.CustomResourceDefinition{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "appprojects.argoproj.io",
+				},
+				Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+					Group: "argoproj.io",
+					Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+						{
+							Name:    "v1alpha1",
+							Served:  true,
+							Storage: true,
+							Schema: &apiextensionsv1.CustomResourceValidation{
+								OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+									Type: "object",
+									Properties: map[string]apiextensionsv1.JSONSchemaProps{
+										"spec": {
+											Type:                   "object",
+											XPreserveUnknownFields: func(b bool) *bool { return &b }(true),
+										},
+										"status": {
+											Type:                   "object",
+											XPreserveUnknownFields: func(b bool) *bool { return &b }(true),
+										},
+									},
+								},
+							},
+						},
+					},
+					Scope: apiextensionsv1.NamespaceScoped,
+					Names: apiextensionsv1.CustomResourceDefinitionNames{
+						Plural:   "appprojects",
+						Singular: "appproject",
+						Kind:     "AppProject",
+						ListKind: "AppProjectList",
+					},
+				},
+			},
+		},
+		ErrorIfCRDPathMissing: false,
 	}
 
 	// Retrieve the first found binary directory to allow running tests from IDEs

@@ -70,8 +70,13 @@ func (r *Reconciler) setApplicationOwnership(cluster *operatorv1alpha1.Cluster, 
 
 // buildApplicationSpec creates the specs of the cluster application.
 func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map[string]interface{} {
+	destName := cluster.Name
+	if cluster.Spec.Connection.Mode == operatorv1alpha1.ConnectionModeLocal {
+		destName = "in-cluster"
+	}
+
 	return map[string]interface{}{
-		"project": "default",
+		"project": cluster.Name,
 		"source": map[string]interface{}{
 			"repoURL":        "git@github.com:super-phenix/superphenix.git",
 			"path":           "charts/superphenix",
@@ -81,7 +86,7 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			},
 		},
 		"destination": map[string]interface{}{
-			"name":      "cluster-remote",
+			"name":      destName,
 			"namespace": r.OperatorNamespace,
 		},
 		"syncPolicy": map[string]interface{}{

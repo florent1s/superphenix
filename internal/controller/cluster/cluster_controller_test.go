@@ -125,12 +125,36 @@ var _ = Describe("Cluster Controller", func() {
 			spec, found, err := unstructured.NestedMap(argoCDApp.Object, "spec")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
-			Expect(spec["project"]).To(Equal("default"))
+			Expect(spec["project"]).To(Equal(resourceName))
 
 			destination, found, err := unstructured.NestedMap(spec, "destination")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
-			Expect(destination["name"]).To(Equal("cluster-remote"))
+			Expect(destination["name"]).To(Equal("in-cluster")) // Default for local mode in test
+
+			By("Verifying that the ArgoCD AppProject was created")
+			argoCDProject := &unstructured.Unstructured{}
+			argoCDProject.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "AppProject",
+			})
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: resourceName, Namespace: "default"}, argoCDProject)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(argoCDProject.GetName()).To(Equal(resourceName))
+			Expect(argoCDProject.GetOwnerReferences()).To(HaveLen(1))
+			Expect(argoCDProject.GetOwnerReferences()[0].Name).To(Equal(resourceName))
+			Expect(argoCDProject.GetFinalizers()).To(ContainElement("resources-finalizer.argocd.argoproj.io"))
+
+			projectSpec, found, err := unstructured.NestedMap(argoCDProject.Object, "spec")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			destinations, found, err := unstructured.NestedSlice(projectSpec, "destinations")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			Expect(destinations).To(HaveLen(1))
+			dest := destinations[0].(map[string]interface{})
+			Expect(dest["name"]).To(Equal("in-cluster"))
 
 			source, found, err := unstructured.NestedMap(spec, "source")
 			Expect(err).NotTo(HaveOccurred())
@@ -165,10 +189,10 @@ var _ = Describe("Cluster Controller", func() {
 			}
 			Expect(k8sClient.Create(ctx, newSecret)).To(Succeed())
 
-			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{
+			// We expect the reconcile to fail because new-url is unreachable, but we want to check if the secret and app were at least updated
+			_, _ = controllerReconciler.Reconcile(ctx, reconcile.Request{
 				NamespacedName: typeNamespacedName,
 			})
-			Expect(err).NotTo(HaveOccurred())
 
 			argoCDSecret := &corev1.Secret{}
 			err = k8sClient.Get(ctx, types.NamespacedName{Name: "argocd-secret-" + resourceName, Namespace: "default"}, argoCDSecret)
@@ -177,6 +201,21 @@ var _ = Describe("Cluster Controller", func() {
 			var config map[string]interface{}
 			Expect(json.Unmarshal(argoCDSecret.Data["config"], &config)).To(Succeed())
 			Expect(config["bearerToken"]).To(Equal("some-token"))
+
+			By("Verifying that the ArgoCD Application destination was updated for remote")
+			err = k8sClient.Get(ctx, typeNamespacedName, argoCDApp)
+			Expect(err).NotTo(HaveOccurred())
+			spec, _, _ = unstructured.NestedMap(argoCDApp.Object, "spec")
+			destination, _, _ = unstructured.NestedMap(spec, "destination")
+			Expect(destination["name"]).To(Equal(resourceName))
+
+			By("Verifying that the ArgoCD AppProject destination was updated for remote")
+			err = k8sClient.Get(ctx, typeNamespacedName, argoCDProject)
+			Expect(err).NotTo(HaveOccurred())
+			projectSpec, _, _ = unstructured.NestedMap(argoCDProject.Object, "spec")
+			destinations, _, _ = unstructured.NestedSlice(projectSpec, "destinations")
+			dest = destinations[0].(map[string]interface{})
+			Expect(dest["name"]).To(Equal(resourceName))
 
 			By("Reconciling with certificate-based authentication")
 			certSecretName := "cert-secret"

@@ -7,8 +7,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -38,7 +40,7 @@ var (
 // +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/finalizers,verbs=update
-// +kubebuilder:rbac:groups=argoproj.io,resources=applications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=argoproj.io,resources=applications;appprojects,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups="*",resources="*",verbs="*"
@@ -148,8 +150,38 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		}
 	}
 
+	// Check if ArgoCD CRDs are installed
+	if err := r.checkArgoCDCRDs(ctx); err != nil {
+		r.updateArgoCDCondition(ctx, cluster, metav1.ConditionFalse, operatorv1alpha1.ReasonArgoCDCRDMissing, err.Error())
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+	r.updateArgoCDCondition(ctx, cluster, metav1.ConditionTrue, "ArgoCDCRDInstalled", "ArgoCD CRDs are installed")
+
 	// Handle the reconciling logic for the cluster
 	return r.reconcileCluster(ctx, cluster)
+}
+
+// checkArgoCDCRDs verifies if the required ArgoCD CRDs are installed in the management cluster.
+func (r *Reconciler) checkArgoCDCRDs(ctx context.Context) error {
+	log := logf.FromContext(ctx)
+
+	gvks := []schema.GroupVersionKind{
+		{Group: "argoproj.io", Version: "v1alpha1", Kind: "Application"},
+		{Group: "argoproj.io", Version: "v1alpha1", Kind: "AppProject"},
+	}
+
+	for _, gvk := range gvks {
+		_, err := r.RESTMapper().RESTMapping(gvk.GroupKind(), gvk.Version)
+		if err != nil {
+			if meta.IsNoMatchError(err) {
+				log.Info("ArgoCD CRD not found", "GVK", gvk.String())
+				return fmt.Errorf("ArgoCD CRD %s not found", gvk.Kind)
+			}
+			return err
+		}
+	}
+
+	return nil
 }
 
 // reconcileCluster checks if the cluster can be reached and administered and then deploys
@@ -176,6 +208,13 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		if err != nil {
 			r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "HealthCheckFailed", err.Error(), "Error")
 		}
+
+		// Even if the cluster is unreachable, we still try to reconcile the ArgoCD AppProject and Application
+		// so that they are created/updated with the correct destination.
+		// This is useful when the cluster is not yet reachable but we want to prepare the ArgoCD resources.
+		_ = r.reconcileAppProject(ctx, cluster)
+		_ = r.reconcileApplication(ctx, cluster)
+
 		return result, err
 	}
 
@@ -189,9 +228,16 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
+	// Reconcile ArgoCD AppProject
+	if err := r.reconcileAppProject(ctx, cluster); err != nil {
+		log.Error(err, "Failed to reconcile ArgoCD AppProject")
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
+	}
+
 	// Reconcile ArgoCD Application
 	if err := r.reconcileApplication(ctx, cluster); err != nil {
-		return ctrl.Result{RequeueAfter: time.Minute}, err
+		log.Error(err, "Failed to reconcile ArgoCD Application")
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
 	// Update the current version and phase in status if everything else is healthy
@@ -201,4 +247,27 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 
 	// Reconcile again in 5 minutes to ensure the cluster stays in sync
 	return ctrl.Result{RequeueAfter: 5 * time.Minute}, nil
+}
+
+func (r *Reconciler) updateArgoCDCondition(ctx context.Context, cluster *operatorv1alpha1.Cluster, status metav1.ConditionStatus, reason, message string) {
+	// Check if condition already exists with same values
+	for _, c := range cluster.Status.Conditions {
+		if c.Type == operatorv1alpha1.ConditionTypeArgoCDInstalled && c.Status == status && c.Reason == reason {
+			return
+		}
+	}
+
+	patch := client.MergeFrom(cluster.DeepCopy())
+	condition := metav1.Condition{
+		Type:               operatorv1alpha1.ConditionTypeArgoCDInstalled,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: cluster.Generation,
+	}
+	r.setCondition(&cluster.Status.Conditions, condition)
+	if err := r.Status().Patch(ctx, cluster, patch); err != nil {
+		logf.FromContext(ctx).Error(err, "Failed to patch ArgoCD condition")
+	}
 }

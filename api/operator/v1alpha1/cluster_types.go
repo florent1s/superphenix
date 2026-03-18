@@ -24,6 +24,11 @@ const (
 
 	// ReasonInvalidVersion is used when the requested version change is invalid.
 	ReasonInvalidVersion = "InvalidVersion"
+
+	// ConditionTypeArgoCDInstalled represents the status of ArgoCD CRDs installation.
+	ConditionTypeArgoCDInstalled = "ArgoCDInstalled"
+	// ReasonArgoCDCRDMissing is used when the ArgoCD CRDs are not installed in the cluster.
+	ReasonArgoCDCRDMissing = "ArgoCDCRDMissing"
 )
 
 // DeploymentMode defines whether the cluster is hyperconverged or decoupled.
