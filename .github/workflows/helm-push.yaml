@@ -44,9 +44,9 @@ jobs:
             echo "Processing chart in: $chart_dir"
 
             # Extract chart name and version from Chart.yaml
-            # We use grep and sed to avoid dependencies on yq
-            CHART_NAME=$(grep '^name:' "$chart_file" | awk '{print $2}' | tr -d '"' | tr -d "'")
-            CHART_VERSION_IN_FILE=$(grep '^version:' "$chart_file" | awk '{print $2}' | tr -d '"' | tr -d "'")
+            # We use yq to reliably parse the YAML file
+            CHART_NAME=$(yq e '.name' "$chart_file")
+            CHART_VERSION_IN_FILE=$(yq e '.version' "$chart_file")
 
             # Determine the version to push
             if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
