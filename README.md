@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/SPX_white.svg">
     <source media="(prefers-color-scheme: light)" srcset="assets/SPX_black.svg">
-    <img alt="Zensical" src="assets/SPX_white.svg" width="290" height="240">
+    <img alt="Zensical" src="assets/SPX_white.svg" width="350" height="150">
   </picture>
 </p>
 
