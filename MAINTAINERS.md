@@ -7,6 +7,7 @@ The Maintainers are the governing body for the Superphenix project. See [GOVERNA
 | Name | GitHub |
 |------|--------|
 | *SkalaNetworks* | [SkalaNetworks](https://github.com/SkalaNetworks) |
+| *gign0766* | [gign0766](https://github.com/gign0766)|
 
 ## Emeritus Maintainers
 
