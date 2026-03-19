@@ -1,0 +1,34 @@
+{{- range $dataStoreID, $dataStore := .Values.dataStores }}
+
+{{- $replicas := $.Values.dataStoreDefaults.replicas }}
+
+---
+# EtcdCluster: https://github.com/aenix-io/etcd-operator/tree/main/examples/manifests
+apiVersion: etcd.aenix.io/v1alpha1
+kind: EtcdCluster
+metadata:
+  name: {{ $dataStoreID }}
+spec:
+  replicas: {{ $replicas }}
+  storage:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: {{ $dataStore.storageClassName | default "" }}
+        resources:
+          requests:
+            storage: {{ $dataStore.storage | default $.Values.dataStoreDefaults.storage }}
+  podTemplate:
+    spec:
+      containers:
+        - name: etcd
+          image: quay.io/coreos/etcd:{{ $dataStore.version | required "[dataStore].version can't be empty." }}
+          imagePullPolicy: IfNotPresent
+  security:
+    tls:
+      peerTrustedCASecret: etcd-ca-{{ $dataStoreID }}
+      peerSecret: etcd-peer-{{ $dataStoreID }}
+      serverSecret: etcd-server-{{ $dataStoreID }}
+      clientTrustedCASecret: etcd-ca-{{ $dataStoreID }}
+      clientSecret: etcd-client-{{ $dataStoreID }}
+
+{{- end }}

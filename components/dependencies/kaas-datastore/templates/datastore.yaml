@@ -1,0 +1,41 @@
+{{- range $dataStoreID, $dataStore := .Values.dataStores }}
+
+{{- $replicas := $.Values.dataStoreDefaults.replicas }}
+{{- $clusterDomain := "cluster.local" }}
+
+---
+apiVersion: kamaji.clastix.io/v1alpha1
+kind: DataStore
+metadata:
+  name: {{ $dataStoreID }}
+spec:
+  driver: etcd
+  endpoints:
+  {{- range $count := until (int $replicas) }}
+    - {{ printf "%s-%d.%s-headless.%s.svc.%s:2379" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
+  {{- end }}
+  tlsConfig:
+    certificateAuthority:
+      certificate:
+        secretReference:
+          keyPath: tls.crt
+          name: etcd-ca-{{ $dataStoreID }}
+          namespace: {{ $.Release.Namespace }}
+      privateKey:
+        secretReference:
+          keyPath: tls.key
+          name: etcd-ca-{{ $dataStoreID }}
+          namespace: {{ $.Release.Namespace }}
+    clientCertificate:
+      certificate:
+        secretReference:
+          keyPath: tls.crt
+          name: etcd-client-{{ $dataStoreID }}
+          namespace: {{ $.Release.Namespace }}
+      privateKey:
+        secretReference:
+          keyPath: tls.key
+          name: etcd-client-{{ $dataStoreID }}
+          namespace: {{ $.Release.Namespace }}
+
+{{- end }}

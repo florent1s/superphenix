@@ -1,0 +1,23 @@
+# -- Defines default values for datastores
+# @section -- Datastore default parameters
+dataStoreDefaults:
+  replicas: 3
+  storage: 10Gi
+
+# -- Defines datastore resources for the controlplanes.
+# Each key defines a datastore and should be unique
+# See values.yaml for the complete syntax.
+# @default -- {}
+dataStores: {}
+  # fr01-agc01-virt01-datastore01:
+  #   # Storage class friendly name to use
+  #   # @section -- Datastore
+  #   storageClassName: ""
+  #
+  #   # -- Size of the persistentVolumeClaims
+  #   # @section -- Datastore
+  #   storage: 10Gi
+  #
+  #   # -- Version tag of the etcd image
+  #   # @section -- Datastore
+  #   version: v3.6.7

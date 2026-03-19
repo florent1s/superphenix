@@ -1,0 +1,110 @@
+{{- range $dataStoreID, $dataStore := .Values.dataStores }}
+
+{{- $replicas := $.Values.dataStoreDefaults.replicas }}
+{{- $clusterDomain := "cluster.local" }}
+
+---
+# Kamaji certs: https://github.com/clastix/kamaji-etcd/tree/master/charts/kamaji-etcd/templates
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: etcd-issuer-{{ $dataStoreID }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  ca:
+    secretName: etcd-ca-{{ $dataStoreID }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-server-{{ $dataStoreID }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  secretName: etcd-server-{{ $dataStoreID }}
+  isCA: false
+  usages:
+    - "client auth"
+    - "server auth"
+    - "signing"
+    - "key encipherment"
+  dnsNames:
+  {{- range $count := until (int $replicas) }}
+    - {{ printf "%s-%d" $dataStoreID $count }}
+    - {{ printf "%s-%d.%s-headless" $dataStoreID $count $dataStoreID }}
+    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
+    - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
+    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
+  {{- end }}
+  ipAddresses:
+    - 127.0.0.1
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    size: 4096
+  duration: 2160h0m0s # 3 months
+  renewBefore: 240h0m0s # 10 days
+  issuerRef:
+    name: etcd-issuer-{{ $dataStoreID }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-peer-{{ $dataStoreID }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  secretName: etcd-peer-{{ $dataStoreID }}
+  isCA: false
+  usages:
+    - "server auth"
+    - "client auth"
+    - "signing"
+    - "key encipherment"
+  dnsNames:
+  {{- range $count := until (int $replicas) }}
+    - {{ printf "%s-%d" $dataStoreID $count }}
+    - {{ printf "%s-%d.%s-headless" $dataStoreID $count $dataStoreID }}
+    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
+    - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
+    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
+  {{- end }}
+  ipAddresses:
+    - 127.0.0.1
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    size: 4096
+  duration: 2160h0m0s # 3 months
+  renewBefore: 240h0m0s # 10 days
+  issuerRef:
+    name: etcd-issuer-{{ $dataStoreID }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-client-{{ $dataStoreID }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  commonName: root
+  secretName: etcd-client-{{ $dataStoreID }}
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "client auth"
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    size: 4096
+  duration: 2160h0m0s # 3 months
+  renewBefore: 240h0m0s # 10 days
+  issuerRef:
+    name: etcd-issuer-{{ $dataStoreID }}
+    kind: Issuer
+
+{{- end }}

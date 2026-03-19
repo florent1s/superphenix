@@ -1,0 +1,38 @@
+{{- range $dataStoreID, $dataStore := .Values.dataStores }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: etcd-ca-issuer-{{ $dataStoreID }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-6"
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-ca-{{ $dataStoreID }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-6"
+spec:
+  isCA: true
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "cert sign"
+  commonName: etcd-ca
+  secretName: etcd-ca-{{ $dataStoreID }}
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  duration: 87600h # 10 years
+  renewBefore: 960h0m0s # 40 days
+  issuerRef:
+    name: etcd-ca-issuer-{{ $dataStoreID }}
+    kind: Issuer
+    group: cert-manager.io
+
+{{- end }}
