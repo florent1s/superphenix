@@ -79,7 +79,7 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 		"project": cluster.Name,
 		"source": map[string]interface{}{
 			"repoURL":        "git@github.com:super-phenix/superphenix.git",
-			"path":           "deployments/helm/superphenix-system",
+			"path":           "components/system/superphenix-system",
 			"targetRevision": "HEAD",
 			"helm": map[string]interface{}{
 				"valuesObject": r.generateApplicationValues(cluster),

@@ -47,7 +47,7 @@ jobs:
 
       - name: Package and Push Charts
         run: |
-          CHARTS_DIR="deployments/helm"
+          CHARTS_DIR="components/system"
           REGISTRY="oci://ghcr.io/${{ github.repository_owner }}/charts"
           VERSION="${{ steps.prep.outputs.version }}"
 

@@ -160,7 +160,7 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
 			Expect(source["repoURL"]).To(Equal("git@github.com:super-phenix/superphenix.git"))
-			Expect(source["path"]).To(Equal("deployments/helm/superphenix-system"))
+			Expect(source["path"]).To(Equal("components/system/superphenix-system"))
 
 			helm, found, err := unstructured.NestedMap(source, "helm")
 			Expect(err).NotTo(HaveOccurred())
