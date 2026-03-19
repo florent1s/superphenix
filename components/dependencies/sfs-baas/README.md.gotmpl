@@ -1,0 +1,25 @@
+# SFS-BAAS
+
+{{ template "chart.versionBadge" . }}
+
+{{ template "chart.description" . }}
+
+### Resource names
+
+Resources have a unique ID (see [this](#creating-a-new-resource)) and a name.
+
+Names do not have to be unique across resources and can be identical. They are simply used as a tag to be filtered and found more easily.
+
+To set a name on a resource, use the `.name` value.
+
+> [!note]
+> Names **must** begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to 63 characters each.
+
+### Setting a resource location
+
+Resources are located within a specific AZ (or *availability zone*). AZs are represented by a unique code.
+
+To deploy your resource in a specific AZ, simply use the code in the `.location` value of the resource.
+
+---
+{{ template "chart.valuesSectionHtml" . }}

@@ -1,0 +1,70 @@
+# -- Superphénix organization to which this project belongs, must be a generated UUIDv4.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+organizationID: "00000000-0000-0000-0000-000000000000"
+# -- Superphénix organization's friendly name.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+organizationName: "null"
+
+# -- Superphénix project to which this project belongs, must be a project within the organization, must be a generated UUIDv4.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+projectID: "00000000-0000-0000-0000-000000000000"
+# -- Superphénix project's friendly name.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+projectName: "null"
+
+# -- AZ in which we're deploying this chart.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+location: ""
+
+# -- Whether this chart is deployed through GitOps or not.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+gitops: false
+
+# -- Defines backups to be created.
+# Each key defines a new backup/backup schedule.
+# See values.yaml for the complete syntax.
+# @section -- Backups
+# @default -- {}
+backups: {}
+  # backup-1:
+  #  # -- User-friendly name of the backup
+  #  # @section -- Backups
+  #  name: "backup-1"
+  #
+  #  # -- AZ in which to deploy the backup
+  #  # @section -- Backups
+  #  location: ""
+  #
+  #  # -- Whether the backup is a single-shot or a schedule
+  #  # @section -- Backups
+  #  scheduled: false
+  #
+  #  # -- CRON schedule to run the backups at intervals, only applied if ".scheduled" is true
+  #  schedule: "1 1 * * *"
+  #
+  #  # -- Whether the backup schedule is paused, only applied if ".scheduled" is true
+  #  # @section -- Backups
+  #  paused: false
+  #
+  #  # -- Retention settings of the backups, only applied if ".scheduled" is true
+  #  # @section -- Backups
+  #  retention:
+  #    # -- Retention time of the backups in hours (max is 960, or 40 days)
+  #    # @section -- Backups
+  #    expiryTime: 744
+  #
+  #  # -- Label selector to target specific resources
+  #  # @section -- Backups
+  #  labelSelector: {}
+  #
+  #  # -- Backup type
+  #  # What will be backed up by this policy.
+  #  # Available values: "All", "VM"
+  #  # @section -- Backups
+  #  type: "All"

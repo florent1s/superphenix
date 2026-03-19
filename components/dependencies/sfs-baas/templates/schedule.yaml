@@ -1,0 +1,57 @@
+{{- range $localID, $backup := .Values.backups }}
+{{- if eq $backup.location $.Values.location }}
+{{- if $backup.scheduled }}
+
+{{- $effectiveID := include "sfs-baas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+---
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: {{ $effectiveID | quote }}
+  namespace: velero-system
+  labels:
+    {{- include "sfs-baas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $backup.name | quote }}
+    superphenix.net/backupType: {{ $backup.type | lower | quote }}
+spec:
+  # Whether this schedule is paused
+  paused: {{ $backup.paused | default false }}
+
+  # The schedule in Cron format, see https://crontab.guru/
+  schedule: {{ required "Must provide a schedule" $backup.schedule | quote }}
+  template:
+    # Cluster scoped resources to backup
+    includedClusterScopedResources:
+      {{- include "sfs-baas.clusterResources" (dict "backupType" ($backup.type | lower)) | nindent 6 }}
+
+    # Namespace scoped resources to backup
+    includedNamespaceScopedResources:
+      {{- include "sfs-baas.namespaceResources" (dict "backupType" ($backup.type | lower)) | nindent 6 }}
+
+    # Resources to target using label selectors
+    labelSelector:
+      matchLabels:
+        {{- with $backup.labelSelector }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        superphenix.net/organizationID: spx-{{ $.Values.organizationID }}
+        superphenix.net/projectID: spx-{{ $.Values.projectID }}
+
+    # Backups are scoped to the project, but some resources are cluster scoped
+    includedNamespaces:
+      - spx-{{ $.Values.projectID }}
+
+    # Time to retain backups in hours
+    ttl: {{ printf "%dh0m0s" (min $backup.retention.expiryTime 960 | int) | quote }}
+
+    # We want to snapshot the PVCs
+    snapshotVolumes: true
+
+    # We want the PVCs to be moved to the backup location
+    snapshotMoveData: true
+
+{{- end }}
+{{- end }}
+{{- end }}
