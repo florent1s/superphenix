@@ -1,0 +1,15 @@
+# Cronjob properties
+cronjob:
+  schedule: '0 7 * * *'
+  image: ghcr.io/siderolabs/talos-backup:latest
+  clusterName: ''
+  agePubKey: ''
+  enableCompression: 'true'
+
+# Base64-encrypted credentials and values for S3 storage
+s3:
+  endpointUrl: ""
+  bucket: ""
+  accessKey: ""
+  secretKey: ""
+  region: ""
