@@ -1,0 +1,26 @@
+{{- range .Values.clusters }}
+{{- $cluster := .name }}
+{{- range $name, $class := .replicationClasses }}
+
+---
+apiVersion: replication.storage.openshift.io/v1alpha1
+kind: VolumeReplicationClass
+metadata:
+  name: {{ $cluster }}-rbd.{{ $name }}
+  labels:
+    replication.superphenix.net/storageClassGroup: "{{ $cluster }}"
+    replication.superphenix.net/classSelector: "{{ $name }}"
+spec:
+  provisioner: {{ $.Values.rookOperatorNamespace }}.rbd.csi.ceph.com
+  parameters:
+    # Don't use journaling as it is less efficient
+    mirroringMode: snapshot
+    # We need to flatten to handle trashed parent and unmirrored parents
+    flattenMode: force
+    schedulingInterval: {{ .schedulingInterval | default "24h" }}
+    schedulingStartTime: {{ .schedulingStartTime | default "22:00:00" }}
+    replication.storage.openshift.io/replication-secret-name: {{ $cluster }}
+    replication.storage.openshift.io/replication-secret-namespace: {{ $cluster }}
+
+{{- end }}
+{{- end }}

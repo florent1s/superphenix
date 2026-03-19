@@ -1,0 +1,21 @@
+{{- range .Values.clusters }}
+{{- $cluster := .name }}
+
+---
+apiVersion: ceph.rook.io/v1
+kind: CephCluster
+metadata:
+  name: {{ $cluster }}
+  namespace: {{ $cluster }}
+spec:
+  crashCollector:
+    disable: true
+  external:
+    enable: true
+  healthCheck:
+    daemonHealth:
+      mon:
+        disabled: false
+        interval: 45s
+
+{{- end }}

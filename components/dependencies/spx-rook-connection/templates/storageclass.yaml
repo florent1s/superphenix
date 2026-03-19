@@ -1,0 +1,74 @@
+{{- range .Values.clusters }}
+{{- $cluster := .name }}
+{{- range .pools }}
+{{- $pool := .name }}
+{{- range .storageClasses }}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  {{- if not .fullName }}
+  name: {{ $cluster }}.{{ .name }}
+  {{- else }}
+  name: {{ .fullName }}
+  {{- end }}
+  {{- if .default }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  {{- end }}
+  labels:
+    replication.superphenix.net/storageClassGroup: "{{ $cluster }}"
+parameters:
+  clusterID: {{ $cluster }}
+  csi.storage.k8s.io/fstype: {{ .fs | default "xfs" }}
+  csi.storage.k8s.io/node-stage-secret-name: {{ $cluster }}
+  csi.storage.k8s.io/node-stage-secret-namespace: {{ $cluster }}
+  csi.storage.k8s.io/controller-expand-secret-name: {{ $cluster }}
+  csi.storage.k8s.io/controller-expand-secret-namespace: {{ $cluster }}
+  csi.storage.k8s.io/provisioner-secret-name: {{ $cluster }}
+  csi.storage.k8s.io/provisioner-secret-namespace: {{ $cluster }}
+  imageFeatures: {{ .features | default "layering,fast-diff,object-map,deep-flatten,exclusive-lock" }}
+  imageFormat: {{ .imageFormat | default "2" | quote }}
+  mapOptions: "krbd:rxbounce" # Necessary for Windows (https://kubevirt.io/monitoring/runbooks/VMStorageClassWarning.html)
+  mounter: rbd
+  pool: {{ $pool }}
+mountOptions:
+  - discard
+{{- with .mountOptions }}
+  {{ . | toYaml }}
+{{- end }}
+provisioner: {{ $.Values.rookOperatorNamespace }}.rbd.csi.ceph.com
+reclaimPolicy: {{ .reclaimPolicy | default "Delete" }}
+volumeBindingMode: {{ .volumeBindingMode | default "Immediate" }}
+allowVolumeExpansion: {{ .allowVolumeExpansion | default true }}
+
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: StorageProfile
+metadata: 
+  {{- if not .fullName }}
+  name: {{ $cluster }}.{{ .name }}
+  {{- else }}
+  name: {{ .fullName }}
+  {{- end }}
+  annotations:
+    # PVCs mounted as Filesystem will try to get partitioned (by default to XFS).
+    # If the PVC is too small, XFS will fail below 300Mi.
+    cdi.kubevirt.io/minimumSupportedPvcSize: 300Mi
+spec:
+  # Use snapshots to clone volumes of this storageclass
+  cloneStrategy: snapshot
+  # Snapshotclass to use when snapshotting volumes of this storageclass
+  snapshotClass: {{ $cluster }}.{{ .name }}
+  # Default PVC/DV settings if nothing is specified in the specs when using this storageclass
+  claimPropertySets: 
+  - volumeMode: Block
+    accessModes:
+    - ReadWriteMany
+  - volumeMode: Filesystem
+    accessModes:
+    - ReadWriteOnce
+
+{{- end }}
+{{- end }}
+{{- end }}

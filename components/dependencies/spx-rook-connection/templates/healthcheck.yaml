@@ -1,0 +1,15 @@
+{{- range .Values.clusters }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "rook-ceph-mon"
+  namespace: {{ .name }}
+stringData:
+  cluster-name: {{ .name | quote }}
+  fsid: {{ .clusterID | quote }}
+  ceph-username: {{ .healthCheck.username | default "client.csi-health" | quote }}
+  ceph-secret: {{ .healthCheck.token | quote }}
+  admin-secret: ""
+  mon-secret: "mon-secret"
+{{- end }}

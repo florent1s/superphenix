@@ -1,0 +1,18 @@
+{{- range .Values.clusters }}
+{{- $protocol := .bootstrapMon.protocol | default "IPv6" }}
+{{- $port := .bootstrapMon.port | default "6789" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "rook-ceph-mon-endpoints"
+  namespace: {{ .name }}
+data:
+  {{- if eq $protocol "IPv4" }}
+  data: "{{ .bootstrapMon.id }}={{ .bootstrapMon.ip }}:{{ $port }}"
+  {{- else if eq $protocol "IPv6" }}
+  data: "{{ .bootstrapMon.id }}=[{{ .bootstrapMon.ip }}]:{{ $port }}"
+  {{- end }}
+  mapping: "{}"
+  maxMonId: "2"
+{{- end }}

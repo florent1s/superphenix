@@ -1,0 +1,25 @@
+{{- range .Values.clusters }}
+{{- $cluster := .name }}
+{{- range .pools }}
+{{- $pool := .name }}
+{{- range .storageClasses }}
+
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  {{- if not .fullName }}
+  name: {{ $cluster }}.{{ .name }}
+  {{- else }}
+  name: {{ .fullName }}
+  {{- end }}
+driver: {{ $.Values.rookOperatorNamespace }}.rbd.csi.ceph.com
+parameters:
+  clusterID: {{ $cluster }}
+  csi.storage.k8s.io/snapshotter-secret-name: {{ $cluster }}
+  csi.storage.k8s.io/snapshotter-secret-namespace: {{ $cluster }}
+deletionPolicy: {{ .reclaimPolicy | default "Delete" }}
+
+{{- end }}
+{{- end }}
+{{- end }}

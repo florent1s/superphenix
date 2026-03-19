@@ -1,0 +1,9 @@
+{{- range .Values.clusters }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .name }}
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+{{- end }}

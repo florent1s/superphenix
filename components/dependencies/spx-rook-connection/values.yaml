@@ -1,0 +1,37 @@
+rookOperatorNamespace: "rook-system"
+mapping: ""
+clusters: []
+#  - name: "spx-aq01-test01-storage01"
+#    # -- Ceph cluster ID (FSID)
+#    # e.g e2a62ea1-6428-496e-a5bf-366936a8c833
+#    clusterID: ""
+#    username: "spx-aq01-test01-virt01.local-block"
+#    token: "test"
+#    # -- Initial MON we will contact to retrieve the entire MON list
+#    bootstrapMon:
+#      # -- MON ID (must be a single letter)
+#      id: ""
+#      # -- IP of the MON
+#      ip: ""
+#      # -- Port of the MON
+#      port: "6789"
+#      # -- Protocol of the IP (IPv4 or IPv6)
+#      protocol: IPv6
+#    # -- Configuration used by Rook to check the health of the remote cluster and to retrieve the full MON list
+#    healthCheck:
+#      # -- Username of the remote healthcheck account on the storage cluster
+#      username: "client.csi-health"
+#      # -- Token associated with the account
+#      token: ""
+#    pools:
+#      - name: "test"
+#        # Create StorageClasses
+#        storageClasses:
+#          - name: "" # Name must be unique across all pools of the same cluster
+#            # fullName: ""
+#            default: true
+#            reclaimPolicy: Delete
+#    replicationClasses:
+#      daily:
+#        schedulingInterval: "24h"
+#        schedulingStartTime: "22:00:00"

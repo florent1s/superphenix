@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rook-ceph-csi-mapping-config
+  namespace: {{ $.Values.rookOperatorNamespace }}
+data:
+  csi-mapping-config-json: '{{ $.Values.mapping }}'
+ 
