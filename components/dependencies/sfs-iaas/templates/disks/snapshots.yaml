@@ -1,0 +1,21 @@
+{{- range $localID, $snap := .Values.diskSnapshots }}
+{{- if eq $snap.location $.Values.location }}
+
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $targetID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $snap.target) }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $snap.name | quote }}
+spec:
+  source:
+    persistentVolumeClaimName: {{ $targetID | quote }}
+
+{{- end }}
+{{- end }}

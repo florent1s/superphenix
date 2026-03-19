@@ -33,40 +33,40 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare Helm version
-        id: prep
-        run: |
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
-            VERSION="${{ github.ref_name }}"
-            # Remove leading 'v' if present for Helm versioning
-            VERSION="${VERSION#v}"
-          else
-            VERSION="0.0.0-latest"
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
       - name: Package and Push Charts
         run: |
-          CHARTS_DIR="components/system"
           REGISTRY="oci://ghcr.io/${{ github.repository_owner }}/charts"
-          VERSION="${{ steps.prep.outputs.version }}"
 
-          for chart in "$CHARTS_DIR"/*; do
-            if [ -d "$chart" ]; then
-              echo "Processing chart: $chart"
-              
-              # Extract chart name
-              CHART_NAME=$(basename "$chart")
-              
-              # Package the chart with the determined version
-              # We use --version and --app-version to ensure consistency with the request
-              helm package "$chart" --version "$VERSION" --app-version "$VERSION"
-              
-              # Push the packaged chart to GHCR
-              # Note: helm package creates a .tgz in the current directory
-              helm push "${CHART_NAME}-${VERSION}.tgz" "$REGISTRY"
-              
-              # Cleanup the packaged file
-              rm "${CHART_NAME}-${VERSION}.tgz"
+          # Find all directories containing a Chart.yaml file
+          find components -name "Chart.yaml" | while read -r chart_file; do
+            chart_dir=$(dirname "$chart_file")
+            echo "Processing chart in: $chart_dir"
+
+            # Extract chart name and version from Chart.yaml
+            # We use grep and sed to avoid dependencies on yq
+            CHART_NAME=$(grep '^name:' "$chart_file" | awk '{print $2}' | tr -d '"' | tr -d "'")
+            CHART_VERSION_IN_FILE=$(grep '^version:' "$chart_file" | awk '{print $2}' | tr -d '"' | tr -d "'")
+
+            # Determine the version to push
+            if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+              VERSION="${{ github.ref_name }}"
+              # Remove leading 'v' if present for Helm versioning
+              VERSION="${VERSION#v}"
+            elif [[ "$CHART_VERSION_IN_FILE" == "0.0.0" ]]; then
+              VERSION="0.0.0-latest"
+            else
+              VERSION="$CHART_VERSION_IN_FILE"
             fi
+
+            echo "Pushing $CHART_NAME with version $VERSION"
+
+            # Package the chart with the determined version
+            helm package "$chart_dir" --version "$VERSION" --app-version "$VERSION"
+
+            # Push the packaged chart to GHCR
+            # Note: helm package creates a .tgz in the current directory
+            helm push "${CHART_NAME}-${VERSION}.tgz" "$REGISTRY"
+
+            # Cleanup the packaged file
+            rm "${CHART_NAME}-${VERSION}.tgz"
           done

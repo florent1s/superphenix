@@ -1,0 +1,65 @@
+{{- range $localID, $vpc := .Values.vpcs }}
+{{- if eq $vpc.location $.Values.location }}
+
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+---
+apiVersion: kubeovn.io/v1
+kind: Vpc
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $vpc.name | quote }}
+spec:
+  namespaces:
+  - {{ $.Release.Namespace | quote }}
+
+  {{- $hasNatGateway := false }}
+  {{- range $subnetLocalID, $subnet := $.Values.subnets }}
+    {{- if eq $localID $subnet.vpc }}
+      {{- if $subnet.natGateway.enabled }}
+        {{- $hasNatGateway = true }}
+        {{- break }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  {{- if or $hasNatGateway $vpc.staticRoutes }}
+  staticRoutes:
+  {{- with $vpc.staticRoutes }}
+  {{- . | toYaml | nindent 2 }}
+  {{- end }}
+
+  {{- range $subnetLocalID, $subnet := $.Values.subnets }}
+  {{- if and (eq $localID $subnet.vpc) (eq $vpc.location $subnet.location) }}
+
+  {{- if $subnet.natGateway }}
+  {{- if $subnet.natGateway.enabled }}
+  {{- $subnetID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $subnetLocalID) }}
+  {{- with $subnet.natGateway }}
+  # Redirect traffic to NAT gateway for subnet '{{ $subnetLocalID }}'
+  - cidr: 0.0.0.0/0
+    nextHopIP: {{ required "Must provide a NAT gateway lanIP" .lanIP }}
+    policy: policyDst
+    routeTable: {{ $subnetID | quote }}
+  - cidr: ::/0
+    nextHopIP: {{ required "Must provide a NAT gateway lanIP" .lanIP }}
+    policy: policyDst
+    routeTable: {{ $subnetID | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+
+  {{- end }}
+  {{- end }}
+  {{- end }}
+
+  {{- with $vpc.policyRoutes }}
+  policyRoutes:
+  {{- . | toYaml | nindent 2 }}
+  {{- end }}
+
+{{- end }}
+{{- end }}

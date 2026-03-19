@@ -1,0 +1,140 @@
+{{- range $localID, $subnet := .Values.subnets }}
+{{- if eq $subnet.location $.Values.location }}
+
+{{- $dnsv4 := "" }}
+{{- $dnsv6 := "" }}
+{{- with $subnet.dhcp }}
+{{- $dnsv4 = .dnsv4 }}
+{{- $dnsv6 = .dnsv6 }}
+{{- end }}
+
+{{- $subnetID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $vpcID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $subnet.vpc) }}
+---
+apiVersion: kubeovn.io/v1
+kind: Subnet
+metadata:
+  name: {{ $subnetID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $subnetID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $subnet.name | quote }}
+spec:
+  vpc: {{ $vpcID | quote }}
+  provider: {{ $subnetID }}.{{ $.Release.Namespace }}.ovn
+  routeTable: {{ $subnetID | quote }}
+  namespaces:
+  - {{ $.Release.Namespace | quote }}
+  protocol: {{ $subnet.protocol | default "Dual" }}
+  cidrBlock: {{ $subnet.cidrBlock | quote }}
+  {{- if $subnet.gateway }}
+  gateway: {{ $subnet.gateway | quote }}
+  {{- end }}
+  {{- with $subnet.excludeIps }}
+  excludeIps:
+  {{- .excludeIps | toYaml | nindent 2 }}
+  {{- end }}
+
+  # DHCP enabled, we bypass Kubevirt and send replies to requests directly
+  enableDHCP: true
+
+  # DHCP options
+  {{- if or (eq $subnet.protocol "IPv4") (eq $subnet.protocol "Dual") }}
+  dhcpV4Options: 'dns_server={{ $dnsv4 | default "1.1.1.1" }}'
+  {{- end }}
+  {{- if or (eq $subnet.protocol "IPv6") (eq $subnet.protocol "Dual") }}
+  dhcpV6Options: 'dns_server={{ $dnsv6 | default "2606:4700:4700::1111" }}'
+  {{- end }}
+
+  # Router Advertisement enabled, we bypass Kubevirt and send replies to requests directly
+  enableIPv6RA: true
+  # MTU 1500
+  mtu: 1500
+  # Subnets must be isolated, do not use the IP of the hypervisors when trying to go out
+  natOutgoing: false
+  {{- with $subnet.private}}
+  private: {{ . }}
+  {{- end }}
+
+---
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: {{ $subnetID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $subnetID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $subnet.name | quote }}
+spec:
+  config: '{
+    "cniVersion": "0.3.1",
+    "name": "generic-veth",
+    "plugins": [
+      {
+        "type": "kube-ovn",
+        "server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
+        "provider": "{{ $subnetID }}.{{ $.Release.Namespace }}.ovn"
+      }
+    ]
+  }'
+
+{{- if $subnet.natGateway }}
+{{- if $subnet.natGateway.enabled }}
+{{- $natGwID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $natGateway := $subnet.natGateway }}
+---
+apiVersion: kubeovn.io/v1
+kind: VpcNatGateway
+metadata:
+  name: {{ $natGwID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $natGwID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $subnet.natGateway.name | quote }}
+spec:
+  vpc: {{ $vpcID | quote }}
+  subnet: {{ $subnetID | quote }}
+  lanIp: {{ $natGateway.lanIP | quote }}
+  {{- with $natGateway.tolerations }}
+  tolerations: {{ . | toYaml | nindent 2 }}
+  {{- end }}
+  externalSubnets:
+    - spx-internal-bgp
+  # Add a static route to redirect traffic headed for loadbalancers (198.18.0.0/16) to the gateway
+  # of the subnet on which the NAT gateway is deployed.
+  routes:
+    - cidr: 198.18.0.0/16
+      nextHopIP: gateway
+  {{- if $natGateway.bgpSpeaker }}
+  {{- with $natGateway.bgpSpeaker }}
+  bgpSpeaker:
+    enabled: {{ .enabled }}
+    asn: {{ .asn }}
+    remoteAsn: {{ .remoteAsn }}
+    neighbors: {{ .neighbors }}
+    {{- with .enableGracefulRestart }}
+    enableGracefulRestart: {{ . }}
+    {{- end }}
+    {{- with .routerId }}
+    routerId: {{ . | quote }}
+    {{- end }}
+    {{- with .holdTime }}
+    holdTime: {{ . | quote }}
+    {{- end }}
+    {{- with .password }}
+    password: {{ . | quote }}
+    {{- end }}
+    {{- with .extraArgs }}
+    extraArgs: {{ . | toYaml | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- else }}
+  bgpSpeaker: {{ $.Values.bgpSpeaker | trimPrefix "'" | trimSuffix "'" | fromJson | toYaml | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

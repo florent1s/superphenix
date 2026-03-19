@@ -1,0 +1,64 @@
+{{- range $localID, $restore := .Values.vmRestores }}
+{{- if eq $restore.location $.Values.location }}
+
+{{- $restoreID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $snapshotID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $restore.snapshot) }}
+{{- $targetID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $restore.destination) }}
+---
+apiVersion: snapshot.kubevirt.io/v1beta1
+kind: VirtualMachineRestore
+metadata:
+  name: {{ $restoreID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $restoreID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $restore.name | quote }}
+spec:
+  # Source snapshot that contains all the data for the restore process
+  virtualMachineSnapshotName: {{ $snapshotID | quote }}
+  # Stop the target VM immediately if it is running
+  targetReadinessPolicy: StopTarget
+  # Replace volumes in-place by deleting them and restoring with the exact same name
+  volumeRestorePolicy: InPlace
+  # Do not give ownership of the volumes to the VM
+  volumeOwnershipPolicy: None
+
+  # Target can be non-existent VM (clone restore), or the initial VM that was used to create the snapshot (in-place restore).
+  target:
+    apiGroup: kubevirt.io
+    kind: VirtualMachine
+    name: {{ $targetID | quote }}
+
+  {{- if not $restore.inPlace }}
+  patches:
+    # Effective ID label on VM/VMI must match the .metadata.name (RFC001/RFC002)
+    - '{"op": "replace", "path": "/metadata/labels/superphenix.net~1resourceEffectiveID", "value": "{{ $targetID }}"}'
+    - '{"op": "replace", "path": "/spec/template/metadata/labels/superphenix.net~1resourceEffectiveID", "value": "{{ $targetID }}"}'
+    # Local ID label on VM/VMI must be updated to the one used to generate the EID (RFC001/RFC002)
+    - '{"op": "replace", "path": "/metadata/labels/superphenix.net~1resourceLocalID", "value": "{{ $restore.destination }}"}'
+    - '{"op": "replace", "path": "/spec/template/metadata/labels/superphenix.net~1resourceLocalID", "value": "{{ $restore.destination }}"}'
+    # As the restore was done using GitOps, we set the VM to be GitOps controlled
+    - '{"op": "replace", "path": "/metadata/labels/superphenix.net~1gitops", "value": "true"}'
+    - '{"op": "replace", "path": "/spec/template/metadata/labels/superphenix.net~1gitops", "value": "true"}'
+
+  {{- with required "Every volume must be overriden when restore is not InPlace" $restore.volumeRestoreOverrides }}
+  volumeRestoreOverrides:
+    {{- range . }}
+    {{- $originalEffectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" .originalVolume) }}
+    {{- $restoreEffectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" .restoreVolume) }}
+    - volumeName: {{ $originalEffectiveID | quote }}
+      restoreName: {{ $restoreEffectiveID | quote }}
+      labels:
+        # As the restore was done using GitOps, we set the VM to be GitOps controlled
+        superphenix.net/gitops: "true"
+        # Effective ID label on PVC must match the .metadata.name (RFC001/RFC002)
+        superphenix.net/resourceEffectiveID: {{ $restoreEffectiveID | quote }}
+        # Local ID label on PVC must be updated to the one used to generate the EID (RFC001/RFC002)
+        superphenix.net/resourceLocalID: {{ .restoreVolume | quote }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+
+{{- end }}
+{{- end }}

@@ -1,0 +1,125 @@
+{{- range $localID, $netpol := .Values.networkPolicies }}
+{{- if or (has "all" $netpol.locations) (has $.Values.location $netpol.locations) }}
+{{- if $netpol.enabled }}
+
+{{- $allowAllIngress := (and $netpol.allowAll $netpol.allowAll.ingress ) }}
+{{- $allowAllEgress := (and $netpol.allowAll $netpol.allowAll.egress ) }}
+{{- $blockAllIngress := (and $netpol.blockAll $netpol.blockAll.ingress) }}
+{{- $blockAllEgress := (and $netpol.blockAll $netpol.blockAll.egress) }}
+
+{{- $blockAll := (and $netpol.blockAll (or $netpol.blockAll.ingress $netpol.blockAll.egress)) }}
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $netpol.name | quote }}
+  annotations:
+    # Do not block ICMPv4/ICMPv6/DHCPv4/DHCPv6
+    ovn.kubernetes.io/network_policy_enforcement: lax
+spec:
+  podSelector:
+    matchLabels:
+      {{- with $netpol.selector }}
+      {{- with .matchLabels }}
+      {{- . | toYaml | nindent 6 }}
+      {{- end }}
+      {{- end }}
+      # Ensure we only target the project
+      superphenix.net/projectID: spx-{{ $.Values.projectID }}
+
+    matchExpressions: 
+      {{- with $netpol.selector }}
+      {{- with .matchExpressions }}
+      {{- . | toYaml | nindent 6 }}
+      {{- end }}
+      {{- end }}
+      # Do not apply network policies to pods excluded from network policies
+      - key: superphenix.net/ignoreNetworkPolicies
+        operator: NotIn
+        values: ["true"]
+
+  {{- if $allowAllIngress }}
+  ingress: [{}]
+  {{- else if $blockAllIngress }}
+  ingress: null
+  {{- else if (not $blockAllIngress) }}
+  {{- with $netpol.ingress }}
+  ingress:
+  {{- range $rule := . }}
+  {{- range $from := $rule.from }}
+  - from:
+    {{- if $from.ipBlock }}
+    - ipBlock:
+        cidr: {{ $from.ipBlock.cidr | quote }}
+        except: {{ $from.ipBlock.except | toYaml | nindent 10 }}
+    {{- else }}
+    - podSelector:
+        matchLabels:
+          {{- with $from.podSelector.matchLabels }}
+          {{- . | toYaml | nindent 10 }}
+          {{- end }}
+          superphenix.net/projectID: spx-{{ $.Values.projectID }}
+        {{- with $from.podSelector.matchExpressions }}
+        matchExpressions: {{ . | toYaml | nindent 8 }}
+        {{- end }}
+    {{- end }}
+    {{- with $from.ports }}
+    ports: {{- . | toYaml | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+
+  {{- if $allowAllEgress }}
+  egress: [{}]
+  {{- else if $blockAllEgress }}
+  egress: null
+  {{- else }}
+  {{- with $netpol.egress }}
+  egress:
+  {{- range $rule := . }}
+  {{- range $to := $rule.to }}
+  - to:
+    {{- if $to.ipBlock }}
+    - ipBlock:
+        cidr: {{ $to.ipBlock.cidr | quote }}
+        except: {{ $to.ipBlock.except | toYaml | nindent 10 }}
+    {{- else }}
+    - podSelector: 
+        matchLabels:
+          {{- with $to.podSelector.matchLabels }}
+          {{- . | toYaml | nindent 10 }}
+          {{- end }}
+          superphenix.net/projectID: spx-{{ $.Values.projectID }}
+        {{- with $to.podSelector.matchExpressions }}
+        matchExpressions: {{ . | toYaml | nindent 8 }}
+        {{- end }}
+    {{- end }}
+    {{- with $to.ports }}
+    ports: {{- . | toYaml | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+
+  {{- if or $blockAllIngress $blockAllEgress }}
+  policyTypes:
+  {{- if $blockAllIngress }}
+  - Ingress
+  {{- end }}
+  {{- if $blockAllEgress }}
+  - Egress
+  {{- end }}
+  {{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}

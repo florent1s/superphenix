@@ -1,0 +1,50 @@
+# SFS-IAAS
+
+{{ template "chart.versionBadge" . }} {{ template "chart.versionBadge" . }}
+
+{{ template "chart.description" . }}
+
+## Creating new resources
+
+For each type of resource present in this chart (*VPC*, *Subnet*, *Disk*, ...), there's a dictionnary in which they can be created. 
+  
+The key used to create a new resource within that dictionnary is the ID of the resource.
+
+> [!caution]
+> This ID **must** be unique across resources of the same type within the project.  
+> If two resources of the same type have identical IDs, the one defined last in the dictionnary will override all others.  
+
+For example, with a VPC:
+
+```yaml
+vpcs:
+  new-vpc: # This is the unique ID of the resource, no other VPC can have it
+    name: "vpc"
+    location: "aq01-test01"
+  new-vpc: # WARNING: this key will override the one above
+     name: "vpc2"
+     location: "aq01-test01"
+```
+
+> [!note]
+> IDs **must** begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to 63 characters each.
+
+### Resource names
+
+Resources have a unique ID (see [this](#creating-a-new-resource)) and a name.
+
+Names do not have to be unique across resources and can be identical. They are simply used as a tag to be filtered and found more easily.
+
+To set a name on a resource, use the `.name` value.
+
+> [!note]
+> Names **must** begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to 63 characters each.
+
+### Setting a resource location
+
+Resources are located within a specific AZ (or *availability zone*). AZs are represented by a unique code.
+
+To deploy your resource in a specific AZ, simply use the code in the `.location` value of the resource.
+
+---
+{{ template "chart.valuesSectionHtml" . }}

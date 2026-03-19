@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "spx-{{ .Values.projectID }}"
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+  annotations:
+    {{- include "sfs-iaas.replicationStrategy" $ | nindent 4 }}

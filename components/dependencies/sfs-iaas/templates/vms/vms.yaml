@@ -1,0 +1,192 @@
+{{- range $localID, $vm := .Values.vms }}
+{{- if eq $vm.location $.Values.location }}
+
+{{- $volumes := $vm.volumes }}
+{{- $compute := $vm.compute }}
+{{- $insertVirtioDisk := and (not $volumes.noVirtioDisk) (and $vm.type (contains "windows" $vm.type)) }}
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    {{- range $k, $v := $vm.labels }}
+    {{ printf "user.superphenix.net/%s" $k }}: {{ $v | quote }}
+    {{- end }}
+    superphenix.net/workloadClass: "virtualmachine"
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $vm.name | quote }}
+spec:
+  preference:
+    kind: VirtualMachineClusterPreference
+    name: {{ $vm.type | default "linux" | quote }}
+
+  runStrategy: {{ $vm.runStrategy | default "Manual" }}
+
+  template:
+    metadata:
+      annotations:
+        kubevirt.io/allow-pod-bridge-network-live-migration: "true"
+        {{- if $vm.network }}
+        {{- range $vm.network.interfaces }}
+        {{- $subnetID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" .subnet) }}
+
+        {{- if .portSecurity }}
+        {{ printf "%s.%s.ovn.kubernetes.io/port_security: '%t'" $subnetID $.Release.Namespace .portSecurity }}
+        {{- else }}
+        {{ printf "%s.%s.ovn.kubernetes.io/port_security: '%s'" $subnetID $.Release.Namespace "false" }}
+        {{- end }}
+        {{ printf "%s.%s.ovn.kubernetes.io/allow_live_migration: 'true'" $subnetID $.Release.Namespace }}
+
+        {{- if and .static .static.enabled }}
+        {{- $ipAnnotation := printf "%s.%s.ovn.kubernetes.io/ip_address" $subnetID $.Release.Namespace }}
+        {{- if eq .static.protocol "Dual" }}
+        {{ printf "%s: '%s,%s'" $ipAnnotation .static.ipv4 .static.ipv6 }}
+        {{- else if eq .static.protocol "IPv4" }}
+        {{ printf "%s: '%s'" $ipAnnotation .static.ipv4 }}
+        {{- else if eq .static.protocol "IPv6" }}
+        {{ printf "%s: '%s'" $ipAnnotation .static.ipv6 }}
+        {{- end }}
+        {{- end }}
+
+        {{- end }}
+        {{- end }}
+      labels:
+        {{- include "sfs-iaas.labels" $ | nindent 8 }}
+        {{- range $k, $v := $vm.labels }}
+        {{ printf "user.superphenix.net/%s" $k }}: {{ $v | quote }}
+        {{- end }}
+        superphenix.net/workloadClass: "virtualmachine"
+        superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+        superphenix.net/resourceLocalID: {{ $localID | quote }}
+        superphenix.net/resourceName: {{ $vm.name | quote }}
+    spec:
+      hostname: {{ $vm.hostname | default (tpl $vm.name .) }}
+      domain:
+        {{- with $compute.cpu }}
+        cpu:
+          sockets: {{ .sockets | default 1 }}
+          cores: {{ .cores | default 1 }}
+          threads: {{ .threads | default 1 }}
+        {{- end }}
+
+        {{- with $compute.memory }}
+        memory:
+          guest: {{ .guest | quote }}
+        {{- end }}
+
+        devices:
+          {{- if and $vm.network $vm.network.interfaces }}
+          interfaces:
+          {{- range $i, $if := $vm.network.interfaces }}
+          {{- $subnetID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $if.subnet) }}
+          - name: {{ printf "interface-%d" $i }}
+            state: {{ .state | default "up" }}
+            {{- with .model }}
+            model: {{ . }}
+            {{- end }}
+            binding:
+              name: managedtap
+          {{- end }}
+          {{- end }}
+
+          {{- with $volumes }}
+          disks:
+          {{- range .disks }}
+          {{- $dvID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" .name ) }}
+          - name: {{ $dvID | quote}}
+            {{- if .cdrom }}
+            cdrom:
+              readonly: true
+              bus: {{ .bus | default "sata" }}
+            {{- else }}
+            disk:
+              {{- with .bus}}
+              bus: {{ . | quote }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- with .cloudInitNoCloud }}
+          - name: "cloud-init"
+            disk:
+              {{- with .bus}}
+              bus: {{ . | quote }}
+              {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if $insertVirtioDisk }}
+          # Load the Windows VirtIO drivers to install them at boot
+          - name: windows-virtio-drivers
+            cdrom:
+              readonly: true
+              bus: sata
+          {{- end }}
+
+          # Used for mouse control on VNC
+          {{- $controlsDisabled := (and $vm.controls (not $vm.controls.enabled)) }}
+          {{- $controlBus := "" }}
+          {{- if $vm.controls }}
+          {{- $controlBus = $vm.controls.bus }}
+          {{- end }}
+          {{- if not $controlsDisabled }}
+          inputs:
+          - bus: {{ $controlBus | default "virtio" | quote }}
+            name: mouse-input
+            type: tablet
+          {{- end }}
+          
+      {{- with $volumes }}
+      volumes:
+      {{- range .disks }}
+      {{- $dvID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" .name ) }}
+        - name: {{ $dvID | quote }}
+          persistentVolumeClaim:
+            claimName: {{ $dvID | quote }}
+      {{- end }}
+      {{- with .cloudInitNoCloud }}
+        - name: "cloud-init"
+          cloudInitNoCloud:
+            secretRef:
+              name: cloudinit-{{ $effectiveID }}
+      {{- end }}
+      {{- if $insertVirtioDisk }}
+        # Load the Windows VirtIO drivers to install them at boot
+        - name: windows-virtio-drivers
+          containerDisk:
+            image: quay.io/kubevirt/virtio-container-disk:v1.7.0
+      {{- end }}
+      {{- end }}
+
+      {{- if $vm.network }}
+      networks:
+        {{- range $i, $if := $vm.network.interfaces }}
+        {{- $subnetID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $if.subnet) }}
+        - name: {{ printf "interface-%d" $i }}
+          multus:
+            {{- if eq $i 0 }}
+            default: true
+            {{- end }}
+            networkName: {{ $.Release.Namespace }}/{{ $subnetID }}
+        {{- end }}
+      {{- end }}
+
+      {{- if and $vm.accessCredentials $vm.accessCredentials.injectSshKeys }}
+      {{- with $.Values.ssh.publicKeys }}
+      accessCredentials:
+        {{- range $localID, $key := . }}
+        {{- $keyID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+        - sshPublicKey:
+            propagationMethod:
+              noCloud: {}
+            source:
+              secret:
+                secretName: {{ $keyID | quote }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+
+{{- end }}
+{{- end }}

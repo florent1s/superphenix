@@ -1,0 +1,53 @@
+{{- range $localID, $schedule := .Values.diskSnapshotSchedules }}
+{{- if eq $schedule.location $.Values.location }}
+
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+---
+apiVersion: snapscheduler.backube/v1
+kind: SnapshotSchedule
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $schedule.name | quote }}
+spec:
+  disabled: {{ $schedule.paused | default false }}
+  claimSelector:
+    matchLabels:
+      superphenix.net/organizationID: spx-{{ $.Values.organizationID }}
+      superphenix.net/projectID: spx-{{ $.Values.projectID }}
+  
+  retention:
+    {{- if and $schedule.retention $schedule.retention.maxCount }}
+    maxCount: {{ min $schedule.retention.maxCount 31 }}
+    {{- else }}
+    maxCount: 7
+    {{- end }}
+
+    {{- if and $schedule.retention $schedule.retention.expiryTime }}
+    expires: {{ printf "%dh" (min $schedule.retention.expiryTime 744 | int) | quote }}
+    {{- end }}
+
+  {{- $sched := required "Must provide a schedule" $schedule.schedule }}  
+  {{- if eq $sched.frequency "daily" }}
+  schedule: "@daily"
+  {{- else if eq $sched.frequency "weekly" }}
+  schedule: "@weekly"
+  {{- else if $sched.cron }}
+  schedule: {{ $sched.cron | quote }}
+  {{- else }}
+  {{- fail "Must provide a valid schedule (daily, weekly or a CRON expression)" }}
+  {{- end }}
+
+  snapshotTemplate:
+    labels:
+      superphenix.net/generated: "true"
+      superphenix.net/organizationID: spx-{{ $.Values.organizationID }}
+      superphenix.net/projectID: spx-{{ $.Values.projectID }}
+      superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+      superphenix.net/resourceLocalID: {{ $localID | quote }}
+
+{{- end }}
+{{- end }}

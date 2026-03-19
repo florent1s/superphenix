@@ -1,0 +1,45 @@
+{{- range $localID, $eip := .Values.eips }}
+{{- if eq $eip.location $.Values.location }}
+
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $natGwID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $eip.natGateway) }}
+---
+apiVersion: kubeovn.io/v1
+kind: IptablesEIP
+metadata:
+  name: {{ $effectiveID | quote }}
+  annotations:
+    ovn.kubernetes.io/bgp: "true"
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $eip.name | quote }}
+spec:
+  natGwDp: {{ $natGwID | quote }}
+  {{- with $eip.ipv4 }}
+  v4ip: {{ . | quote }}
+  {{- end }}
+  {{- with $eip.ipv6 }}
+  v6ip: {{ . | quote }}
+  {{- end }}
+  externalSubnet: {{ $eip.subnet | required "Subnet required in EIP" | quote }}
+
+{{- if $eip.internalIP }}
+---
+apiVersion: kubeovn.io/v1
+kind: IptablesFIPRule
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $eip.name | quote }}
+spec:
+  eip: {{ $effectiveID | quote }}
+  internalIp: {{ $eip.internalIP | quote }}
+{{- end }}
+
+{{- end }}
+{{- end }}

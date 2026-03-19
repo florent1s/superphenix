@@ -1,0 +1,52 @@
+{{- range $localID, $lb := .Values.loadbalancers }}
+{{- if eq $lb.location $.Values.location }}
+
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+---
+apiVersion: kubeovn.io/v1
+kind: SwitchLBRule
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $lb.name | quote }}
+spec:
+  # Only target endpoints in the project's namespace
+  namespace: {{ $.Release.Namespace | quote }}
+
+  # Virtual IP that will respond to requests, must be part of 198.18.0.0/16 (SPX RFC008)
+  {{- if not (mustRegexMatch "198\\.18\\.(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})" $lb.vip) }}
+  {{- fail (printf "Load balancer VIP %s must be part of 198.18.0.0/16" $lb.vip) }}
+  {{- end }}
+  vip: {{ $lb.vip | quote }}
+
+  # Ports on which the traffic is redirected
+  {{- with $lb.ports }}
+  ports:
+  {{- range . }}
+  {{- if not (has (upper .protocol) (list "TCP" "UDP")) }}
+  {{- fail "Protocol must be TCP or UDP" }}
+  {{- end }}
+  - name: {{ printf "%d-%d-%s" (int .port) (int .targetPort) (.protocol | lower) }}
+    port: {{ .port }}
+    targetPort: {{ .targetPort }}
+    protocol: {{ .protocol | upper | quote }}
+  {{- end }}
+  {{- end }}
+
+  # Backend specified through Kubernetes label selectors
+  {{- with $lb.selector }}
+  selector:
+  {{- . | toYaml | nindent 4 }}
+  {{- end }}
+
+  # Backends specified through static endpoints (IPs)
+  {{- with $lb.endpoints }}
+  endpoints:
+  {{- . | toYaml | nindent 4 }}
+  {{- end }}
+
+{{- end }}
+{{- end }}

@@ -1,0 +1,68 @@
+{{- range $localID, $disk := .Values.disks }}
+{{- if eq $disk.location $.Values.location }}
+
+{{- $class := (required "Must provide a storage class" $disk.class) }}
+{{- $storageClass := get $.Values.storageClassMapping $class }}
+
+{{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: {{ $effectiveID | quote }}
+  annotations:
+    # We need to use a specialized network that is not restricted by client policies or lack of connectivity
+    v1.multus-cni.io/default-network: kube-system/system-isolated-egress
+    # If the DV is created AFTER its PVC because the PVC was restored through a VMRestore/VolumeRestore, we need the DV to adopt it
+    # Without this annotation, the CDI's webhook would reject the DV's creation because its destination PVC already exists
+    cdi.kubevirt.io/allowClaimAdoption: "true"
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/ignoreNetworkPolicies: "true"
+    superphenix.net/workloadClass: "datavolume-importer"
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $disk.name | quote }}
+spec:
+  storage:
+    volumeMode: Block
+    accessModes:
+      - ReadWriteMany
+    storageClassName: {{ (required "No storageclass found" $storageClass) | quote }}
+    {{- with $disk.storage }}
+    resources:
+      requests:
+        storage: {{ . | quote }}
+    {{- end }}
+  {{- if .source }}
+  source:
+    {{- with .source.http }}
+    http:
+    {{ . | toYaml | nindent 8 }}
+    {{- end }}
+
+    {{- with .source.registry }}
+    registry:
+    {{ . | toYaml | nindent 8 }}
+    {{- end }}
+
+    {{- with .source.diskSnapshot }}
+    {{- $snapID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" .target) }}
+    snapshot:
+      name: {{ $snapID | quote }}
+      namespace: "spx-{{ $.Values.projectID }}"
+    {{- end }}
+
+    {{- with .source.diskClone }}
+    {{- $cloneID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" .target) }}
+    pvc:
+      name: {{ $cloneID | quote }}
+      namespace: "spx-{{ $.Values.projectID }}"
+    {{- end }}
+  {{- else }}
+  source:
+    blank: {}
+  {{- end }}
+
+{{- end }}
+{{- end }}

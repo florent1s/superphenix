@@ -1,0 +1,32 @@
+{{- range $localID, $eip := .Values.eips }}
+{{- if eq $eip.location $.Values.location }}
+{{- if not $eip.internalIP }}
+
+{{- if $eip.internalCIDR }}
+{{- fail "Please convert your SNAT to the new syntax '.snats' and remove '.internalCIDR'" }}
+{{- end }}
+
+{{- $eipEffectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $eipEffectiveIDNoPrefix := include "sfs-iaas.getUUIDv5" (dict "NS" $.Values.projectID "NAME" $localID) }}
+
+{{- range $snat := $eip.snats }}
+{{- $snatLocalID := include "sfs-iaas.getUUIDv5" (dict "NS" $eipEffectiveIDNoPrefix "NAME" $snat.internalCIDR) }}
+{{- $snatEffectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $snatLocalID) }}
+---
+apiVersion: kubeovn.io/v1
+kind: IptablesSnatRule
+metadata:
+  name: {{ $snatEffectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $snatEffectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $snatLocalID | quote }}
+    superphenix.net/resourceName: {{ $eip.name | quote }}
+spec:
+  eip: {{ $eipEffectiveID | quote }}
+  internalCIDR: {{ $snat.internalCIDR | quote }}
+{{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}

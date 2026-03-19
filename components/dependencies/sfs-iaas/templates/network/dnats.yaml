@@ -1,0 +1,33 @@
+{{- range $localID, $eip := .Values.eips }}
+{{- if eq $eip.location $.Values.location }}
+{{- if not $eip.internalIP }}
+
+{{- $eipEffectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $eipEffectiveIDNoPrefix := include "sfs-iaas.getUUIDv5" (dict "NS" $.Values.projectID "NAME" $localID) }}
+
+{{- range $dnat := $eip.dnats }}
+{{- $protocol := $dnat.protocol | lower }}
+{{- $template := (printf "%d-%s-%d-%s" ($dnat.externalPort | int) $dnat.internalIP ($dnat.internalPort | int) $protocol) }}
+{{- $dnatLocalID := include "sfs-iaas.getUUIDv5" (dict "NS" $eipEffectiveIDNoPrefix "NAME" $template) }}
+{{- $dnatEffectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $dnatLocalID) }}
+---
+kind: IptablesDnatRule
+apiVersion: kubeovn.io/v1
+metadata:
+  name: {{ $dnatEffectiveID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $dnatEffectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $dnatLocalID | quote }}
+    superphenix.net/resourceName: {{ $eip.name | quote }}
+spec:
+  eip: {{ $eipEffectiveID | quote }}
+  externalPort: {{ $dnat.externalPort | quote }}
+  internalPort: {{ $dnat.internalPort | quote }}
+  internalIp: {{ $dnat.internalIP | quote }}
+  protocol:  {{ $protocol | quote }}
+{{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}

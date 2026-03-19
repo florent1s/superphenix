@@ -1,0 +1,23 @@
+{{- range $localID, $snapshot := .Values.vmSnapshots }}
+{{- if eq $snapshot.location $.Values.location }}
+
+{{- $snapshotID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
+{{- $vmID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $snapshot.target) }}
+---
+apiVersion: snapshot.kubevirt.io/v1beta1
+kind: VirtualMachineSnapshot
+metadata:
+  name: {{ $snapshotID | quote }}
+  labels:
+    {{- include "sfs-iaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $snapshotID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $snapshot.name | quote }}
+spec:
+  source:
+    apiGroup: kubevirt.io
+    kind: VirtualMachine
+    name: {{ $vmID | quote }}
+
+{{- end }}
+{{- end }}

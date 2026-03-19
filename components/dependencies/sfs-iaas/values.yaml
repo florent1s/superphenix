@@ -1,0 +1,509 @@
+# -- Superphenix organization to which this project belongs, must be a generated UUIDv4.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+organizationID: "00000000-0000-0000-0000-000000000000"
+# -- Superphenix organization's friendly name.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+organizationName: "null"
+
+# -- Superphenix project to which this project belongs, must be a project within the organization, must be a generated UUIDv4.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+projectID: "00000000-0000-0000-0000-000000000000"
+# -- Superphenix project's friendly name.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+projectName: "null"
+
+# -- AZ in which we're deploying this chart.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+location: ""
+
+# -- Wether this chart is deployed through GitOps or not.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+gitops: false
+
+# -- Mapping between user-friendly names of storage classes and their real names.
+# The mapping is specified for the current AZ, meaning that each AZ can have a different mapping.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+storageClassMapping: {}
+
+# -- BGP speaker configuration for this AZ.
+# The value is passed as an escape JSON and must be decoded in the template
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+bgpSpeaker: ""
+
+# @section -- Global overrides
+global:
+  # -- Labels added to every single object templated by this chart.
+  # This parameter cannot be overriden by the user.
+  # @section -- Global values
+  labels: {}
+
+# -- Each key defines a new VPC, each key should be unique.
+# See the default VPC for the syntax to define a new VPC.
+# @section -- VPCs
+# @default -- "{}"
+vpcs:
+  # default-vpc:
+  #  # -- User-friendly name of the VPC
+  #  # @section -- Default VPC
+  #  name: "default"
+  #
+  #  # -- AZ in which to deploy the resource
+  #  # @section -- Default VPC
+  #  location: ""
+  #
+  #  # -- Static routes added to the VPC
+  #  # @section -- Default VPC
+  #  staticRoutes: []
+  #
+  #  # -- Policy routes added to the VPC
+  #  # @section -- Default VPC
+  #  policyRoutes: []
+  #
+  #  # -- VPC peerings added to the VPC
+  #  # Scope: ADMIN
+  #  # @section -- Default VPC
+  #  vpcPeerings: []
+
+# -- Each key defines a new Subnet, each key should be unique
+# @section -- Subnets
+# @default -- See the default Subnet for the syntax to define a new Subnet
+subnets: {}
+#  default-subnet:
+  #  # -- User-friendly name of the default subnet
+  #  # @section -- Default Subnet
+  #  name: "default"
+  #
+  #  # -- AZ in which to deploy the resource
+  #  # @section -- Default Subnet
+  #  location: ""
+  #
+  #  # -- Protocol for this Subnet, can be IPv4/IPv6/Dual
+  #  # @section -- Default Subnet
+  #  protocol: Dual
+  #
+  #  # -- Name of the VPC to which this Subnet belongs, must be equal to
+  #  # the name of a key in the `vpc` dictionary, not to a user-friendly name
+  #  # @section -- Default Subnet
+  #  vpc: "default-vpc"
+  #
+  #  # -- CIDR for this Subnet
+  #  # If Dual protocol is set, the IPv4/IPV6 subnets are separated by a comma
+  #  # @section -- Default Subnet
+  #  cidrBlock: "10.10.0.0/16,fd00:10:10::/64"
+  #
+  #  # -- Gateway for this Subnet, if unspecified, defaults to first address in every CIDR block
+  #  # If Dual protocol is set, the IPv4/IPV6 gateways are separated by a comma
+  #  # @section -- Default Subnet
+  #  gateway: "10.10.0.1,fd00:10:10::1"
+  #
+  #  # -- DHCP options
+  #  dhcp:
+  #    # -- DNS propagated through DHCPv4
+  #    dnsv4: 1.1.1.1
+  #    # -- DNS propagated through DHCPv6
+  #    dnsv6: 2606:4700:4700::1111
+  #
+  #  # -- IPs that should be excluded from the IPAM, gateways are automatically added to this list
+  #  # @section -- Default Subnet
+  #  excludeIps: []
+  #
+  #  # -- Whether this subnet is "private", which means resources in this subnet can't access anything else
+  #  # outside of it, and nothing outside of it can access resources in this subnet. This is an extreme
+  #  # isolation method.
+  #  # @section -- Default Subnet
+  #  private: false
+  #
+  #  # -- NAT gateway attached to the Subnet, will act as the egress point for all the traffic
+  #  # @section -- Default Subnet's NAT gateway
+  #  # @default -- "{}"
+  #  natGateway:
+  #    # -- Enable the NAT gateway for this Subnet
+  #    # @section -- Default Subnet's NAT gateway
+  #    enabled: true
+  #
+  #    # -- User-friendly name of the default gateway
+  #    # @section -- Default Subnet's NAT gateway
+  #    name: "default"
+  #
+  #    # -- IP of the gateway in the LAN of the default subnet
+  #    # @section -- Default Subnet's NAT gateway
+  #    lanIP: "10.10.255.254"
+  #
+  #    # -- BGP speaker settings if the NAT gateway is in BGP mode
+  #    # Scope: ADMIN
+  #    # @section -- Default Subnet's NAT gateway
+  #    bgpSpeaker:
+  #      enabled: true
+  #      asn: 65500
+  #      remoteAsn: 65000
+  #      neighbors:
+  #        - 100.65.0.0
+  #      # Optional parameters that can be omitted
+  #      # enableGracefulRestart: true
+  #      # routerId: 1.1.1.1
+  #      # holdTime: 1m
+  #      # password: "password123"
+  #      extraArgs:
+  #        - -v5
+
+# -- SSH access to the VirtualMachines
+# @section -- SSH key store
+# @default -- ""
+ssh:
+  # -- Public keys to inject inside the VMs.
+  # See value.yaml for the complete syntax, each key should be unique.
+  # @section -- SSH key store
+  # @default -- "{}"
+  publicKeys: {}
+  #  default:
+  #    name: "key"
+  #    value: "ssh-rsa AAAAB3NzaC1yHRRCa+shfULsvAkLclySXRz1unKwTKW3rIRqRkVJOLeILy8Nj7V3q/7FGbejTlI3Z9aIWfgBkkrQe88EXkj=="
+
+# -- Replication settings for disaster recovery of the project.
+# @section -- Replication
+replication:
+  # -- Replication schedule applied to every AZ.
+  # If specified, the project is set to be replicated in every AZ.
+  # @section -- Replication
+  schedule: ""
+  # -- Replication strategy per AZ (overrides .schedule)
+  # This setting can be used to enable replication on specific AZs.
+  # It can also be used to disable replication for a specific AZ if a global schedule has been configured.
+  # @section -- Replication
+  availabilityZones: {}
+  #  test01:
+  #    # -- Enable or disable replication on this AZ
+  #    enabled: true
+  #    # -- Schedule used to run the replications for this AZ
+  #    schedule: "daily"
+
+# -- Disks that can be attached to VMs
+# @section -- Disks
+# @default -- ""
+disks:
+#  example:
+#    # -- User-friendly name of the disk
+#    name: "example"
+#    # -- AZ in which to deploy the resource
+#    location: ""
+#    # -- Requested size of the disk
+#    storage: 10G
+#    # -- Storage class to use
+#    class: "" 
+#    # -- Source of the data to import in the disk (optional)
+#    # If no source is specified, the disk will be created blank
+#    source:
+#      # -- HTTP/Registry source for the disk
+#      # https://github.com/kubevirt/containerized-data-importer/blob/main/doc/datavolumes.md#https3gcsregistry-source
+#      http: {}
+#      # -- Docker registry source for the disk
+#      registry: {}
+#      # -- Clone another disk present in the project
+#      diskClone:
+#        # -- Local ID of the disk
+#        target: example
+#      # -- Restore a disk from a snapshot
+#      diskSnapshot:
+#        # -- Local ID of the snapshot
+#        target: example
+
+# -- Snapshots of Disks
+# @section -- Disk Snapshots
+# @default -- ""
+diskSnapshots:
+#  example:
+#    # -- User-friendly name of the snapshot
+#    name: "example"
+#    # -- AZ in which to deploy the resource
+#    location: ""
+#    # -- Disk targeted by the snapshot
+#    target: "disk-example"
+
+# -- Schedules for snapshots of Disks
+# @section -- Disk Snapshot Schedules
+# @default -- ""
+diskSnapshotSchedules:
+#  daily:
+#    # -- User-friendly name of the schedule
+#    name: "example"
+#    # -- AZ in which to deploy the resource
+#    location: ""
+#    # -- Pause the schedule
+#    paused: false
+#    # -- Retention settings
+#    retention:
+#      # -- Number of snapshots to keep (max is 31, default is 7)
+#      maxCount: 31
+#      # -- Number of hours to keep the snapshot (optional, max is 744, cumulative with `.maxCount`)
+#      expiryTime: 744 # 1 month
+#    # -- Schedule on which to run the snapshots
+#    schedule:
+#      # -- Frequency at which to run the snapshots (values: weekly, daily)
+#      frequency: "daily"
+#      # -- CRON expression, mutually exclusive with `.frequency`
+#      cron: "0 * * * *"
+
+# -- Each key defines a new VM, each key should be unique.
+# See values.yaml for the complete syntax.
+# @section -- Virtual Machines
+# @default -- "{}"
+vms:
+#  example:
+#    # -- User-friendly name of the VirtualMachine
+#    name: "example"
+#    # -- AZ in which to deploy the resource
+#    location: ""
+#    # -- Labels added to the VirtualMachine
+#    labels: {}
+#    # -- Hostname of the VirtualMachineInstance, defaults to the name of the VirtualMachine
+#    hostname: ""
+#    # -- Run strategy of the VM
+#    runStrategy: "Always"
+#    # -- Type of OS, used to set specific compatibility parameters, defaults to "linux" (available: linux, windows)
+#    type: linux
+#    # -- Network of the VM
+#    network:
+#      interfaces:
+#        # -- Interface we're adding to the VM
+#        - subnet: "default"
+#
+#          # -- Whether we should protect this interface against IP spoofing (optional)
+#          portSecurity: false
+#
+#          # -- Whether this interface is up or down (optional, defaults to up)
+#          state: up
+#
+#          # -- Model of the NIC (optional)
+#          # Available options: [virtio (recommended), e1000 (if virtio unsupported by the guest)]
+#          model: virtio
+#
+#          # -- Static configuration of the interfaces
+#          static:
+#            # -- Enable static allocation of the IPs on the interface (optional, defaults to false)
+#            # If disabled, the IPs will automatically be chosen by the IPAM within the range
+#            # The protocol (IPv4 only, IPv6 only or Dual stack) will be inferred from the configuration of the subnet
+#            enabled: true
+#
+#            # -- Protocol can be "IPv4", "IPv6" or "Dual"
+#            protocol: "Dual"
+#
+#            # -- IPv4 of the interface, ignored if protocol is "IPv6"
+#            # The IP must be part of the subnet
+#            ipv4: "10.10.0.10"
+#
+#            # -- IPv6 of the interface, ignored if protocol is "IPv4"
+#            # The IP must be part of the subnet
+#            ipv6: "fd00:10:10::10"
+#        - subnet: "test"
+#          static:
+#            enabled: false
+#    # -- Volumes mounted to the VM
+#    volumes:
+#      # -- Disks to mount on the VM
+#      disks:
+#        - name: "boot-disk"
+#          # -- Optional argument, "virtio" by default (if VM type is set to "linux") as it offers better performance.
+#          # Set it to "sata" if the OS doesn't have virtio drivers pre-installed (e.g Windows).
+#          bus: "virtio"
+#          # -- Mounts the disk as a CD-ROM. The bus will default to "sata" if none was provided to
+#          # be able to use the disk as an installation drive (as no virtio driver will be present).
+#          cdrom: true
+#      # -- Cloud Init configuration drive
+#      cloudInitNoCloud:
+#        bus: virtio
+#        userData: |-
+#          #cloud-config
+#          chpasswd:
+#            list: |
+#              debian:zeghoh6ria6Foh9chub6ewae0ais4tie
+#            expire: False
+#    # -- Compute
+#    compute:
+#      cpu:
+#        sockets: 1
+#        cores: 1
+#        threads: 1
+#      memory:
+#        guest: 2Gi
+#    # -- Mouse & keyboard control
+#    controls:
+#      # -- Enabled by default if omitted
+#      enabled: true
+#      # -- Bus used to mount the mouse and keyboard, "virtio" if unspecified (available: usb, virtio)
+#      bus: usb
+#    accessCredentials:
+#      # -- Inject the SSH keys inside the VirtualMachines
+#      injectSshKeys: true
+
+# -- Snapshots of Virtual Machines
+# @section -- VM Snapshots
+# @default -- ""
+vmSnapshots:
+#  example:
+#    # -- User-friendly name of the snapshot
+#    name: "example"
+#    # -- AZ in which to deploy the resource
+#    location: ""
+#    # -- VM targeted by the snapshot
+#    target: "vm-example"
+
+vmRestores:
+#  example:
+#    location: test01
+#    name: "example"
+#    snapshot: example
+#    destination: vm
+#    inPlace: true
+#    # volumeRestoreOverrides:
+#    #  - originalVolume: abc
+#    #    restoreVolume: def
+
+# -- Elastic IPs available in this project.
+# See values.yaml for the complete syntax.
+# @section -- Elastic IPs
+# @default -- "{}"
+eips:
+# default:
+#   # -- Friendly-name of the default EIP
+#   # @section -- Elastic IPs
+#   name: "default"
+#   # -- AZ in which to deploy the resource
+#   # @section -- Elastic IPs
+#   location: ""
+#   # -- EIP attached to the default NAT Gateway
+#   # @section -- Elastic IPs
+#   natGateway: "default"
+#   # -- IPv4 of the Elastic IP
+#   # @section -- Elastic IPs
+#   ipv4: "23.159.120.130"
+#   # -- IPv6 of the Elastic IP
+#   # @section -- Elastic IPs
+#   ipv6: ""
+#   # -- Subnet in which we pick the IPs
+#   # @section -- Elastic IPs
+#   subnet: "external-subnet"
+#   # -- Internal IP to which this EIP is bound, making this EIP a FIP (Floating IP).
+#   # If omitted, SNAT/DNAT must be provided to use the EIP by filling `.internalCIDR`.
+#   # Mutually exclusive with `.internalCIDR`.
+#   # @section -- Elastic IPs
+#   internalIP: "10.10.0.10"
+#   # -- DNATs between EIPs and internal CIDRs
+#   # @section -- Elastic IPs
+#   snats:
+#   # my-snat:
+#       # -- Internal CIDR that will be SNATed using this EIP
+#       internalCIDR: "10.10.0.0/24"
+#   # -- DNATs between EIPs and internal IPs
+#   # @section -- Elastic IPs
+#   dnats:
+#   # my-dnat:
+#       # -- External port where we receive the traffic
+#       # @section -- Elastic IPs
+#       externalPort: "80"
+#       # -- Re-mapped internal port where we send the traffic
+#       # @section -- Elastic IPs
+#       internalPort: "8080"
+#       # -- Internal IP on which to send the traffic
+#       # @section -- Elastic IPs
+#       internalIP: "10.10.0.10"
+#       # -- Protocol on which we expect the traffic (TCP/UDP)
+#       # @section -- Elastic IPs
+#       protocol: "tcp"
+
+# -- Load balancers to VMs, supports TCP/UDP and automatic healthchecks
+# @section -- Load balancers
+loadbalancers:
+#  my-lb:
+#    # -- Friendly-name of the load balancer
+#    # @section -- Load balancers
+#    name: "default"
+#    # -- AZ in which to deploy the resource
+#    # @section -- Load balancers
+#    location: ""
+#    # -- Virtual IP of the load balancer
+#    # Must be in range 198.18.0.0/16 and not conflict with another LB
+#    # @section -- Load balancers
+#    vip: "198.18.1.1"
+#    # -- Label selector to target a set of VMs, mutually exclusive with `.endpoints`
+#    # @section -- Load balancers
+#    selector:
+#      - label:value
+#    # -- Static endpoints to target, mutually exclusive with `selector`
+#    endpoints:
+#      - 10.10.10.10
+#      - 10.10.10.11
+#    # -- Ports to target on the endpoints
+#    # @section -- Load balancers
+#    ports:
+#    # Port on which the load balancer receives the traffic before forwarding it to the targetPort
+#    - port: 80
+#      # Port on which to forward the traffic
+#      targetPort: 8080
+#      # Protocol on which to listen (TCP/UDP)
+#      protocol: TCP
+
+# -- Network policies (firewalling rules) to block/allow traffic in and out of the project
+# @section -- Network Policies
+networkPolicies:
+# -- List of rules we want applied to our project.
+#  rules:
+#    default:
+#      # -- Friendly-name of the network policy
+#      name: "default"
+#      # -- Enable the network policy
+#      enabled: true
+#      # -- AZs on which to deploy the network policies
+#      # Use "all" to target every AZ
+#      locations: []
+#      # -- VMs selected by that network policy
+#      # Selectors are ANDed between .matchLabels and .matchExpressions
+#      selector:
+#        # -- Match all the VMs that have that set of labels
+#        matchLabels: {}
+#        #  a: b
+#        #  c: d
+#        # -- Match all the VMs using expressions
+#        matchExpressions: {}
+#        # - key: test
+#        #   operator: In
+#        #   values: [a, b, c]
+#      # -- Create a network policy that allows all ingress or egress
+#      # If enabled, .ingress and .egress are ignored
+#      allowAll:
+#        # -- Allow all ingress traffic from the selected pods
+#        ingress: false
+#        # -- Allow all egress traffic from the selected pods
+#        egress: false
+#      # -- Create a network policy that blocks all ingress or egress
+#      # If enabled, .ingress and .egress are ignored
+#      # The .allowAll values have priority over blockAll
+#      blockAll:
+#        # -- Block all ingress traffic from the selected pods
+#        ingress: false
+#        # -- Block all egress traffic from the selected pods
+#        egress: false
+#      # -- Rules to allow specific ingress traffic
+#      ingress:
+#      # - from:
+#      #  - ipBlock:
+#      #     cidr: 0.0.0.0/0
+#      #  ports:
+#      #    - protocol: TCP
+#      #      port: 22
+#      #      endPort: 25
+#      # -- Rules to allow specific egress traffic
+#      egress:
+#      # - to:
+#      #  - ipBlock:
+#      #     cidr: 0.0.0.0/0
+#      #  ports:
+#      #    - protocol: UDP
+#      #      port: 67
