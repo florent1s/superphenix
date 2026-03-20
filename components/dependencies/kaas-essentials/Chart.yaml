@@ -1,0 +1,23 @@
+apiVersion: v2
+
+name: kaas-essentials
+
+description: Installs essential utilities in a tenant cluster (HAProxy, Cilium, Kubevirt-csi).
+
+type: application
+
+version: 1.33.0
+
+dependencies:
+  - enabled: true
+    name: cilium
+    repository: https://helm.cilium.io/
+    version: 1.18.*
+  - enabled: true
+    name: metrics-server
+    repository: https://kubernetes-sigs.github.io/metrics-server
+    version: "3.13.*" # https://github.com/kubernetes-sigs/metrics-server/releases
+#  - enabled: true
+#    name: coredns
+#    repository: https://coredns.github.io/helm
+#    version: "~1.37.0"

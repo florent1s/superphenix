@@ -1,0 +1,75 @@
+controlPlane:
+  fqdn: ""
+  network:
+    apiServer:
+      address: 10.96.0.1
+      port: 7443
+      proxyPort: 7444
+
+kubevirtCsi:
+  storageClasses: {}
+    # default:
+    #   isDefaultClass: true
+    #   tenantClass: default
+    #   infraClass: default
+  snapshotclasses: {}
+    # default:
+    #   isDefaultClass: true
+    #   tenantClass: default
+    #   infraClass: default
+  
+  nodeDriverRegistrarVersion: v2.15.0 # https://github.com/kubernetes-csi/node-driver-registrar/releases
+  csiLivenessprobeVersion: v2.17.0    # https://github.com/kubernetes-csi/livenessprobe/releases
+  snapshotControllerVersion: v8.4.0   # https://github.com/kubernetes-csi/external-snapshotter/releases
+  csiDriverVersion: latest            # https://quay.io/repository/kubevirt/kubevirt-csi-driver?tab=tags
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %          Metrics server           %
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+metrics-server:
+  fullnameOverride: "metrics-server"
+  args:
+    - --kubelet-insecure-tls=true
+    - --kubelet-preferred-address-types=InternalIP
+  apiService:
+    create: true
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %              Cilium               %
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+cilium:
+  kubeProxyReplacement: true
+  ipam:
+    mode: kubernetes
+  k8s:
+    requireIPv4PodCIDR: true
+  securityContext:
+    privileged: false
+  cni:
+    chainingMode: portmap
+  sessionAffinity: true
+  k8sServiceHost: ""
+  k8sServicePort: 7443
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %              CoreDNS              %
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#coredns:
+#  # Initial amount of DNS instances
+#  replicaCount: 2
+#  k8sAppLabelOverride: "kube-dns"
+#
+#  # IP of the DNS cluster-wide
+#  service:
+#    clusterIP: "10.96.0.10"
+#
+#  affinity:
+#    podAntiAffinity:
+#      requiredDuringSchedulingIgnoredDuringExecution:
+#        - topologyKey: kubernetes.io/hostname
+#          labelSelector:
+#            matchLabels:
+#              k8s-app: kube-dns
+#  rollingUpdate:
+#    maxUnavailable: 1
+#    maxSurge: 0
