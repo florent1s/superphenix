@@ -1,0 +1,143 @@
+---
+# === Adjust TCP service spec on creation to make it dual-stack
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: kaas-tcp-svc-map
+spec:
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+    - apiGroups:   [""]
+      apiVersions: ["v1"]
+      operations:  ["CREATE","UPDATE"]
+      resources:   ["services"]
+      scope: '*'
+  matchConditions:
+    - name: match-tcp-svc
+      expression: "object.metadata.name.startsWith(\"spx-\") && has(object.metadata.labels) && \"kamaji.clastix.io/project\" in object.metadata.labels"
+  failurePolicy: Fail
+  reinvocationPolicy: IfNeeded
+  mutations:
+    - patchType: "JSONPatch"
+      jsonPatch:
+        expression: >
+          [
+            JSONPatch{
+              op: "replace",
+              path: "/spec/ipFamilies",
+              value: ["IPv4","IPv6"]
+            }
+          ]
+    - patchType: "JSONPatch"
+      jsonPatch:
+        expression: >
+          [
+            JSONPatch{
+              op: "replace",
+              path: "/spec/ipFamilyPolicy",
+              value: "RequireDualStack"
+            }
+          ]
+
+---
+# === Binding for the MutatingAdmissionPolicy above
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: kaas-tcp-svc-map
+spec:
+  policyName: kaas-tcp-svc-map
+
+---
+# === Add annotations on DVs from KaaS clusters
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: kaas-dv-anno-map
+spec:
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+    - apiGroups:   ["cdi.kubevirt.io"]
+      apiVersions: ["*"]
+      operations:  ["CREATE","UPDATE"]
+      resources:   ["datavolumes"]
+      scope: '*'
+  matchConditions:
+    - name: match-kaas-dv
+      expression: "object.metadata.name.startsWith(\"pvc-\") && has(object.metadata.labels) && \"csi-driver/cluster\" in object.metadata.labels"
+  failurePolicy: Fail
+  reinvocationPolicy: IfNeeded
+  mutations:
+    - patchType: "JSONPatch"
+      jsonPatch:
+        expression: >
+          [
+            JSONPatch{
+              op: "add",
+              path: "/metadata/annotations/" + jsonpatch.escapeKey("cdi.kubevirt.io/allowClaimAdoption"),
+              value: "true"
+            },
+            JSONPatch{
+              op: "add",
+              path: "/metadata/annotations/" + jsonpatch.escapeKey("v1.multus-cni.io/default-network"),
+              value: "kube-system/system-isolated-egress"
+            }
+          ]
+
+---
+# === Binding for the MutatingAdmissionPolicy above
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: kaas-dv-anno-map
+spec:
+  policyName: kaas-dv-anno-map
+
+---
+# === Change Subnet for PVC binding hot-plug pods
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: kaas-pvc-hp-subnet
+spec:
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+    - apiGroups:   [""]
+      apiVersions: ["v1"]
+      operations:  ["CREATE","UPDATE"]
+      resources:   ["pods"]
+      scope: '*'
+  matchConditions:
+    - name: match-kaas-hp-pod
+      expression: "has(object.metadata.name) && object.metadata.name.startsWith(\"hp-volume-\")"
+  failurePolicy: Fail
+  reinvocationPolicy: IfNeeded
+  mutations:
+    - patchType: "JSONPatch"
+      jsonPatch:
+        expression: >
+          [
+            JSONPatch{
+              op: "add",
+              path: "/metadata/annotations/" + jsonpatch.escapeKey("v1.multus-cni.io/default-network"),
+              value: "kube-system/system-blackhole"
+            }
+          ]
+
+---
+# === Binding for the MutatingAdmissionPolicy above
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: kaas-pvc-hp-subnet
+spec:
+  policyName: kaas-pvc-hp-subnet

@@ -9,7 +9,7 @@ dataStoreDefaults:
 # See values.yaml for the complete syntax.
 # @default -- {}
 dataStores: {}
-  # fr01-agc01-virt01-datastore01:
+  # fr01-abc01-virt01-datastore01:
   #   # Storage class friendly name to use
   #   # @section -- Datastore
   #   storageClassName: ""
