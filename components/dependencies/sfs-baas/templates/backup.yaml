@@ -38,8 +38,8 @@ spec:
   includedNamespaces:
     - spx-{{ $.Values.projectID }}
 
-  # Time to retain backups in hours
-  #ttl: {{ printf "%dh0m0s" (min $backup.retention.expiryTime 960 | int) | quote }}
+  # Time to retain backups in hours (100 years, can't set no TTL in Velero)
+  ttl: 876000h
 
   # We want to snapshot the PVCs
   snapshotVolumes: true
