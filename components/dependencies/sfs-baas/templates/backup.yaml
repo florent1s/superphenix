@@ -15,6 +15,7 @@ metadata:
     superphenix.net/resourceLocalID: {{ $localID | quote }}
     superphenix.net/resourceName: {{ $backup.name | quote }}
     superphenix.net/backupType: {{ $backup.type | lower | quote }}
+    superphenix.net/backupSourceAZ: {{ $.Values.location | quote }}
 spec:
   # Cluster scoped resources to backup
   includedClusterScopedResources:

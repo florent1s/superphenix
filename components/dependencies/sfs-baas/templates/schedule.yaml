@@ -15,6 +15,7 @@ metadata:
     superphenix.net/resourceLocalID: {{ $localID | quote }}
     superphenix.net/resourceName: {{ $backup.name | quote }}
     superphenix.net/backupType: {{ $backup.type | lower | quote }}
+    superphenix.net/backupSourceAZ: {{ $.Values.location | quote }}
 spec:
   # Whether this schedule is paused
   paused: {{ $backup.paused | default false }}
