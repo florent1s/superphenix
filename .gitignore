@@ -5,7 +5,8 @@
 *.so
 *.dylib
 bin/*
-scripts/
+hacks/
+hacks/
 Dockerfile.cross
 
 # Test binary, built with `go test -c`
