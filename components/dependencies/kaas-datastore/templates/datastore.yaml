@@ -11,9 +11,7 @@ metadata:
 spec:
   driver: etcd
   endpoints:
-  {{- range $count := until (int $replicas) }}
-    - {{ printf "%s-%d.%s-headless.%s.svc.%s:2379" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
-  {{- end }}
+  - {{ printf "%s.%s.svc.%s:2379" $dataStoreID $.Release.Namespace $clusterDomain }}
   tlsConfig:
     certificateAuthority:
       certificate:

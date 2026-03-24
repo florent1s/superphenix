@@ -36,8 +36,11 @@ spec:
     - {{ printf "%s-%d.%s-headless" $dataStoreID $count $dataStoreID }}
     - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
     - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
-    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
   {{- end }}
+    - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc.{{ $clusterDomain }}"
+    - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc"
+    - "{{ $dataStoreID }}"
+    - localhost
   ipAddresses:
     - 127.0.0.1
   privateKey:
@@ -70,8 +73,11 @@ spec:
     - {{ printf "%s-%d.%s-headless" $dataStoreID $count $dataStoreID }}
     - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
     - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
-    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
   {{- end }}
+    - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc.{{ $clusterDomain }}"
+    - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc"
+    - "{{ $dataStoreID }}"
+    - localhost
   ipAddresses:
     - 127.0.0.1
   privateKey:
