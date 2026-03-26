@@ -33,6 +33,23 @@ data:
         # when one cluster is managed by multiple ArgoCDs
         installationID: "controller.superphenix.net"
 
+        # Setup health assessment for Application CRDs to allow for sync waves between them
+        resource.customizations: |
+          argoproj.io/Application:
+            health.lua: |
+              hs = {}
+              hs.status = "Progressing"
+              hs.message = ""
+              if obj.status ~= nil then
+                if obj.status.health ~= nil then
+                  hs.status = obj.status.health.status
+                  if obj.status.health.message ~= nil then
+                    hs.message = obj.status.health.message
+                  end
+                end
+              end
+              return hs
+
       # Parameters injected to ArgoCD
       params:
         # The default behavior of the ApplicationSet controller is unsatisfactory when it comes to globbing, patch it

@@ -1,4 +1,1124 @@
-# Default values for superphenix chart.
-# This is a test example chart.
+# -- Cluster on which the applications should be deployed
+cluster:
+  name: "in-cluster"
 
-testValue: "hardcoded-test-value"
+# -- ArgoCD application parameters
+argocd:
+  appVersion: "argoproj.io/v1alpha1"
+  namespace: "argocd-system"
+  project: "default"
+
+# -- Disable all applications and override "per application" setting
+disableAll: false
+
+# -- "Per application" settings
+apps:
+  # YAML -- Pure YAML injected to the cluster from a Git repository
+  yaml:
+    enabled: false
+    modes: []
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "default"
+    repoURL: ""
+    path: ""
+    targetRevision: "main"
+    directory:
+      recurse: true
+
+  # Argo -- ArgoCD applications injected to the cluster from a Git repository
+  argo:
+    enabled: false
+    modes: []
+    automation:
+      enabled: true
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "argocd-system"
+    repoURL: ""
+    path: ""
+    targetRevision: "main"
+    directory:
+      recurse: true
+
+  # Metrics-server -- Pod metrics aggregator for HPA/VPA
+  metrics-server:
+    wave: "-10"
+    enabled: true
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "metrics-server-system"
+    repoURL: "https://kubernetes-sigs.github.io/metrics-server/"
+    targetRevision: "3.13.0"
+    helm:
+      chart: "metrics-server"
+      releaseName: "metrics-server"
+      values:
+        replicas: 3
+        metrics:
+          enabled: true
+        serviceMonitor:
+          enabled: true
+        defaultArgs:
+          - --cert-dir=/tmp
+          - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+          - --kubelet-use-node-status-port
+          - --kubelet-insecure-tls
+          - --metric-resolution=15s
+
+  # Ingress-nginx -- Ingress controller
+  ingress-nginx:
+    wave: "-10"
+    enabled: true
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "ingress-nginx-system"
+    nsLabels:
+      pod-security.kubernetes.io/enforce: privileged
+    repoURL: "https://kubernetes.github.io/ingress-nginx"
+    targetRevision: "4.13.3"
+    helm:
+      chart: "ingress-nginx"
+      releaseName: "ingress-nginx"
+      values:
+        controller:
+          hostNetwork: true
+          ingressClassResource:
+            name: "spx-nginx"
+          ingressClass: "spx-nginx"
+          kind: DaemonSet
+          service:
+            type: ClusterIP
+          config:
+            hsts: "false"
+            use-forwarded-headers: "true"
+            enable-real-ip: "true"
+            log-format-upstream: '{"msec": "$msec", "connection": "$connection", "connection_requests": "$connection_requests", "pid": "$pid", "request_id": "$request_id", "request_length": "$request_length", "remote_addr": "$remote_addr", "remote_user": "$remote_user", "remote_port": "$remote_port", "time_local": "$time_local", "time_iso8601": "$time_iso8601", "request": "$request", "request_uri": "$request_uri", "args": "$args", "status": "$status", "body_bytes_sent": "$body_bytes_sent", "bytes_sent": "$bytes_sent", "http_referer": "$http_referer", "http_user_agent": "$http_user_agent", "http_x_forwarded_for": "$http_x_forwarded_for", "http_host": "$http_host", "server_name": "$server_name", "request_time": "$request_time", "upstream": "$upstream_addr", "upstream_connect_time": "$upstream_connect_time", "upstream_header_time": "$upstream_header_time", "upstream_response_time": "$upstream_response_time", "upstream_response_length": "$upstream_response_length", "upstream_cache_status": "$upstream_cache_status", "ssl_protocol": "$ssl_protocol", "ssl_cipher": "$ssl_cipher", "scheme": "$scheme", "request_method": "$request_method", "server_protocol": "$server_protocol", "pipe": "$pipe", "gzip_ratio": "$gzip_ratio", "http_cf_ray": "$http_cf_ray"}'
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+          # Tolerate to schedule on masters
+          tolerations:
+            - key: "node-role.kubernetes.io/master"
+              operator: "Exists"
+              effect: "NoSchedule"
+
+  # Cert-manager -- Let's encrypt SSL certificate issuance operator
+  cert-manager:
+    wave: "-10"
+    enabled: true
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "cert-manager-system"
+    repoURL: "https://charts.jetstack.io"
+    targetRevision: "1.19.1"
+    helm:
+      chart: "cert-manager"
+      releaseName: "cert-manager"
+      values:
+        enableCertificateOwnerRef: true
+        crds:
+          enabled: true
+        prometheus:
+          servicemonitor:
+            enabled: true
+        extraObjects:
+          - |
+            apiVersion: cert-manager.io/v1
+            kind: ClusterIssuer
+            metadata:
+              name: letsencrypt
+            spec:
+              acme:
+                # The ACME server URL
+                server: https://acme-v02.api.letsencrypt.org/directory
+
+                # Email address used for ACME registration
+                email: user@example.org
+
+                # Name of a secret used to store the ACME account private key
+                privateKeySecretRef:
+                  name: letsencrypt
+
+                # Enable the HTTP-01 challenge provider
+                solvers:
+                - http01:
+                    ingress:
+                      class: spx-nginx
+
+  # Prometheus -- Metric aggregation and analysis
+  prometheus-stack:
+    wave: "-5"
+    enabled: true
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions:
+        - ServerSideApply=true
+    namespace: "prometheus-system"
+    nsLabels:
+      pod-security.kubernetes.io/enforce: privileged
+    repoURL: "https://prometheus-community.github.io/helm-charts"
+    targetRevision: "78.4.0"
+    helm:
+      chart: "kube-prometheus-stack"
+      releaseName: "prometheus"
+      values:
+        # Talos has different selectors
+        kubeEtcd:
+          service:
+            selector:
+              k8s-app: kube-controller-manager
+
+          serviceMonitor:
+            relabelings: # Add nodename label
+              - sourceLabels: [__meta_kubernetes_pod_node_name]
+                separator: ;
+                regex: ^(.*)$
+                targetLabel: nodename
+                replacement: $1
+                action: replace
+            metricRelabelings: # Remove pod label
+              - action: labeldrop
+                regex: pod
+
+        # Talos has different selectors
+        kubeScheduler:
+          service:
+            selector:
+              k8s-app: kube-scheduler
+
+        # Talos has different selectors
+        kubeControllerManager:
+          service:
+            selector:
+              k8s-app: kube-controller-manager
+
+        defaultRules:
+          create: false
+
+        alertmanager:
+          enabled: false
+
+        grafana:
+          ingress:
+            enabled: true
+            ingressClassName: "spx-nginx"
+            hosts:
+              - "invalid"
+            tls:
+              - secretName: "grafana-tls"
+                hosts:
+                  - "invalid"
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt
+          additionalDataSources:
+            - name: Loki
+              editable: false
+              type: loki
+              url: "http://loki.loki-system:3100"
+              jsonData:
+                httpHeaderName1: 'X-Scope-OrgID'
+              secureJsonData:
+                httpHeaderValue1: '1'
+          adminPassword: ""
+
+        prometheus:
+          prometheusSpec:
+            podMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorSelectorNilUsesHelmValues: false
+            retention: 30d
+            retentionSize: "45GB"
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  resources:
+                    requests:
+                      storage: 50Gi
+
+  # Promtail -- Agent which ships the contents of local logs to a Loki instance
+  promtail:
+    wave: "0"
+    enabled: true
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "promtail-system"
+    nsLabels:
+      pod-security.kubernetes.io/enforce: privileged
+    repoURL: "https://grafana.github.io/helm-charts"
+    targetRevision: "6.17.0"
+    helm:
+      chart: "promtail"
+      releaseName: "promtail"
+      values:
+        serviceMonitor:
+          enabled: true
+        config:
+          clients:
+            - url: http://loki.loki-system:3100/loki/api/v1/push
+              tenant_id: 1
+
+  # Loki -- Log aggregator with Prometheus-like query language
+  loki:
+    wave: "-5"
+    enabled: true
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "loki-system"
+    repoURL: "https://grafana.github.io/helm-charts"
+    targetRevision: "6.43.0"
+    helm:
+      chart: "loki"
+      releaseName: "loki"
+      values:
+        deploymentMode: SingleBinary
+        global:
+          clusterDomain: ""
+          dnsService: "coredns"
+          dnsNamespace: "kube-system"
+        loki:
+          schemaConfig:
+            configs:
+              - from: 2024-12-01
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+          compactor:
+            compaction_interval: 10m
+            retention_enabled: true
+            retention_delete_delay: 2h
+            retention_delete_worker_count: 150
+            delete_request_store: filesystem
+          limits_config:
+            retention_period: 14d
+          auth_enabled: true
+          commonConfig:
+            replication_factor: 1
+          storage:
+            type: 'filesystem'
+        monitoring:
+          serviceMonitor:
+            enabled: true
+        lokiCanary:
+          enabled: false
+        singleBinary:
+          replicas: 1
+          persistence:
+            enableStatefulSetAutoDeletePVC: false
+            size: 50Gi
+
+        minio:
+          enabled: false
+        gateway:
+          enabled: false
+        test:
+          enabled: false
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+
+        backend:
+          replicas: 0
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        ingester:
+          replicas: 0
+        querier:
+          replicas: 0
+        queryFrontend:
+          replicas: 0
+        queryScheduler:
+          replicas: 0
+        distributor:
+          replicas: 0
+        compactor:
+          replicas: 0
+        indexGateway:
+          replicas: 0
+        bloomCompactor:
+          replicas: 0
+        bloomGateway:
+          replicas: 0
+
+  kubevirt:
+    wave: "5"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "kubevirt-system"
+    repoURL: "xxx"
+    targetRevision: "HEAD"
+    path: "v1.7.0/"
+    directory:
+      recurse: true
+
+  # CDI -- Kubevirt CDI
+  cdi:
+    wave: "5"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "cdi-system"
+    repoURL: "oci://ghcr.io/super-phenix/charts/cdi"
+    targetRevision: "0.1.0"
+    helm:
+      chart: "cdi"
+      releaseName: "cdi"
+
+  # Rook Operator -- This must be enabled for any cluster that plans on interacting with Ceph/Rook.
+  # Virtualization clusters need the operator to provision an external connection to a centralized
+  # storage cluster, and centralized storage clusters need this operator to provision a local Ceph
+  # cluster that will act as a remote backend for "client" clusters.
+  rook-operator:
+    wave: "-5"
+    enabled: true
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "rook-system"
+    nsLabels:
+      pod-security.kubernetes.io/enforce: privileged
+    repoURL: "https://charts.rook.io/release"
+    targetRevision: "1.16.5"
+    helm:
+      chart: "rook-ceph"
+      releaseName: "rook-operator"
+      values:
+        logLevel: DEBUG
+
+        # We want to bind to the IPv6 SPX storage network
+        useOperatorHostNetwork: true
+        enforceHostNetwork: true
+        # Container Storage Interface
+        csi:
+          # Necessary for volume replication and mirroring
+          csiAddons:
+            enabled: true
+          # Necessary for volume replication and mirroring
+          enableOMAPGenerator: true
+          # We need to bind the RBD on another port because of hostNetwork port conflicts
+          csiAddonsRBDProvisionerPort: 9071
+          # We don't do CephFS
+          enableCephfsDriver: false
+          # Monitoring config
+          serviceMonitor:
+            enabled: true
+        monitoring:
+          enabled: true
+        # Discover new disks to show them on the dashboard
+        enableDiscoveryDaemon: true
+        discoveryDaemonInterval: 5m
+
+  rook-local-cluster:
+    wave: "0"
+    enabled: false
+    modes: [Hyperconverged, DecoupledStorage]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "spx-storage"
+    nsLabels:
+      pod-security.kubernetes.io/enforce: privileged
+    repoURL: "https://charts.rook.io/release"
+    targetRevision: "1.16.3"
+    helm:
+      chart: "rook-ceph-cluster"
+      releaseName: "rook-local-cluster"
+      values:
+        operatorNamespace: rook-system
+        clusterName: "invalid"
+        toolbox:
+          enabled: true
+        monitoring:
+          enabled: true
+
+        ingress:
+          dashboard:
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt
+            host:
+              name: "invalid"
+              path: "/"
+            tls:
+              - hosts:
+                  - "invalid"
+                secretName: ceph-dashboard-tls
+            ingressClassName: spx-nginx
+
+        cephClusterSpec:
+          cephConfig:
+            global:
+              # Always move images to trash before fully deleting them
+              # This is already enforced by the Ceph-CSI for K8s cluster, this option is here only to protect
+              # manual removals done from the dashboard or from the toolbox
+              rbd_move_to_trash_on_remove: "true"
+              # Wait before purging RBD images that have been put into the trash, allowing for their recovery
+              # This time is set to one week in seconds (7*24*60*60)
+              rbd_move_to_trash_on_remove_expire_seconds: "604800"
+              # Wait before propagating a mirroring relationship deletion to the remote cluster
+              # This time is set to one week in seconds (7*24*60*60)
+              rbd_mirroring_delete_delay: "604800"
+              # How many snapshots we keep on the remote cluster before pruning
+              rbd_mirroring_max_mirroring_snapshots: "30"
+
+          dashboard:
+            enabled: true
+            ssl: false
+            prometheusEndpoint: "http://prometheus-kube-prometheus-prometheus.prometheus-system:9090"
+            prometheusEndpointSSLVerify: false
+
+          mgr:
+            modules:
+              - name: rook
+                enabled: true
+
+          storage:
+            useAllDevices: false
+            deviceFilter: ""
+
+          crashCollector:
+            disable: false
+            daysToRetain: 365
+
+          network:
+            # Use the underlying host network for performance and to expose the daemons to remote Ceph clients
+            provider: host
+            # We run Ceph only on IPv6 networks, bind the daemons on IPv6 addresses
+            ipFamily: IPv6
+            # This needs to be overriden for each cluster with the IPv6 ranges dedicated to handling storage traffic
+            addressRanges:
+              public:
+                - invalid
+              cluster:
+                - invalid
+
+        cephFileSystems: []
+        cephObjectStores: []
+        cephBlockPools:
+          # We need to override the ".mgr" pool because it doesn't have a device class by default
+          # This configuration ensures it has a device class of type "nvme"
+          - name: mgr
+            spec:
+              name: .mgr
+              failureDomain: host
+              deviceClass: nvme
+              replicated:
+                size: 3
+                requireSafeReplicaSize: true
+              parameters:
+                compression_mode: none
+              mirroring:
+                enabled: false
+              enableCrushUpdates: true
+            storageClass:
+              enabled: false
+
+          # Block storage used locally by the storage cluster for its internal needs
+          # FS type is EXT4 because it is running hyperconverged (XFS can deadlock in that scenario)
+          # Replication is set to only 2 because the data is considered non-critical (logs, metrics...)
+          - name: spx-scratchpad
+            spec:
+              failureDomain: host
+              enableRBDStats: true
+              deviceClass: nvme
+              replicated:
+                size: 2
+              enableCrushUpdates: true
+            storageClass:
+              enabled: true
+              name: spx-scratchpad
+              isDefault: true
+              reclaimPolicy: Delete
+              allowVolumeExpansion: true
+              volumeBindingMode: "Immediate"
+              parameters:
+                imageFormat: "2"
+                imageFeatures: layering,fast-diff,object-map,deep-flatten,exclusive-lock
+                csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+                csi.storage.k8s.io/provisioner-secret-namespace: "spx-storage"
+                csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+                csi.storage.k8s.io/controller-expand-secret-namespace: "spx-storage"
+                csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+                csi.storage.k8s.io/node-stage-secret-namespace: "spx-storage"
+                csi.storage.k8s.io/fstype: ext4
+              mountOptions:
+                - discard
+
+          # Block storage to be used by remote SPX clusters
+          # Device type: NVMe
+          # Replication: 3x
+          - name: spx-rbd-nvme-3x
+            spec:
+              failureDomain: host
+              enableRBDStats: true
+              deviceClass: nvme
+              replicated:
+                size: 3
+              enableCrushUpdates: true
+            storageClass:
+              enabled: false
+
+          # Block storage to be used by remote SPX clusters
+          # Device type: NVMe
+          # Replication: 2x
+          - name: spx-rbd-nvme-2x
+            spec:
+              failureDomain: host
+              enableRBDStats: true
+              deviceClass: nvme
+              replicated:
+                size: 2
+              enableCrushUpdates: true
+            storageClass:
+              enabled: false
+
+  rook-connection:
+    wave: "0"
+    enabled: false
+    modes: [DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      # The endpoint ConfigMap is edited on the fly by Rook and must be ignored during syncs, unless it doesn't exist on the cluster
+      syncOptions:
+        - RespectIgnoreDifferences=true
+    namespace: "rook-system"
+    nsLabels:
+      pod-security.kubernetes.io/enforce: privileged
+    # The endpoint ConfigMap is edited on the fly by Rook and must be ignored from diffs when it changes
+    ignoreDifferences:
+      - kind: ConfigMap
+        jsonPointers:
+          - /data/data
+          - /data/mapping
+    repoURL: "oci://ghcr.io/super-phenix/charts/spx-rook-connection"
+    path: "."
+    targetRevision: "0.1.0"
+    helm:
+      chart: "spx-rook-connection"
+      releaseName: "spx-rook-connection"
+
+  volume-replicator:
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "volume-replicator"
+    repoURL: "ghcr.io/super-phenix/helm-charts"
+    targetRevision: "0.4.0"
+    helm:
+      chart: "volume-replicator"
+      releaseName: "volume-replicator"
+      values:
+        exclusionRegex: "^prime-.*$"
+
+  # Policies -- Used to enforce SPX RFCs and protect against bugs/attacks
+  policies:
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "kube-system"
+    repoURL: "xxx"
+    targetRevision: "v0.1.1"
+    helm:
+      chart: "spx-policies"
+      releaseName: "spx-policies"
+
+  # Talos-backup -- Used to run a CronJob that periodically pushes etcd snapshots to S3 storage
+  talos-backup:
+    enabled: false
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "talos-backup"
+    repoURL: "oci://ghcr.io/super-phenix/charts/talos-backup"
+    targetRevision: "0.1.0"
+    helm:
+      chart: "talos-backup"
+      releaseName: "talos-backup"
+
+  # Velero -- Used to execute disaster recovery across AZs
+  velero:
+    wave: "0"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "velero-system"
+    nsLabels:
+      pod-security.kubernetes.io/enforce: privileged
+    repoURL: "https://vmware-tanzu.github.io/helm-charts"
+    targetRevision: "12.0.0"
+    helm:
+      chart: velero
+      releaseName: "velero"
+      values:
+        # Install plugins at boot of Velero
+        initContainers:
+          # Plugin to connect to S3 buckets
+          - name: velero-plugin-for-aws
+            image: velero/velero-plugin-for-aws:v1.12.1
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - mountPath: /target
+                name: plugins
+          # Plugin to handle KubeVirt backups
+          - name: velero-plugin-for-kubevirt
+            image: quay.io/kubevirt/kubevirt-velero-plugin:v0.8.0
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - mountPath: /target
+                name: plugins
+          # Plugin to handle SPX specific backup actions
+          - name: velero-plugin-for-superphenix
+            image: ghcr.io/super-phenix/superphenix-velero-plugin:v0.1.0
+            imagePullPolicy: Always
+            volumeMounts:
+              - mountPath: /target
+                name: plugins
+
+        # Enable metrics and service monitors
+        metrics:
+          serviceMonitor:
+            enabled: true
+
+        # Node agent is used for CSI-Movement backups
+        deployNodeAgent: true
+
+        # General Velero configuration
+        configuration:
+          # Tell the server we're deploying in a different namespace than the original
+          namespace: velero-system
+          # CSI feature is used for CSI-Movement backups
+          features: "EnableCSI"
+          # S3 where we're sending the backups
+          backupStorageLocation: {}
+          # How long a backup can run for before being terminated
+          defaultItemOperationTimeout: 4h
+          # Priorities for the restoring order
+          restoreResourcePriorities: >-
+            vpc.kubeovn.io,
+            subnet.kubeovn.io,
+            vpc-nat-gateway.kubeovn.io,
+            iptables-eip.kubeovn.io,
+            iptables-fip-rule.kubeovn.io,
+            iptables-snat-rule.kubeovn.io,
+            iptables-dnat-rule.kubeovn.io,
+            switch-lb-rule.kubeovn.io,
+            networkpolicy.networking.k8s.io,
+            network-attachment-definition.k8s.cni.cncf.io,
+            controllerrevision.apps,
+            persistentvolume,
+            persistentvolumeclaim,
+            datavolume.cdi.kubevirt.io,
+            secret,
+            virtualmachine.kubevirt.io,
+            cluster.cluster.x-k8s.io,
+            kubevirtcluster.infrastructure.cluster.x-k8s.io,
+            configmap,
+            issuer.cert-manager.io,
+            certificate.cert-manager.io,
+            serviceaccount,
+            role.rbac.authorization.k8s.io,
+            rolebinding.rbac.authorization.k8s.io,
+            clusterrole.rbac.authorization.k8s.io,
+            clusterrolebinding.rbac.authorization.k8s.io,
+            etcdcluster.etcd.aenix.io,
+            datastore.kamaji.clastix.io,
+            gateway.gateway.networking.k8s.io,
+            tlsroute.gateway.networking.k8s.io,
+            deployment.apps,
+            kamajicontrolplane.controlplane.cluster.x-k8s.io,
+            kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io,
+            kubevirtmachinetemplate.infrastructure.cluster.x-k8s.io,
+            kubeadmconfig.bootstrap.cluster.x-k8s.io,
+            kubevirtmachine.infrastructure.cluster.x-k8s.io,
+            machine.cluster.x-k8s.io,
+            machineset.cluster.x-k8s.io,
+            machinedeployment.cluster.x-k8s.io
+
+        # Authentication to the S3 bucket
+        credentials:
+          secretContents:
+            cloud: ""
+
+        # We don't backup the persistent data, only the K8s resources
+        snapshotsEnabled: false
+
+        # Override kubectl due to Bitnami issues
+        kubectl:
+          image:
+            tag: 1.33.4
+
+  # CSI-Addons -- Used to add features such as replications to the CSI
+  csi-addons:
+    wave: "0"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "csi-addons-system"
+    repoURL: "oci://ghcr.io/super-phenix/charts/csi-addons"
+    path: "."
+    targetRevision: "0.1.0"
+    helm:
+      chart: "csi-addons"
+      releaseName: "csi-addons"
+
+  # CSI-Snapshotter -- Used to add VolumeSnapshots to the CSI
+  csi-snapshotter:
+    wave: "0"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: false
+      prune: false
+      syncOptions: {}
+    namespace: "csi-snapshotter-system"
+    repoURL: "oci://ghcr.io/super-phenix/charts/external-snapshotter"
+    path: "."
+    targetRevision: "0.1.0"
+    helm:
+      chart: "external-snapshotter"
+      releaseName: "external-snapshotter"
+
+  # Kyverno -- Used to correctly set VolumeSnapshotClass/VolumeReplicationClass (ideally removed ASAP)
+  kyverno:
+    wave: "0"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "kyverno-system"
+    repoURL: "https://kyverno.github.io/kyverno/"
+    targetRevision: "3.6.0"
+    helm:
+      chart: kyverno
+      releaseName: "kyverno"
+
+  # Snapscheduler -- Used to schedule snapshots of volumes
+  snapscheduler:
+    wave: "0"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      syncOptions: {}
+    namespace: "snapscheduler-system"
+    repoURL: "https://backube.github.io/helm-charts/"
+    targetRevision: "*"
+    helm:
+      chart: snapscheduler
+      releaseName: "snapscheduler"
+      values:
+        # Run the controller HA
+        replicaCount: 2
+
+        # Make the snapshots owned by the schedule so that they get garbage collected if the
+        # schedule is ever deleted
+        enableOwnerReferences: true
+
+
+  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # %          KaaS Controller System           %
+  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # KaaS Controller -- extra CRDs and resources for KaaS
+  kaas-controller:
+    wave: "15"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: true
+      prune: false
+      syncOptions: {}
+    namespace: "kaas-system"
+    repoURL: "oci://ghcr.io/super-phenix/charts/kaas-controller"
+    path: "."
+    targetRevision: "0.3.0"
+    helm:
+      chart: "kaas-controller"
+      releaseName: "kaas-controller"
+      values: {}
+
+  # KaaS Datastore -- Deploys etcd clusters for Kamaji controlplanes through etcd-operator
+  kaas-datastore:
+    wave: "5"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: true
+      prune: false
+      syncOptions: {}
+    namespace: "kaas-datastore-system"
+    repoURL: "oci://ghcr.io/super-phenix/charts/kaas-datastore"
+    path: "."
+    targetRevision: "0.1.1"
+    helm:
+      chart: "kaas-datastore"
+      releaseName: "kaas-datastore"
+      # No datastores are deployed by default, they must be declared in the
+      # config.yaml file for each virtualization cluster.
+      values: {}
+
+  # Kamaji -- Hosted k8s controlplanes
+  kamaji:
+    wave: "10"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: true
+      prune: false
+      syncOptions: {}
+    namespace: "kamaji-system"
+    repoURL: "xxx"
+    targetRevision: "2026.2.24"
+    helm:
+      chart: "kamaji"
+      releaseName: "kamaji"
+      values:
+        image:
+          tag: "edge-26.2.5" # https://github.com/clastix/kamaji/releases
+        replicaCount: 3
+        defaultDatastoreName: "" # Disable default DS (override in config.yaml)
+        extraArgs:
+          # 336h = 14d
+          - --certificate-expiration-deadline=336h
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 1
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: kamaji
+                  topologyKey: kubernetes.io/hostname
+        resources:
+          limits:
+            cpu: null
+            memory: null
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        # dataStores are configured in each cluster's config.yaml using the etcd-operator
+        kamaji-etcd:
+          deploy: false
+
+  # Cluster API operator -- Install providers for KaaS
+  cluster-api-operator:
+    wave: "15"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: true
+      prune: false
+      syncOptions: {}
+    namespace: "capi-operator-system"
+    repoURL: "https://kubernetes-sigs.github.io/cluster-api-operator"
+    targetRevision: "0.25.0" # https://github.com/kubernetes-sigs/cluster-api-operator/releases
+    helm:
+      chart: "cluster-api-operator"
+      releaseName: "cluster-api-operator"
+      values:
+        core:
+          cluster-api:
+            version: v1.12.3 # https://github.com/kubernetes-sigs/cluster-api/releases
+        bootstrap:
+          kubeadm:
+            version: v1.12.3 # https://github.com/kubernetes-sigs/cluster-api/releases
+        infrastructure:
+          kubevirt:
+            version: v0.11.1 # https://github.com/kubernetes-sigs/cluster-api-provider-kubevirt/releases
+        controlPlane:
+          kamaji:
+            version: v0.17.0 # https://github.com/clastix/cluster-api-control-plane-provider-kamaji/releases
+
+
+  # ETCD operator -- Deploys datastores for the controlplanes
+  etcd-operator:
+    wave: "5"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: true
+      prune: false
+      syncOptions: {}
+    namespace: "etcd-operator-system"
+    repoURL: "xxx"
+    targetRevision: "0.1.0"
+    helm:
+      chart: "etcd-operator"
+      releaseName: "etcd-operator"
+      values:
+        # https://github.com/aenix-io/etcd-operator/blob/main/charts/etcd-operator/values.yaml
+        etcdOperator:
+          vpa:
+            enabled: false
+        kubeRbacProxy:
+          vpa:
+            enabled: false
+
+  # Traefik -- Gateway API & ingress controller
+  traefik:
+    wave: "0"
+    enabled: false
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: false
+      selfHeal: true
+      prune: false
+      syncOptions: {}
+    namespace: "traefik-system"
+    nsLabels:
+      # allow hostnetwork
+      pod-security.kubernetes.io/enforce: privileged
+    repoURL: "https://traefik.github.io/charts"
+    targetRevision: "39.0.2" # https://github.com/traefik/traefik-helm-chart/releases
+    helm:
+      chart: "traefik"
+      releaseName: "traefik"
+      values:
+        gateway:
+          enabled: false
+        gatewayClass:
+          enabled: true
+          name: traefik
+        deployment:
+          enabled: true
+          kind: DaemonSet
+        ingressClass:
+          enabled: false
+        ports:
+          web:
+            port: 8000
+            expose:
+              default: false
+          # HTTPS API server
+          websecure:
+            port: 7443
+            exposedPort: 7443
+            expose:
+              default: true
+            protocol: TCP
+            http:
+              tls:
+                enabled: true
+          # TLS API server (HAProxy)
+          api-tls:
+            port: 7444
+            expose:
+              default: true
+            exposedPort: 7444
+            protocol: TCP
+            http:
+              tls:
+                enabled: true
+          # Konnectivity server
+          konnectivity:
+            port: 7442
+            exposedPort: 7442
+            expose:
+              default: true
+            protocol: TCP
+            http:
+              tls:
+                enabled: true
+          metrics:
+            port: 9101
+            exposedPort: 9101
+        service:
+          enabled: true
+          single: true
+          type: ClusterIP
+        ingressRoute:
+          dashboard:
+            enabled: false
+        api:
+          dashboard: false
+        hostNetwork: true
+        updateStrategy:
+          type: RollingUpdate
+          rollingUpdate:
+            # required for daemonset
+            maxUnavailable: 1
+            maxSurge: 0
+        providers:
+          kubernetesIngress:
+            enabled: false
+          kubernetesGateway:
+            enabled: true
+            # enable TLSRoute
+            experimentalChannel: true

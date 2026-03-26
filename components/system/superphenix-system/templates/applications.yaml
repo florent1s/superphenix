@@ -1,0 +1,93 @@
+{{ $cluster := .Values.cluster }}
+{{ $argocd := .Values.argocd }}
+{{ $disableAll := .Values.disableAll }}
+{{ $labels := include "superphenix-system.labels" . }}
+
+{{- range $app, $values := .Values.apps }}
+{{- $currentMode := $.Values.cluster.deploymentMode }}
+{{- if eq $.Values.cluster.deploymentMode "Decoupled" }}
+  {{- $currentMode = printf "%s%s" $.Values.cluster.deploymentMode $.Values.cluster.type }}
+{{- end }}
+{{- if and (eq $values.enabled true) (eq $disableAll false) (has $currentMode (default (list) $values.modes)) }}
+
+---
+apiVersion: {{ $argocd.appVersion }}
+kind: Application
+metadata:
+  name: spx-{{ $app | lower }}
+  namespace: {{ $argocd.namespace }}
+  labels: {{ $labels | nindent 4 }}
+  annotations:
+    {{- if hasKey $values "wave" }}
+    argocd.argoproj.io/sync-wave: {{ $values.wave | quote }}
+    {{- end }}
+spec:
+  project: {{ $argocd.project }}
+  source:
+    repoURL: {{ $values.repoURL | quote }}
+
+    {{- with $values.helm }}
+    {{- with .chart }}
+    chart: {{ . | quote }}
+    {{- end }}
+    {{- end }}
+
+    {{- with $values.path }}
+    path: {{ . | quote }}
+    {{- end }}
+
+    {{- with $values.directory }}
+    directory:
+      {{- with .recurse }}
+      recurse: {{ . }}
+      {{- end }}
+    {{- end }}
+
+    targetRevision: {{ $values.targetRevision | quote }}
+
+    {{- with $values.helm }}
+    helm:
+      {{- with .releaseName }}
+      releaseName: {{ . | quote }}
+      {{- end }}
+
+      {{- with .values }}
+      valuesObject:
+        {{- tpl (toYaml .) . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+  destination:
+    name: {{ $cluster.name | quote }}
+    namespace: {{ $values.namespace | quote }}
+  {{- with $values.ignoreDifferences }}
+  ignoreDifferences:
+  {{- . | toYaml | nindent 4 }}
+  {{- end }}
+  syncPolicy:
+    # Remove this check with ArgoCD 3.1
+    {{- if $values.automation.enabled }}
+    automated:
+      enabled: {{ $values.automation.enabled | default false }}
+      {{- if $values.automation.selfHeal }}
+      selfHeal: true
+      {{- end }}
+      {{- if $values.automation.prune }}
+      prune: true
+      {{- end }}
+    {{- end }}
+    syncOptions:
+      {{- if $values.automation.syncOptions }}
+      {{- toYaml $values.automation.syncOptions | nindent 6 }}
+      {{- end }}
+      - CreateNamespace=true
+      - ServerSideApply=true
+    managedNamespaceMetadata:
+      labels:
+        superphenix.net/gitops: "true"
+        {{- with $values.nsLabels }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+
+{{- end }}
+{{- end }}
+
