@@ -32,6 +32,17 @@ const (
 	// ReasonArgoCDCRDMissing is used when the ArgoCD CRDs are not installed in the cluster.
 	ReasonArgoCDCRDMissing = "ArgoCDCRDMissing"
 
+	// ConditionTypeArgoCDSynced represents the synchronization status of the cluster's ArgoCD Application.
+	ConditionTypeArgoCDSynced = "ArgoCDSynced"
+	// ReasonArgoCDSynced is used when the ArgoCD Application is synced.
+	ReasonArgoCDSynced = "ArgoCDSynced"
+	// ReasonArgoCDOutOfSync is used when the ArgoCD Application is out of sync.
+	ReasonArgoCDOutOfSync = "ArgoCDOutOfSync"
+	// ReasonArgoCDSyncFailed is used when the ArgoCD Application sync failed.
+	ReasonArgoCDSyncFailed = "ArgoCDSyncFailed"
+	// ReasonArgoCDUnknown is used when the ArgoCD Application status is unknown.
+	ReasonArgoCDUnknown = "ArgoCDUnknown"
+
 	// ConditionTypeReady represents the status when the cluster is fully operational.
 	ConditionTypeReady = "Ready"
 	// ReasonReconcileSuccess is used when the cluster is fully reconciled.
@@ -97,19 +108,26 @@ type ClusterSpec struct {
 	// +kubebuilder:validation:MinLength=1
 	AvailabilityZone string `json:"availabilityZone"`
 
-	// NetworkConfiguration is a YAML dict of unknown values that will be passed to the network configuration chart.
-	// +optional
-	NetworkConfiguration *apiextensionsv1.JSON `json:"networkConfiguration,omitempty"`
-
 	// SystemConfiguration is a YAML dict of unknown values that will be passed to the system configuration chart.
 	// +optional
 	SystemConfiguration *apiextensionsv1.JSON `json:"systemConfiguration,omitempty"`
 
+	// RepoURL is the URL of the repository where the Superphenix system chart is located.
+	// If not specified, the default value from the controller configuration is used.
+	// +optional
+	RepoURL string `json:"repoURL,omitempty"`
+
+	// ChartName is the name of the Superphenix system chart.
+	// If not specified, the default value from the controller configuration is used.
+	// +optional
+	ChartName string `json:"chartName,omitempty"`
+
 	// Version is the Superphenix version for this cluster.
 	// It must follow semantic versioning.
-	// +kubebuilder:validation:Required
+	// If not specified, the default value from the controller configuration is used.
+	// +optional
 	// +kubebuilder:validation:Pattern=`^v?([0-9]+)(\.[0-9]+)?(\.[0-9]+)?(-([0-9A-Za-z\-.]+))?(\+([0-9A-Za-z\-.]+))?$`
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
 
 	// Connection defines the parameters to connect to the remote cluster.
 	// +kubebuilder:validation:Required
@@ -166,7 +184,7 @@ type SecretReference struct {
 // ClusterStatus defines the observed state of Cluster.
 type ClusterStatus struct {
 	// Phase represents the current phase of the cluster lifecycle.
-	// +kubebuilder:validation:Enum=Deployed;Deploying;OutOfSync;Error;Paused
+	// +kubebuilder:validation:Enum=Deployed;Deploying;OutOfSync;Error;Paused;Unknown
 	// +optional
 	Phase string `json:"phase,omitempty"`
 

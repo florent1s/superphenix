@@ -60,6 +60,10 @@ config:
     values: {}
     ha:
       enabled: false
+    system:
+      repoURL: ghcr.io/super-phenix/charts/superphenix-system
+      chartName: superphenix-system
+      version: 0.0.0-latest
 
 # Metrics and Health
 metrics:

@@ -71,6 +71,11 @@ spec:
                   within the region.
                 minLength: 1
                 type: string
+              chartName:
+                description: |-
+                  ChartName is the name of the Superphenix system chart.
+                  If not specified, the default value from the controller configuration is used.
+                type: string
               connection:
                 description: Connection defines the parameters to connect to the remote
                   cluster.
@@ -116,10 +121,6 @@ spec:
                 description: DeploymentMode defines whether the cluster is hyperconverged
                   or decoupled.
                 type: string
-              networkConfiguration:
-                description: NetworkConfiguration is a YAML dict of unknown values
-                  that will be passed to the network configuration chart.
-                x-kubernetes-preserve-unknown-fields: true
               pauseSync:
                 default: false
                 description: |-
@@ -130,6 +131,11 @@ spec:
                 description: Region is the geographic region where this cluster is
                   located.
                 minLength: 1
+                type: string
+              repoURL:
+                description: |-
+                  RepoURL is the URL of the repository where the Superphenix system chart is located.
+                  If not specified, the default value from the controller configuration is used.
                 type: string
               systemConfiguration:
                 description: SystemConfiguration is a YAML dict of unknown values
@@ -147,6 +153,7 @@ spec:
                 description: |-
                   Version is the Superphenix version for this cluster.
                   It must follow semantic versioning.
+                  If not specified, the default value from the controller configuration is used.
                 pattern: ^v?([0-9]+)(\.[0-9]+)?(\.[0-9]+)?(-([0-9A-Za-z\-.]+))?(\+([0-9A-Za-z\-.]+))?$
                 type: string
             required:
@@ -154,7 +161,6 @@ spec:
             - connection
             - deploymentMode
             - region
-            - version
             type: object
           status:
             description: Status defines the observed state of Cluster.
@@ -244,6 +250,7 @@ spec:
                 - OutOfSync
                 - Error
                 - Paused
+                - Unknown
                 type: string
             type: object
         required:

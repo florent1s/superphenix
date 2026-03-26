@@ -50,6 +50,9 @@ type Reconciler struct {
 	client.Client
 	Scheme            *runtime.Scheme
 	OperatorNamespace string
+	DefaultRepoURL    string
+	DefaultChartName  string
+	DefaultVersion    string
 }
 
 // SetupWithManager sets up the controller with the Manager.

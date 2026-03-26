@@ -97,11 +97,6 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(ClusterType)
 		**out = **in
 	}
-	if in.NetworkConfiguration != nil {
-		in, out := &in.NetworkConfiguration, &out.NetworkConfiguration
-		*out = new(v1.JSON)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.SystemConfiguration != nil {
 		in, out := &in.SystemConfiguration, &out.SystemConfiguration
 		*out = new(v1.JSON)

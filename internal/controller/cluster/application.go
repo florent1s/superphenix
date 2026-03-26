@@ -2,6 +2,9 @@ package cluster
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"maps"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -38,7 +41,52 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 	}
 
 	log.Info("Successfully reconciled ArgoCD Application", "Application.Name", app.GetName())
+
+	// Propagate ArgoCD Application status to Cluster status
+	r.propagateApplicationStatus(ctx, cluster, app)
+
 	return nil
+}
+
+// propagateApplicationStatus propagates the ArgoCD Application status to the Cluster status.
+func (r *Reconciler) propagateApplicationStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, app *unstructured.Unstructured) {
+	healthStatus, _, _ := unstructured.NestedString(app.Object, "status", "health", "status")
+	syncStatus, _, _ := unstructured.NestedString(app.Object, "status", "sync", "status")
+
+	var status metav1.ConditionStatus
+	var reason string
+	var message string
+	var phase string
+
+	switch syncStatus {
+	case "Synced":
+		status = metav1.ConditionTrue
+		reason = operatorv1alpha1.ReasonArgoCDSynced
+		message = "ArgoCD Application is synced"
+		phase = "Deployed"
+	case "OutOfSync":
+		status = metav1.ConditionFalse
+		reason = operatorv1alpha1.ReasonArgoCDOutOfSync
+		message = "ArgoCD Application is out of sync"
+		phase = "OutOfSync"
+	case "Unknown":
+		status = metav1.ConditionUnknown
+		reason = operatorv1alpha1.ReasonArgoCDUnknown
+		message = "ArgoCD Application status is unknown"
+		phase = "Unknown"
+	default:
+		status = metav1.ConditionFalse
+		reason = operatorv1alpha1.ReasonArgoCDSyncFailed
+		message = fmt.Sprintf("ArgoCD Application sync status: %s", syncStatus)
+		phase = "Error"
+	}
+
+	if healthStatus == "Degraded" {
+		phase = "Error"
+		message = fmt.Sprintf("%s (Health: %s)", message, healthStatus)
+	}
+
+	r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeArgoCDSynced, status, reason, message, phase)
 }
 
 // initApplication creates the template of the cluster application.
@@ -75,12 +123,27 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 		destName = "in-cluster"
 	}
 
+	repoURL := r.DefaultRepoURL
+	if cluster.Spec.RepoURL != "" {
+		repoURL = cluster.Spec.RepoURL
+	}
+
+	chartName := r.DefaultChartName
+	if cluster.Spec.ChartName != "" {
+		chartName = cluster.Spec.ChartName
+	}
+
+	targetRevision := r.DefaultVersion
+	if cluster.Spec.Version != "" {
+		targetRevision = cluster.Spec.Version
+	}
+
 	return map[string]interface{}{
 		"project": cluster.Name,
 		"source": map[string]interface{}{
-			"repoURL":        "git@github.com:super-phenix/superphenix.git",
-			"path":           "components/system/superphenix-system",
-			"targetRevision": "HEAD",
+			"repoURL":        repoURL,
+			"chart":          chartName,
+			"targetRevision": targetRevision,
 			"helm": map[string]interface{}{
 				"valuesObject": r.generateApplicationValues(cluster),
 			},
@@ -105,5 +168,31 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 
 // generateApplicationValues generates the values for the cluster application Helm chart.
 func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster) map[string]interface{} {
-	return map[string]interface{}{}
+	values := map[string]interface{}{
+		"cluster": map[string]interface{}{
+			"name":             cluster.Name,
+			"region":           cluster.Spec.Region,
+			"availabilityZone": cluster.Spec.AvailabilityZone,
+			"deploymentMode":   string(cluster.Spec.DeploymentMode),
+		},
+	}
+
+	if cluster.Spec.Type != nil {
+		values["cluster"].(map[string]interface{})["type"] = string(*cluster.Spec.Type)
+	}
+
+	version := r.DefaultVersion
+	if cluster.Spec.Version != "" {
+		version = cluster.Spec.Version
+	}
+	values["cluster"].(map[string]interface{})["version"] = version
+
+	if cluster.Spec.SystemConfiguration != nil {
+		var systemConfig map[string]interface{}
+		if err := json.Unmarshal(cluster.Spec.SystemConfiguration.Raw, &systemConfig); err == nil {
+			maps.Copy(values, systemConfig)
+		}
+	}
+
+	return values
 }

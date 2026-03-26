@@ -55,6 +55,9 @@ func main() {
 	var argocdDefaultConfig string
 	var argocdHAConfig string
 	var haEnabled bool
+	var defaultRepoURL string
+	var defaultChartName string
+	var defaultVersion string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -78,6 +81,9 @@ func main() {
 	flag.StringVar(&argocdDefaultConfig, "argocd-default-config", "/etc/superphenix/argocd/default/values.yaml", "Path to the default ArgoCD configuration file")
 	flag.StringVar(&argocdHAConfig, "argocd-ha-config", "/etc/superphenix/argocd/ha/values.yaml", "Path to the HA ArgoCD configuration file")
 	flag.BoolVar(&haEnabled, "ha-enabled", false, "Whether to enable HA for ArgoCD")
+	flag.StringVar(&defaultRepoURL, "default-repo-url", "git@github.com:super-phenix/superphenix.git", "The default repository URL for the Superphenix system chart")
+	flag.StringVar(&defaultChartName, "default-chart-name", "superphenix-system", "The default chart name for the Superphenix system chart")
+	flag.StringVar(&defaultVersion, "default-version", "v0.0.1", "The default version for the Superphenix system chart")
 	flag.StringVar(&operatorNamespace, "operator-namespace", os.Getenv("OPERATOR_NAMESPACE"), "The namespace where the operator is deployed")
 	flag.BoolVar(&isManagementCluster, "is-management-cluster", false, "Whether this operator is running on a management cluster and should reconcile management components")
 	opts := zap.Options{
@@ -183,6 +189,9 @@ func main() {
 		Client:            mgr.GetClient(),
 		Scheme:            mgr.GetScheme(),
 		OperatorNamespace: operatorNamespace,
+		DefaultRepoURL:    defaultRepoURL,
+		DefaultChartName:  defaultChartName,
+		DefaultVersion:    defaultVersion,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "Cluster")
 		os.Exit(1)

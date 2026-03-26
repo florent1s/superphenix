@@ -10,12 +10,14 @@ spec:
   deploymentMode: Hyperconverged
   region: us-east-1
   availabilityZone: us-east-1a
-  networkConfiguration:
-    mtu: 1500
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
+  version: v1.0.0
+  chartName: superphenix-system
   systemConfiguration:
+    network:
+      mtu: 1500
+      dns:
+        - 8.8.8.8
+        - 1.1.1.1
     timezone: UTC
     ntp:
       - pool.ntp.org

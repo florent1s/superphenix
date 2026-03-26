@@ -43,6 +43,9 @@ spec:
             - --operator-namespace=$(OPERATOR_NAMESPACE)
             - --argocd-default-config=/etc/superphenix/argocd/default/values.yaml
             - --argocd-ha-config=/etc/superphenix/argocd/ha/values.yaml
+            - --default-repo-url={{ .Values.config.argocd.system.repoURL }}
+            - --default-chart-name={{ .Values.config.argocd.system.chartName }}
+            - --default-version={{ .Values.config.argocd.system.version }}
             {{- if .Values.config.argocd.ha.enabled }}
             - --ha-enabled=true
             {{- end }}
