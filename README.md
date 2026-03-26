@@ -2,13 +2,13 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/SPX_white.svg">
     <source media="(prefers-color-scheme: light)" srcset="assets/SPX_black.svg">
-    <img alt="Zensical" src="assets/SPX_white.svg" width="350" height="200">
+    <img alt="Superphenix" src="assets/SPX_white.svg" width="350" height="200">
   </picture>
 </p>
 
 <p align="center">
   <strong>
-    Full cloud infrastructure on Kubernetes. Run VMs, networking, storage, and automation as declarative, GitOps-driven systems—all on a standard Kubernetes control plane.
+    An Opensource IaaS/PaaS/SaaS platform based on Kubernetes. Build your own cloud provider wherever you want.
   </strong>
 </p>
 
