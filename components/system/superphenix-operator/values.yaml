@@ -61,7 +61,7 @@ config:
     ha:
       enabled: false
     system:
-      repoURL: ghcr.io/super-phenix/charts/superphenix-system
+      repoURL: ghcr.io/super-phenix/charts
       chartName: superphenix-system
       version: 0.0.0-latest
 

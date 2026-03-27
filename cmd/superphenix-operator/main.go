@@ -81,9 +81,9 @@ func main() {
 	flag.StringVar(&argocdDefaultConfig, "argocd-default-config", "/etc/superphenix/argocd/default/values.yaml", "Path to the default ArgoCD configuration file")
 	flag.StringVar(&argocdHAConfig, "argocd-ha-config", "/etc/superphenix/argocd/ha/values.yaml", "Path to the HA ArgoCD configuration file")
 	flag.BoolVar(&haEnabled, "ha-enabled", false, "Whether to enable HA for ArgoCD")
-	flag.StringVar(&defaultRepoURL, "default-repo-url", "git@github.com:super-phenix/superphenix.git", "The default repository URL for the Superphenix system chart")
+	flag.StringVar(&defaultRepoURL, "default-repo-url", "ghcr.io/super-phenix/charts/superphenix-system", "The default repository URL for the Superphenix system chart")
 	flag.StringVar(&defaultChartName, "default-chart-name", "superphenix-system", "The default chart name for the Superphenix system chart")
-	flag.StringVar(&defaultVersion, "default-version", "v0.0.1", "The default version for the Superphenix system chart")
+	flag.StringVar(&defaultVersion, "default-version", "0.0.0-latest", "The default version for the Superphenix system chart")
 	flag.StringVar(&operatorNamespace, "operator-namespace", os.Getenv("OPERATOR_NAMESPACE"), "The namespace where the operator is deployed")
 	flag.BoolVar(&isManagementCluster, "is-management-cluster", false, "Whether this operator is running on a management cluster and should reconcile management components")
 	opts := zap.Options{

@@ -15,9 +15,10 @@ var (
 	// supportedPreviousVersions maps the target version to a semver constraint for the previous version.
 	// For example, to upgrade to "1.1.0", the current version might need to be ">= 1.0.0".
 	supportedPreviousVersions = map[string]string{
-		"1.1.0": ">= 1.0.0",
-		"1.2.0": ">= 1.1.0",
-		"2.0.0": ">= 1.2.0",
+		"0.0.0-latest": ">= 0.0.0",
+		"1.1.0":        ">= 1.0.0",
+		"1.2.0":        ">= 1.1.0",
+		"2.0.0":        ">= 1.2.0",
 	}
 )
 
