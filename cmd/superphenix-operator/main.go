@@ -48,13 +48,15 @@ func main() {
 	var enableHTTP2 bool
 	var argocdChartURL string
 	var argocdChartVersion string
-	var argocdValuesConfigMapName string
+	var valuesConfigMapName string
 	var isManagementCluster bool
 	var operatorNamespace string
 	var tlsOpts []func(*tls.Config)
 	var argocdDefaultConfig string
 	var argocdHAConfig string
 	var haEnabled bool
+	var managementChartURL string
+	var managementChartVersion string
 	var defaultRepoURL string
 	var defaultChartName string
 	var defaultVersion string
@@ -77,10 +79,12 @@ func main() {
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
 	flag.StringVar(&argocdChartURL, "argocd-chart-url", "https://argoproj.github.io/argo-helm", "The URL of the ArgoCD chart repository")
 	flag.StringVar(&argocdChartVersion, "argocd-chart-version", "9.4.17", "The version of the ArgoCD chart")
-	flag.StringVar(&argocdValuesConfigMapName, "argocd-values-configmap-name", "superphenix-mgmt-argocd-config", "The name of the ConfigMap containing ArgoCD values")
+	flag.StringVar(&valuesConfigMapName, "values-configmap-name", "superphenix-mgmt-values", "The name of the general management ConfigMap holding Helm values for each component under dedicated sub-keys")
 	flag.StringVar(&argocdDefaultConfig, "argocd-default-config", "/etc/superphenix/argocd/default/values.yaml", "Path to the default ArgoCD configuration file")
 	flag.StringVar(&argocdHAConfig, "argocd-ha-config", "/etc/superphenix/argocd/ha/values.yaml", "Path to the HA ArgoCD configuration file")
 	flag.BoolVar(&haEnabled, "ha-enabled", false, "Whether to enable HA for ArgoCD")
+	flag.StringVar(&managementChartURL, "management-chart-url", "ghcr.io/super-phenix/charts", "The OCI registry URL for the superphenix-management chart")
+	flag.StringVar(&managementChartVersion, "management-chart-version", "0.0.0-latest", "The version of the superphenix-management chart")
 	flag.StringVar(&defaultRepoURL, "default-repo-url", "ghcr.io/super-phenix/charts/superphenix-system", "The default repository URL for the Superphenix system chart")
 	flag.StringVar(&defaultChartName, "default-chart-name", "superphenix-system", "The default chart name for the Superphenix system chart")
 	flag.StringVar(&defaultVersion, "default-version", "0.0.0-latest", "The default version for the Superphenix system chart")
@@ -200,16 +204,18 @@ func main() {
 	if isManagementCluster {
 		setupLog.Info("Setting up management components reconciler")
 		if err := (&management.Reconciler{
-			Client:                    mgr.GetClient(),
-			Scheme:                    mgr.GetScheme(),
-			Config:                    mgr.GetConfig(),
-			ArgoCDChartURL:            argocdChartURL,
-			ArgoCDChartVersion:        argocdChartVersion,
-			OperatorNamespace:         operatorNamespace,
-			ArgoCDValuesConfigMapName: argocdValuesConfigMapName,
-			ArgoCDDefaultConfig:       argocdDefaultConfig,
-			ArgoCDHAConfig:            argocdHAConfig,
-			HAEnabled:                 haEnabled,
+			Client:                  mgr.GetClient(),
+			Scheme:                  mgr.GetScheme(),
+			Config:                  mgr.GetConfig(),
+			OperatorNamespace:       operatorNamespace,
+			ValuesConfigMapName:     valuesConfigMapName,
+			HAEnabled:               haEnabled,
+			ArgoCDChartURL:          argocdChartURL,
+			ArgoCDChartVersion:      argocdChartVersion,
+			ArgoCDDefaultConfig:     argocdDefaultConfig,
+			ArgoCDHAConfig:          argocdHAConfig,
+			ManagementChartURL:      managementChartURL,
+			ManagementChartVersion:  managementChartVersion,
 		}).SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "Failed to create management controller")
 			os.Exit(1)
