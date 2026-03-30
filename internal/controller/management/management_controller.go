@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
 	corev1 "k8s.io/api/core/v1"
@@ -22,7 +23,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -42,19 +42,27 @@ type Reconciler struct {
 	ArgoCDChartURL            string
 	ArgoCDChartVersion        string
 	ArgoCDValuesConfigMapName string
-	OperatorNamespace         string
 	ArgoCDDefaultConfig       string
 	ArgoCDHAConfig            string
+	OperatorNamespace         string
 	HAEnabled                 bool
 }
 
-// Reconcile handles the reconciliation of management components on the management cluster.
-// It will handle the lifecycle of the entire management stack (ArgoCD, Console, API...)
+// SetupWithManager registers the controller with the Manager, watching only the ArgoCD values ConfigMap.
+func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return builder.ControllerManagedBy(mgr).
+		Named("management-controller").
+		For(&corev1.ConfigMap{}, builder.WithPredicates(r.configMapPredicate())).
+		Complete(r)
+}
+
+// Reconcile bootstraps and maintains the management stack (ArgoCD, Console, API...).
+// It is triggered by changes to the ArgoCD values ConfigMap and re-enqueues periodically as a safety net.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	log := logf.FromContext(ctx)
 
-	// If a specific request is received, it should be for our ConfigMap
-	if req.Name != "" && (req.Name != r.ArgoCDValuesConfigMapName || req.Namespace != r.OperatorNamespace) {
+	// Ignore useless events for ConfigMaps other than the one we watch.
+	if req.Name != "" && !r.isTargetConfigMap(req.Name, req.Namespace) {
 		return reconcile.Result{}, nil
 	}
 
@@ -64,65 +72,44 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
 	}
 
-	// Requeue periodically as a safety measure, even if no ConfigMap changes
 	return reconcile.Result{RequeueAfter: 10 * time.Minute}, nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
-	b := builder.ControllerManagedBy(mgr).
-		Named("management-controller")
-
-	if r.ArgoCDValuesConfigMapName != "" && r.OperatorNamespace != "" {
-		b = b.Watches(
-			&corev1.ConfigMap{},
-			handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, obj client.Object) []reconcile.Request {
-				if obj.GetName() == r.ArgoCDValuesConfigMapName && obj.GetNamespace() == r.OperatorNamespace {
-					return []reconcile.Request{{NamespacedName: types.NamespacedName{
-						Name:      obj.GetName(),
-						Namespace: obj.GetNamespace(),
-					}}}
-				}
-				return nil
-			}),
-		)
-	}
-
-	return b.For(&corev1.ConfigMap{}, builder.WithPredicates(r.configMapPredicate())).
-		Complete(r)
+// isTargetConfigMap reports whether the given name and namespace identify the watched ArgoCD values ConfigMap.
+func (r *Reconciler) isTargetConfigMap(name, namespace string) bool {
+	return name == r.ArgoCDValuesConfigMapName && namespace == r.OperatorNamespace
 }
 
+// configMapPredicate limits reconciliation events to the ArgoCD values ConfigMap.
 func (r *Reconciler) configMapPredicate() predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			return e.ObjectNew.GetName() == r.ArgoCDValuesConfigMapName && e.ObjectNew.GetNamespace() == r.OperatorNamespace
+			return r.isTargetConfigMap(e.ObjectNew.GetName(), e.ObjectNew.GetNamespace())
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
-			return e.Object.GetName() == r.ArgoCDValuesConfigMapName && e.Object.GetNamespace() == r.OperatorNamespace
+			return r.isTargetConfigMap(e.Object.GetName(), e.Object.GetNamespace())
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
-			return e.Object.GetName() == r.ArgoCDValuesConfigMapName && e.Object.GetNamespace() == r.OperatorNamespace
+			return r.isTargetConfigMap(e.Object.GetName(), e.Object.GetNamespace())
 		},
 		GenericFunc: func(e event.GenericEvent) bool {
-			return e.Object.GetName() == r.ArgoCDValuesConfigMapName && e.Object.GetNamespace() == r.OperatorNamespace
+			return r.isTargetConfigMap(e.Object.GetName(), e.Object.GetNamespace())
 		},
 	}
 }
 
-// reconcileManagementArgoCD will deploy the management ArgoCD that will bootstrap the rest of the stack.
-// It performs an initial default Helm installation, then creates an ArgoCD Application to manage ArgoCD itself.
-// We want ArgoCD to manage itself as much as possible and handle its lifecycle through ArgoCD applications.
+// reconcileManagementArgoCD deploys the management ArgoCD instance that bootstraps the rest of the stack.
+// It resolves the chicken-and-egg problem: first a plain Helm install gets ArgoCD running,
+// then an ArgoCD Application hands its lifecycle back to ArgoCD itself.
 func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
-	// Install ArgoCD through Helm. We want ArgoCD to manage itself, but the chicken-and-egg problem
-	// forces us to do a manual installation of ArgoCD before we can do that.
+	// Failures here are non-fatal: ArgoCD may already be running or managed by other means.
 	if err := r.ensureInitialHelmInstall(ctx); err != nil {
-		log.Error(err, "Initial Helm install failed")
-		// We continue anyway, the application might already be self-managed or managed otherwise
+		log.Error(err, "Initial Helm install failed, continuing")
 	}
 
-	// Create or update the ArgoCD Application to manage ArgoCD itself
+	// Give back control to ArgoCD itself.
 	if err := r.ensureArgoCDSelfManaged(ctx); err != nil {
 		return fmt.Errorf("failed to ensure ArgoCD is self-managed: %w", err)
 	}
@@ -131,115 +118,97 @@ func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	return nil
 }
 
-func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
-	log := logf.FromContext(ctx)
-
-	// We use a local Helm settings instance to avoid side effects and ensure
-	// we use a writable directory for the repository cache and configuration.
-	helmSettings := cli.New()
-
-	// Use the controller's REST config if available
-	if r.Config != nil {
-		// cli.EnvSettings doesn't have a direct way to set rest.Config,
-		// but we can use action.Configuration.Init which takes a RESTClientGetter.
-		// For the initial LocateChart, it uses helmSettings.RESTClientGetter().
-		// We'll create a simple RESTClientGetter that returns our config.
-		helmSettings.KubeConfig = "" // Ensure it doesn't try to load from a file
-	}
-
-	// Ensure Helm can write its index files in a containerized environment
-	// by pointing the repository cache and config to a temporary directory.
+// setupHelmEnvironment creates a temporary directory for Helm's cache, config, and data,
+// exports the required environment variables, and returns a configured EnvSettings.
+// The returned cleanup function must be deferred by the caller to restore the environment.
+func setupHelmEnvironment() (*cli.EnvSettings, func(), error) {
 	tmpDir, err := os.MkdirTemp("", "superphenix-helm-*")
 	if err != nil {
-		return fmt.Errorf("failed to create temporary directory for Helm: %w", err)
-	}
-	defer os.RemoveAll(tmpDir)
-
-	// Set environment variables to ensure Helm honors these paths
-	os.Setenv("HELM_CACHE_HOME", filepath.Join(tmpDir, "cache"))
-	os.Setenv("HELM_CONFIG_HOME", filepath.Join(tmpDir, "config"))
-	os.Setenv("HELM_DATA_HOME", filepath.Join(tmpDir, "data"))
-	defer os.Unsetenv("HELM_CACHE_HOME")
-	defer os.Unsetenv("HELM_CONFIG_HOME")
-	defer os.Unsetenv("HELM_DATA_HOME")
-
-	helmSettings.RepositoryCache = filepath.Join(tmpDir, "cache", "repository")
-	helmSettings.RepositoryConfig = filepath.Join(tmpDir, "config", "repositories.yaml")
-	if err := os.MkdirAll(helmSettings.RepositoryCache, 0755); err != nil {
-		return fmt.Errorf("failed to create repository cache directory: %w", err)
-	}
-	if err := os.MkdirAll(filepath.Join(tmpDir, "config"), 0755); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
-	}
-	if err := os.MkdirAll(filepath.Join(tmpDir, "data"), 0755); err != nil {
-		return fmt.Errorf("failed to create data directory: %w", err)
+		return nil, nil, fmt.Errorf("failed to create temporary directory for Helm: %w", err)
 	}
 
-	// In tests, helmSettings.RESTClientGetter() might not be fully functional
-	// depending on the envtest configuration.
+	cacheDir := filepath.Join(tmpDir, "cache")
+	configDir := filepath.Join(tmpDir, "config")
+	dataDir := filepath.Join(tmpDir, "data")
+
+	for _, dir := range []string{filepath.Join(cacheDir, "repository"), configDir, dataDir} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			os.RemoveAll(tmpDir)
+			return nil, nil, fmt.Errorf("failed to create Helm directory %s: %w", dir, err)
+		}
+	}
+
+	os.Setenv("HELM_CACHE_HOME", cacheDir)
+	os.Setenv("HELM_CONFIG_HOME", configDir)
+	os.Setenv("HELM_DATA_HOME", dataDir)
+
+	helmSettings := cli.New()
+	helmSettings.KubeConfig = "" // Use in-cluster config; never load from a kubeconfig file.
+	helmSettings.RepositoryCache = filepath.Join(cacheDir, "repository")
+	helmSettings.RepositoryConfig = filepath.Join(configDir, "repositories.yaml")
+
+	cleanup := func() {
+		os.Unsetenv("HELM_CACHE_HOME")
+		os.Unsetenv("HELM_CONFIG_HOME")
+		os.Unsetenv("HELM_DATA_HOME")
+		os.RemoveAll(tmpDir)
+	}
+
+	return helmSettings, cleanup, nil
+}
+
+// initHelmActionConfig initialises a Helm action.Configuration for the operator namespace.
+// Returns (nil, nil) when the RESTClientGetter is unavailable (e.g. in envtest).
+func (r *Reconciler) initHelmActionConfig(ctx context.Context, helmSettings *cli.EnvSettings) (*action.Configuration, error) {
+	log := logf.FromContext(ctx)
+
 	restGetter := helmSettings.RESTClientGetter()
 	if restGetter == nil {
-		log.Info("Skipping Helm install as RESTClientGetter is nil (likely in test)")
-		return nil
+		log.Info("RESTClientGetter is nil, skipping Helm action config init (likely in test)")
+		return nil, nil
 	}
 
 	actionConfig := new(action.Configuration)
 	if err := actionConfig.Init(restGetter, r.OperatorNamespace, "secret", func(format string, v ...interface{}) {
 		log.Info(fmt.Sprintf(format, v...))
 	}); err != nil {
-		return fmt.Errorf("failed to initialize Helm action configuration: %w", err)
+		return nil, fmt.Errorf("failed to initialize Helm action configuration: %w", err)
 	}
 
-	// Check if already installed
-	histClient := action.NewHistory(actionConfig)
-	histClient.Max = 1
-	if _, err := histClient.Run(ManagementArgoCDName); err == nil {
-		log.Info("ArgoCD Helm release for ArgoCD management already exists, skipping initial install")
-		return nil
-	}
+	return actionConfig, nil
+}
 
-	// Double check namespace exists and is cached
-	// Sometimes there's a race between namespace creation and Helm install
-	_, err = restGetter.ToRESTConfig()
+// isHelmReleaseInstalled reports whether a Helm release with the given name is already deployed.
+func isHelmReleaseInstalled(actionConfig *action.Configuration, releaseName string) bool {
+	hist := action.NewHistory(actionConfig)
+	hist.Max = 1
+	_, err := hist.Run(releaseName)
+	return err == nil
+}
+
+// locateAndLoadArgoCDChart resolves, downloads, and loads the argo-cd Helm chart into memory.
+func locateAndLoadArgoCDChart(clientInstall *action.Install, helmSettings *cli.EnvSettings) (*chart.Chart, error) {
+	cp, err := clientInstall.ChartPathOptions.LocateChart("argo-cd", helmSettings)
 	if err != nil {
-		return fmt.Errorf("failed to get REST config: %w", err)
+		return nil, fmt.Errorf("failed to locate ArgoCD chart: %w", err)
 	}
 
-	// Performing initial default ArgoCD Helm install
-	log.Info("Performing initial default ArgoCD Helm install")
-
-	clientInstall := action.NewInstall(actionConfig)
-	clientInstall.ReleaseName = ManagementArgoCDName
-	clientInstall.Namespace = r.OperatorNamespace
-	clientInstall.RepoURL = r.ArgoCDChartURL
-	clientInstall.Version = r.ArgoCDChartVersion
-	clientInstall.Wait = false
-	clientInstall.CreateNamespace = false // We already created it
-
-	chartName := "argo-cd"
-
-	log.Info("Installing ArgoCD Helm chart", "Chart", chartName, "Version", r.ArgoCDChartVersion, helmSettings.RepositoryCache, helmSettings.RepositoryConfig)
-
-	// Use LocateChart to find and download the chart.
-	// Since RepoURL and Version are set in clientInstall, LocateChart will use them.
-	cp, err := clientInstall.ChartPathOptions.LocateChart(chartName, helmSettings)
+	ch, err := loader.Load(cp)
 	if err != nil {
-		return fmt.Errorf("failed to locate ArgoCD chart: %w", err)
+		return nil, fmt.Errorf("failed to load ArgoCD chart: %w", err)
 	}
 
-	chart, err := loader.Load(cp)
-	if err != nil {
-		return fmt.Errorf("failed to load ArgoCD chart: %w", err)
-	}
+	return ch, nil
+}
 
-	// Install with no particular configuration (empty values)
-	_, err = clientInstall.Run(chart, nil)
-	if err != nil {
-		// Helm is notoriously flaky in envtest regarding namespace visibility.
-		// If we are in a test environment (detected by missing RESTClientGetter or similar)
-		// we can be more lenient, but here we'll just check if the error is about namespace not found.
+// runHelmInstall executes the Helm install for the given chart.
+// Namespace-not-found errors are silenced because they are a known envtest limitation.
+func runHelmInstall(ctx context.Context, clientInstall *action.Install, ch *chart.Chart) error {
+	log := logf.FromContext(ctx)
+
+	if _, err := clientInstall.Run(ch, nil); err != nil {
 		if strings.Contains(err.Error(), "namespaces") && strings.Contains(err.Error(), "not found") {
-			log.Info("Helm failed to find namespace, but it should exist. This is likely an envtest limitation. Skipping initial install.")
+			log.Info("Namespace not found during Helm install; treating as envtest limitation and skipping")
 			return nil
 		}
 		return fmt.Errorf("failed to install initial ArgoCD Helm chart: %w", err)
@@ -248,15 +217,51 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 	return nil
 }
 
-func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
+// ensureInitialHelmInstall performs a one-time default Helm install of ArgoCD.
+// This is idempotent: it is a no-op when the release already exists.
+func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
-	vals, err := r.mergeArgoCDValues(ctx)
+	helmSettings, cleanup, err := setupHelmEnvironment()
 	if err != nil {
-		return fmt.Errorf("failed to merge ArgoCD values: %w", err)
+		return err
+	}
+	defer cleanup()
+
+	actionConfig, err := r.initHelmActionConfig(ctx, helmSettings)
+	if err != nil {
+		return err
+	}
+	if actionConfig == nil {
+		return nil
 	}
 
-	app := &unstructured.Unstructured{
+	if isHelmReleaseInstalled(actionConfig, ManagementArgoCDName) {
+		log.Info("ArgoCD Helm release already exists, skipping initial install")
+		return nil
+	}
+
+	log.Info("Performing initial ArgoCD Helm install", "chart", "argo-cd", "version", r.ArgoCDChartVersion)
+
+	clientInstall := action.NewInstall(actionConfig)
+	clientInstall.ReleaseName = ManagementArgoCDName
+	clientInstall.Namespace = r.OperatorNamespace
+	clientInstall.RepoURL = r.ArgoCDChartURL
+	clientInstall.Version = r.ArgoCDChartVersion
+	clientInstall.Wait = false
+	clientInstall.CreateNamespace = false
+
+	ch, err := locateAndLoadArgoCDChart(clientInstall, helmSettings)
+	if err != nil {
+		return err
+	}
+
+	return runHelmInstall(ctx, clientInstall, ch)
+}
+
+// buildArgoCDApplication constructs the ArgoCD Application manifest that configures ArgoCD to manage itself.
+func (r *Reconciler) buildArgoCDApplication(vals map[string]interface{}) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "argoproj.io/v1alpha1",
 			"kind":       "Application",
@@ -275,7 +280,7 @@ func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
 					},
 				},
 				"destination": map[string]interface{}{
-					"server":    "https://kubernetes.default.svc",
+					"name":      "in-cluster",
 					"namespace": r.OperatorNamespace,
 				},
 				"syncPolicy": map[string]interface{}{
@@ -287,30 +292,33 @@ func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
 			},
 		},
 	}
+}
 
-	// We first check if the Application already exists. If it doesn't, we create it, otherwise we update it.
-	existingApp := &unstructured.Unstructured{}
-	existingApp.SetGroupVersionKind(schema.GroupVersionKind{
+// createOrUpdateArgoCDApplication creates the ArgoCD Application if it does not exist, or updates it otherwise.
+func (r *Reconciler) createOrUpdateArgoCDApplication(ctx context.Context, app *unstructured.Unstructured) error {
+	log := logf.FromContext(ctx)
+
+	existing := &unstructured.Unstructured{}
+	existing.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "argoproj.io",
 		Version: "v1alpha1",
 		Kind:    "Application",
 	})
 
-	err = r.Get(ctx, types.NamespacedName{Name: ManagementArgoCDName, Namespace: r.OperatorNamespace}, existingApp)
+	err := r.Get(ctx, types.NamespacedName{Name: ManagementArgoCDName, Namespace: r.OperatorNamespace}, existing)
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			log.Info("Creating ArgoCD Application for self-management")
-			if err := r.Create(ctx, app); err != nil {
-				return fmt.Errorf("failed to create ArgoCD Application: %w", err)
-			}
-			return nil
+		if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to get ArgoCD Application: %w", err)
 		}
-		return fmt.Errorf("failed to get ArgoCD Application: %w", err)
+		log.Info("Creating ArgoCD Application for self-management")
+		if err := r.Create(ctx, app); err != nil {
+			return fmt.Errorf("failed to create ArgoCD Application: %w", err)
+		}
+		return nil
 	}
 
-	// Update an existing application
 	log.Info("Updating ArgoCD Application for self-management")
-	app.SetResourceVersion(existingApp.GetResourceVersion())
+	app.SetResourceVersion(existing.GetResourceVersion())
 	if err := r.Update(ctx, app); err != nil {
 		return fmt.Errorf("failed to update ArgoCD Application: %w", err)
 	}
@@ -318,98 +326,123 @@ func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
 	return nil
 }
 
-// mapDeepMerge merges two maps, with the source taking precedence over the destination.
-// If a value is nil (null in YAML), the destination key is dropped entirely.
-func mapDeepMerge(destination, source map[string]interface{}) {
-	for key, value := range source {
-		// Drop keys (in YAML, null means we want the value gone, especially in Helm chart values)
+// ensureArgoCDSelfManaged creates or updates the ArgoCD Application that hands ArgoCD's lifecycle to itself.
+func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
+	vals, err := r.mergeArgoCDValues(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to merge ArgoCD values: %w", err)
+	}
+
+	app := r.buildArgoCDApplication(vals)
+	return r.createOrUpdateArgoCDApplication(ctx, app)
+}
+
+// loadYAMLFileValues reads the YAML file at path and unmarshals it into a map.
+// Returns (nil, false, nil) when the file does not exist.
+func loadYAMLFileValues(path string) (map[string]interface{}, bool, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, false, nil
+		}
+		return nil, false, fmt.Errorf("failed to read file %s: %w", path, err)
+	}
+
+	vals := make(map[string]interface{})
+	if err := yaml.Unmarshal(data, &vals); err != nil {
+		return nil, false, fmt.Errorf("failed to unmarshal YAML from %s: %w", path, err)
+	}
+
+	return vals, true, nil
+}
+
+// loadConfigMapValues fetches the ArgoCD values ConfigMap and deep-merges the "values" key into dst.
+func (r *Reconciler) loadConfigMapValues(ctx context.Context, dst map[string]interface{}) error {
+	log := logf.FromContext(ctx)
+
+	cm := &corev1.ConfigMap{}
+	err := r.Get(ctx, types.NamespacedName{Name: r.ArgoCDValuesConfigMapName, Namespace: r.OperatorNamespace}, cm)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			log.Info("ArgoCD values ConfigMap not found, using defaults only",
+				"name", r.ArgoCDValuesConfigMapName,
+				"namespace", r.OperatorNamespace)
+			return nil
+		}
+		return fmt.Errorf("failed to get ArgoCD values ConfigMap: %w", err)
+	}
+
+	data, ok := cm.Data["values"]
+	if !ok {
+		log.Info("ArgoCD values ConfigMap has no 'values' key, skipping",
+			"name", r.ArgoCDValuesConfigMapName,
+			"namespace", r.OperatorNamespace)
+		return nil
+	}
+
+	cmVals := make(map[string]interface{})
+	if err := yaml.Unmarshal([]byte(data), &cmVals); err != nil {
+		return fmt.Errorf("failed to unmarshal YAML from ConfigMap key 'values': %w", err)
+	}
+
+	mapDeepMerge(dst, cmVals)
+	return nil
+}
+
+// mergeArgoCDValues builds the final Helm values map by layering, in order:
+// default config, HA overrides (when enabled), then user overrides from the ConfigMap.
+func (r *Reconciler) mergeArgoCDValues(ctx context.Context) (map[string]interface{}, error) {
+	log := logf.FromContext(ctx)
+	merged := make(map[string]interface{})
+
+	if r.ArgoCDDefaultConfig != "" {
+		vals, found, err := loadYAMLFileValues(r.ArgoCDDefaultConfig)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load default ArgoCD values: %w", err)
+		}
+		if !found {
+			log.Info("Default ArgoCD config file not found", "path", r.ArgoCDDefaultConfig)
+		} else {
+			mapDeepMerge(merged, vals)
+		}
+	}
+
+	if r.HAEnabled && r.ArgoCDHAConfig != "" {
+		vals, found, err := loadYAMLFileValues(r.ArgoCDHAConfig)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load HA ArgoCD values: %w", err)
+		}
+		if !found {
+			log.Info("HA ArgoCD config file not found", "path", r.ArgoCDHAConfig)
+		} else {
+			mapDeepMerge(merged, vals)
+		}
+	}
+
+	if r.ArgoCDValuesConfigMapName != "" && r.OperatorNamespace != "" {
+		if err := r.loadConfigMapValues(ctx, merged); err != nil {
+			return nil, err
+		}
+	}
+
+	return merged, nil
+}
+
+// mapDeepMerge merges src into dst recursively, with src taking precedence.
+// A nil value in src deletes the corresponding key from dst, which allows
+// callers to explicitly drop Helm chart values via YAML null.
+func mapDeepMerge(dst, src map[string]interface{}) {
+	for key, value := range src {
 		if value == nil {
-			delete(destination, key)
+			delete(dst, key)
 			continue
 		}
-
-		// If the value is a map itself, do a recursive merge, otherwise replace the value.
 		if srcMap, ok := value.(map[string]interface{}); ok {
-			if dstMap, ok := destination[key].(map[string]interface{}); ok {
+			if dstMap, ok := dst[key].(map[string]interface{}); ok {
 				mapDeepMerge(dstMap, srcMap)
 				continue
 			}
 		}
-
-		destination[key] = value
+		dst[key] = value
 	}
-}
-
-func (r *Reconciler) mergeArgoCDValues(ctx context.Context) (map[string]interface{}, error) {
-	log := logf.FromContext(ctx)
-	mergedVals := make(map[string]interface{})
-
-	// Load default values from file
-	if r.ArgoCDDefaultConfig != "" {
-		data, err := os.ReadFile(r.ArgoCDDefaultConfig)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return nil, fmt.Errorf("failed to read default ArgoCD values from %s: %w", r.ArgoCDDefaultConfig, err)
-			}
-			log.Info("Default ArgoCD config file not found", "path", r.ArgoCDDefaultConfig)
-		} else {
-			if err := yaml.Unmarshal(data, &mergedVals); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal default ArgoCD values: %w", err)
-			}
-		}
-	}
-
-	// Load HA values from file if enabled
-	if r.HAEnabled && r.ArgoCDHAConfig != "" {
-		data, err := os.ReadFile(r.ArgoCDHAConfig)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return nil, fmt.Errorf("failed to read HA ArgoCD values from %s: %w", r.ArgoCDHAConfig, err)
-			}
-			log.Info("HA ArgoCD config file not found", "path", r.ArgoCDHAConfig)
-		} else {
-			haVals := make(map[string]interface{})
-			if err := yaml.Unmarshal(data, &haVals); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal HA ArgoCD values: %w", err)
-			}
-			// Merge HA values
-			mapDeepMerge(mergedVals, haVals)
-		}
-	}
-
-	// Load values from ConfigMap if provided
-	if r.ArgoCDValuesConfigMapName != "" && r.OperatorNamespace != "" {
-		cm := &corev1.ConfigMap{}
-		err := r.Get(ctx, types.NamespacedName{
-			Name:      r.ArgoCDValuesConfigMapName,
-			Namespace: r.OperatorNamespace,
-		}, cm)
-
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				log.Info("ArgoCD values ConfigMap not found, using defaults only",
-					"Name", r.ArgoCDValuesConfigMapName,
-					"Namespace", r.OperatorNamespace)
-			} else {
-				return nil, fmt.Errorf("failed to get ArgoCD values ConfigMap: %w", err)
-			}
-		} else {
-			// Merge values from the ConfigMap using the "values" key
-			if data, ok := cm.Data["values"]; ok {
-				log.Info("Merging values from ConfigMap key", "key", "values")
-				cmVals := make(map[string]interface{})
-				if err := yaml.Unmarshal([]byte(data), &cmVals); err != nil {
-					return nil, fmt.Errorf("failed to unmarshal YAML from ConfigMap key 'values': %w", err)
-				}
-				// Deep merge CM values
-				mapDeepMerge(mergedVals, cmVals)
-			} else {
-				log.Info("ArgoCD values ConfigMap found but key 'values' is missing",
-					"Name", r.ArgoCDValuesConfigMapName,
-					"Namespace", r.OperatorNamespace)
-			}
-		}
-	}
-
-	return mergedVals, nil
 }
