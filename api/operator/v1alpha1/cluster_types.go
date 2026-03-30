@@ -6,10 +6,8 @@ import (
 )
 
 const (
-	// ConditionTypeConnected represents the status of the connection to the remote cluster.
-	ConditionTypeConnected = "Connected"
-	// ConditionTypeUnreachable represents the status when the remote cluster is unreachable.
-	ConditionTypeUnreachable = "Unreachable"
+	// ConditionTypeReachable represents the connectivity status to the remote cluster.
+	ConditionTypeReachable = "Reachable"
 
 	// ReasonConnectionSuccess is used when the connection to the remote cluster is successful.
 	ReasonConnectionSuccess = "ConnectionSuccess"
@@ -42,6 +40,8 @@ const (
 	ReasonArgoCDSyncFailed = "ArgoCDSyncFailed"
 	// ReasonArgoCDUnknown is used when the ArgoCD Application status is unknown.
 	ReasonArgoCDUnknown = "ArgoCDUnknown"
+	// ReasonArgoCDSyncing is used when the ArgoCD Application is syncing.
+	ReasonArgoCDSyncing = "ArgoCDSyncing"
 
 	// ConditionTypeReady represents the status when the cluster is fully operational.
 	ConditionTypeReady = "Ready"

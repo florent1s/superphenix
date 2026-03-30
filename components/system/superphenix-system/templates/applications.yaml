@@ -81,6 +81,7 @@ spec:
       {{- end }}
       - CreateNamespace=true
       - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true
     managedNamespaceMetadata:
       labels:
         superphenix.net/gitops: "true"

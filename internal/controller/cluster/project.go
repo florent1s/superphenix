@@ -37,28 +37,13 @@ func (r *Reconciler) reconcileAppProject(ctx context.Context, cluster *operatorv
 	}
 
 	// Check if the sync window is present to update the Paused status
-	if cluster.Spec.PauseSync {
-		r.updatePausedStatus(ctx, cluster, project)
-	} else {
+	if !cluster.Spec.PauseSync {
 		// Ensure we remove the Paused condition/phase if it was set
 		r.removePausedStatus(ctx, cluster)
 	}
 
 	log.Info("Successfully reconciled ArgoCD AppProject", "AppProject.Name", project.GetName())
 	return nil
-}
-
-func (r *Reconciler) updatePausedStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, project *unstructured.Unstructured) {
-	spec, found, _ := unstructured.NestedMap(project.Object, "spec")
-	if !found {
-		return
-	}
-
-	windows, found, _ := unstructured.NestedSlice(spec, "syncWindows")
-	if found && len(windows) > 0 {
-		// Sync window is present, we can set the phase to Paused
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypePaused, metav1.ConditionTrue, operatorv1alpha1.ReasonPaused, "Synchronization is paused via ArgoCD sync window", "Paused")
-	}
 }
 
 func (r *Reconciler) removePausedStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster) {
@@ -104,15 +89,26 @@ func (r *Reconciler) buildAppProjectSpec(cluster *operatorv1alpha1.Cluster) map[
 		destName = "in-cluster"
 	}
 
-	spec := map[string]interface{}{
-		"description": "Project for cluster " + cluster.Name,
-		"sourceRepos": []interface{}{"*"},
-		"destinations": []interface{}{
-			map[string]interface{}{
-				"namespace": "*",
-				"name":      destName,
-			},
+	destinations := []interface{}{
+		map[string]interface{}{
+			"namespace": "*",
+			"name":      destName,
 		},
+	}
+
+	// Also add the in-cluster destination for the root application (on the management cluster)
+	// if it's not already there.
+	if destName != "in-cluster" {
+		destinations = append(destinations, map[string]interface{}{
+			"namespace": r.OperatorNamespace,
+			"name":      "in-cluster",
+		})
+	}
+
+	spec := map[string]interface{}{
+		"description":  "Project for cluster " + cluster.Name,
+		"sourceRepos":  []interface{}{"*"},
+		"destinations": destinations,
 		"clusterResourceWhitelist": []interface{}{
 			map[string]interface{}{
 				"group": "*",
@@ -134,7 +130,7 @@ func (r *Reconciler) buildAppProjectSpec(cluster *operatorv1alpha1.Cluster) map[
 				"schedule":   "0 0 * * *", // We use a dummy schedule as we want it to be always active
 				"duration":   "24h",       // Cover the whole day
 				"manualSync": false,
-				"clusters":   []interface{}{destName},
+				"clusters":   []interface{}{destName, "in-cluster"},
 				"namespaces": []interface{}{"*"},
 			},
 		}

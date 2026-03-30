@@ -69,6 +69,9 @@ var _ = Describe("Cluster Controller", func() {
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -90,7 +93,7 @@ var _ = Describe("Cluster Controller", func() {
 					return false
 				}
 				for _, condition := range updatedCluster.Status.Conditions {
-					if condition.Type == operatorv1alpha1.ConditionTypeConnected && condition.Status == metav1.ConditionTrue {
+					if condition.Type == operatorv1alpha1.ConditionTypeReachable && condition.Status == metav1.ConditionTrue {
 						return true
 					}
 				}
@@ -155,12 +158,13 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(destinations).To(HaveLen(1))
 			dest := destinations[0].(map[string]interface{})
 			Expect(dest["name"]).To(Equal("in-cluster"))
+			Expect(dest["namespace"]).To(Equal("*"))
 
 			source, found, err := unstructured.NestedMap(spec, "source")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
 			Expect(source["repoURL"]).To(Equal("git@github.com:super-phenix/superphenix.git"))
-			Expect(source["path"]).To(Equal("components/system/superphenix-system"))
+			Expect(source["chart"]).To(Equal("superphenix-system"))
 
 			helm, found, err := unstructured.NestedMap(source, "helm")
 			Expect(err).NotTo(HaveOccurred())
@@ -214,8 +218,14 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 			projectSpec, _, _ = unstructured.NestedMap(argoCDProject.Object, "spec")
 			destinations, _, _ = unstructured.NestedSlice(projectSpec, "destinations")
-			dest = destinations[0].(map[string]interface{})
-			Expect(dest["name"]).To(Equal(resourceName))
+			Expect(destinations).To(HaveLen(2))
+
+			dest0 := destinations[0].(map[string]interface{})
+			Expect(dest0["name"]).To(Equal(resourceName))
+
+			dest1 := destinations[1].(map[string]interface{})
+			Expect(dest1["name"]).To(Equal("in-cluster"))
+			Expect(dest1["namespace"]).To(Equal("default"))
 
 			By("Reconciling with certificate-based authentication")
 			certSecretName := "cert-secret"
@@ -331,8 +341,8 @@ var _ = Describe("Cluster Controller", func() {
 					return false
 				}
 				for i := range updatedMgmtCluster.Status.Conditions {
-					if updatedMgmtCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeUnreachable {
-						return updatedMgmtCluster.Status.Conditions[i].Status == metav1.ConditionTrue &&
+					if updatedMgmtCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeReachable {
+						return updatedMgmtCluster.Status.Conditions[i].Status == metav1.ConditionFalse &&
 							updatedMgmtCluster.Status.Conditions[i].Reason == operatorv1alpha1.ReasonSecretNotFound
 					}
 				}
@@ -372,6 +382,9 @@ var _ = Describe("Cluster Controller", func() {
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -384,16 +397,16 @@ var _ = Describe("Cluster Controller", func() {
 			err = k8sClient.Get(ctx, typeNamespacedName, updatedCluster)
 			Expect(err).NotTo(HaveOccurred())
 
-			var unreachableCondition *metav1.Condition
+			var reachableCondition *metav1.Condition
 			for i := range updatedCluster.Status.Conditions {
-				if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeUnreachable {
-					unreachableCondition = &updatedCluster.Status.Conditions[i]
+				if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeReachable {
+					reachableCondition = &updatedCluster.Status.Conditions[i]
 					break
 				}
 			}
-			Expect(unreachableCondition).NotTo(BeNil())
-			Expect(unreachableCondition.Status).To(Equal(metav1.ConditionTrue))
-			Expect(unreachableCondition.Reason).To(Equal(operatorv1alpha1.ReasonConnectionConfigError))
+			Expect(reachableCondition).NotTo(BeNil())
+			Expect(reachableCondition.Status).To(Equal(metav1.ConditionFalse))
+			Expect(reachableCondition.Reason).To(Equal(operatorv1alpha1.ReasonConnectionConfigError))
 		})
 
 		It("should report SecretNotFound when secret is missing", func() {
@@ -433,6 +446,9 @@ var _ = Describe("Cluster Controller", func() {
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -445,16 +461,16 @@ var _ = Describe("Cluster Controller", func() {
 			err = k8sClient.Get(ctx, typeNamespacedName, updatedCluster)
 			Expect(err).NotTo(HaveOccurred())
 
-			var unreachableCondition *metav1.Condition
+			var reachableCondition *metav1.Condition
 			for i := range updatedCluster.Status.Conditions {
-				if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeUnreachable {
-					unreachableCondition = &updatedCluster.Status.Conditions[i]
+				if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeReachable {
+					reachableCondition = &updatedCluster.Status.Conditions[i]
 					break
 				}
 			}
-			Expect(unreachableCondition).NotTo(BeNil())
-			Expect(unreachableCondition.Status).To(Equal(metav1.ConditionTrue))
-			Expect(unreachableCondition.Reason).To(Equal(operatorv1alpha1.ReasonSecretNotFound))
+			Expect(reachableCondition).NotTo(BeNil())
+			Expect(reachableCondition.Status).To(Equal(metav1.ConditionFalse))
+			Expect(reachableCondition.Reason).To(Equal(operatorv1alpha1.ReasonSecretNotFound))
 		})
 
 		It("should report InvalidSecret when secret content is missing", func() {
@@ -510,6 +526,9 @@ var _ = Describe("Cluster Controller", func() {
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -522,16 +541,16 @@ var _ = Describe("Cluster Controller", func() {
 			err = k8sClient.Get(ctx, typeNamespacedName, updatedCluster)
 			Expect(err).NotTo(HaveOccurred())
 
-			var unreachableCondition *metav1.Condition
+			var reachableCondition *metav1.Condition
 			for i := range updatedCluster.Status.Conditions {
-				if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeUnreachable {
-					unreachableCondition = &updatedCluster.Status.Conditions[i]
+				if updatedCluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeReachable {
+					reachableCondition = &updatedCluster.Status.Conditions[i]
 					break
 				}
 			}
-			Expect(unreachableCondition).NotTo(BeNil())
-			Expect(unreachableCondition.Status).To(Equal(metav1.ConditionTrue))
-			Expect(unreachableCondition.Reason).To(Equal(operatorv1alpha1.ReasonInvalidSecret))
+			Expect(reachableCondition).NotTo(BeNil())
+			Expect(reachableCondition.Status).To(Equal(metav1.ConditionFalse))
+			Expect(reachableCondition.Reason).To(Equal(operatorv1alpha1.ReasonInvalidSecret))
 		})
 
 		It("should add a finalizer to the Cluster", func() {
@@ -546,6 +565,9 @@ var _ = Describe("Cluster Controller", func() {
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
 			}
 
 			// Use a different name to avoid conflicts with other tests if they are running in parallel or if BeforeEach/AfterEach is tricky
@@ -865,6 +887,9 @@ var _ = Describe("Cluster Controller", func() {
 				Client:            k8sClient,
 				Scheme:            k8sClient.Scheme(),
 				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
 			}
 
 			By("Reconciling the cluster in another namespace")
@@ -888,6 +913,95 @@ var _ = Describe("Cluster Controller", func() {
 			// We don't need to create the secret, just pass it to the function
 			requests := controllerReconciler.findClustersForSecret(ctx, secret)
 			Expect(requests).To(BeEmpty())
+		})
+
+		It("should pause synchronization when PauseSync is true", func() {
+			clusterName := "paused-cluster"
+			clusterNamespace := "default"
+			clusterNamespacedName := types.NamespacedName{
+				Name:      clusterName,
+				Namespace: clusterNamespace,
+			}
+
+			cluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: clusterNamespace,
+				},
+				Spec: operatorv1alpha1.ClusterSpec{
+					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
+					Region:           "us-east-1",
+					AvailabilityZone: "us-east-1a",
+					Version:          "1.0.0",
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeLocal,
+					},
+					PauseSync: true,
+				},
+			}
+			Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, cluster)
+			}()
+
+			controllerReconciler := &Reconciler{
+				Client:            k8sClient,
+				Scheme:            k8sClient.Scheme(),
+				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
+			}
+
+			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: clusterNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			updatedCluster := &operatorv1alpha1.Cluster{}
+			Expect(k8sClient.Get(ctx, clusterNamespacedName, updatedCluster)).To(Succeed())
+			Expect(updatedCluster.Status.Phase).To(Equal("Paused"))
+
+			// Verify ArgoCD Application spec
+			app := &unstructured.Unstructured{}
+			app.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "Application",
+			})
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: "default"}, app)).To(Succeed())
+
+			// Verify project is clusterName, not "default"
+			projectField, found, _ := unstructured.NestedString(app.Object, "spec", "project")
+			Expect(found).To(BeTrue())
+			Expect(projectField).To(Equal(clusterName))
+
+			syncPolicy, found, _ := unstructured.NestedMap(app.Object, "spec", "syncPolicy")
+			Expect(found).To(BeTrue())
+			_, automatedFound, _ := unstructured.NestedMap(syncPolicy, "automated")
+			Expect(automatedFound).To(BeFalse())
+
+			syncOptions, found, _ := unstructured.NestedSlice(syncPolicy, "syncOptions")
+			Expect(found).To(BeTrue())
+			Expect(syncOptions).To(ContainElement("SkipDryRunOnMissingResource=true"))
+
+			// Verify ArgoCD AppProject spec
+			project := &unstructured.Unstructured{}
+			project.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "AppProject",
+			})
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: "default"}, project)).To(Succeed())
+			windows, found, _ := unstructured.NestedSlice(project.Object, "spec", "syncWindows")
+			Expect(found).To(BeTrue())
+			Expect(len(windows)).To(Equal(1))
+
+			// Verify sync window clusters include "in-cluster"
+			window := windows[0].(map[string]interface{})
+			clusters, found, _ := unstructured.NestedSlice(window, "clusters")
+			Expect(found).To(BeTrue())
+			Expect(clusters).To(ContainElement("in-cluster"))
 		})
 	})
 })

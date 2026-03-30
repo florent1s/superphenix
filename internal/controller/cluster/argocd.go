@@ -123,7 +123,7 @@ func (r *Reconciler) reconcileArgoCDSecret(ctx context.Context, cluster *operato
 		} else if errors.Is(err, errInvalidSecret) {
 			reason = operatorv1alpha1.ReasonInvalidSecret
 		}
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeUnreachable, metav1.ConditionTrue, reason, err.Error(), "Error")
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, reason, err.Error(), "Error")
 		return err
 	}
 

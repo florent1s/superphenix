@@ -42,8 +42,12 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 
 	log.Info("Successfully reconciled ArgoCD Application", "Application.Name", app.GetName())
 
-	// Propagate ArgoCD Application status to Cluster status
-	r.propagateApplicationStatus(ctx, cluster, app)
+	if cluster.Spec.PauseSync {
+		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypePaused, metav1.ConditionTrue, operatorv1alpha1.ReasonPaused, "Synchronization is paused", "Paused")
+	} else {
+		// Propagate ArgoCD Application status to Cluster status
+		r.propagateApplicationStatus(ctx, cluster, app)
+	}
 
 	return nil
 }
@@ -74,6 +78,11 @@ func (r *Reconciler) propagateApplicationStatus(ctx context.Context, cluster *op
 		reason = operatorv1alpha1.ReasonArgoCDUnknown
 		message = "ArgoCD Application status is unknown"
 		phase = "Unknown"
+	case "Syncing":
+		status = metav1.ConditionFalse
+		reason = operatorv1alpha1.ReasonArgoCDSyncing
+		message = "ArgoCD Application is syncing"
+		phase = "Deploying"
 	default:
 		status = metav1.ConditionFalse
 		reason = operatorv1alpha1.ReasonArgoCDSyncFailed
@@ -84,9 +93,47 @@ func (r *Reconciler) propagateApplicationStatus(ctx context.Context, cluster *op
 	if healthStatus == "Degraded" {
 		phase = "Error"
 		message = fmt.Sprintf("%s (Health: %s)", message, healthStatus)
+		status = metav1.ConditionFalse
+		reason = operatorv1alpha1.ReasonHealthCheckFailed
+	} else if healthStatus == "Progressing" {
+		phase = "Deploying"
+		message = fmt.Sprintf("%s (Health: %s)", message, healthStatus)
+		if syncStatus == "Synced" {
+			status = metav1.ConditionFalse
+			reason = operatorv1alpha1.ReasonArgoCDSyncing
+		}
+	} else if healthStatus == "Suspended" || healthStatus == "Missing" {
+		phase = "Unknown"
+		message = fmt.Sprintf("%s (Health: %s)", message, healthStatus)
+		status = metav1.ConditionUnknown
 	}
 
 	r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeArgoCDSynced, status, reason, message, phase)
+
+	// Update Ready condition based on both Reachable and ArgoCDSynced
+	readyStatus := metav1.ConditionTrue
+	readyReason := operatorv1alpha1.ReasonReconcileSuccess
+	readyMessage := "Cluster is ready"
+
+	reachable := false
+	for _, c := range cluster.Status.Conditions {
+		if c.Type == operatorv1alpha1.ConditionTypeReachable && c.Status == metav1.ConditionTrue {
+			reachable = true
+			break
+		}
+	}
+
+	if !reachable {
+		readyStatus = metav1.ConditionFalse
+		readyReason = operatorv1alpha1.ReasonConnectionFailed
+		readyMessage = "Cluster is unreachable"
+	} else if status != metav1.ConditionTrue {
+		readyStatus = status
+		readyReason = reason
+		readyMessage = message
+	}
+
+	r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeReady, readyStatus, readyReason, readyMessage)
 }
 
 // initApplication creates the template of the cluster application.
@@ -138,6 +185,22 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 		targetRevision = cluster.Spec.Version
 	}
 
+	syncPolicy := map[string]interface{}{
+		"syncOptions": []interface{}{
+			"CreateNamespace=true",
+			"PrunePropagationPolicy=foreground",
+			"PruneLast=true",
+			"SkipDryRunOnMissingResource=true",
+		},
+	}
+
+	if !cluster.Spec.PauseSync {
+		syncPolicy["automated"] = map[string]interface{}{
+			"prune":    true,
+			"selfHeal": true,
+		}
+	}
+
 	return map[string]interface{}{
 		"project": cluster.Name,
 		"source": map[string]interface{}{
@@ -152,17 +215,7 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			"name":      destName,
 			"namespace": r.OperatorNamespace,
 		},
-		"syncPolicy": map[string]interface{}{
-			"automated": map[string]interface{}{
-				"prune":    true,
-				"selfHeal": true,
-			},
-			"syncOptions": []interface{}{
-				"CreateNamespace=true",
-				"PrunePropagationPolicy=foreground",
-				"PruneLast=true",
-			},
-		},
+		"syncPolicy": syncPolicy,
 	}
 }
 
@@ -174,6 +227,10 @@ func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster
 			"region":           cluster.Spec.Region,
 			"availabilityZone": cluster.Spec.AvailabilityZone,
 			"deploymentMode":   string(cluster.Spec.DeploymentMode),
+		},
+		"argocd": map[string]interface{}{
+			"namespace": r.OperatorNamespace,
+			"project":   cluster.Name,
 		},
 	}
 

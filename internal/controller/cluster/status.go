@@ -48,29 +48,7 @@ func (r *Reconciler) updateStatusWithPhase(ctx context.Context, cluster *operato
 	}
 
 	// Ensure opposite conditions are updated too
-	if condType == operatorv1alpha1.ConditionTypeConnected && status == metav1.ConditionTrue {
-		r.setCondition(&cluster.Status.Conditions, condition)
-		r.setCondition(&cluster.Status.Conditions, metav1.Condition{
-			Type:               operatorv1alpha1.ConditionTypeUnreachable,
-			Status:             metav1.ConditionFalse,
-			Reason:             reason,
-			Message:            message,
-			LastTransitionTime: metav1.Now(),
-			ObservedGeneration: cluster.Generation,
-		})
-	} else if condType == operatorv1alpha1.ConditionTypeUnreachable && status == metav1.ConditionTrue {
-		r.setCondition(&cluster.Status.Conditions, condition)
-		r.setCondition(&cluster.Status.Conditions, metav1.Condition{
-			Type:               operatorv1alpha1.ConditionTypeConnected,
-			Status:             metav1.ConditionFalse,
-			Reason:             reason,
-			Message:            message,
-			LastTransitionTime: metav1.Now(),
-			ObservedGeneration: cluster.Generation,
-		})
-	} else {
-		r.setCondition(&cluster.Status.Conditions, condition)
-	}
+	r.setCondition(&cluster.Status.Conditions, condition)
 
 	cluster.Status.ObservedGeneration = cluster.Generation
 
@@ -110,7 +88,7 @@ func (r *Reconciler) updateClusterVersion(ctx context.Context, cluster *operator
 		latest := &operatorv1alpha1.Cluster{}
 		if err := r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, latest); err == nil {
 			latest.Status.CurrentVersion = cluster.Spec.Version
-			if cluster.Status.Phase != "Paused" {
+			if cluster.Status.Phase != "Paused" && cluster.Status.Phase != "Deploying" {
 				latest.Status.Phase = "Deployed"
 			}
 			if err := r.Status().Update(ctx, latest); err != nil {
@@ -119,12 +97,12 @@ func (r *Reconciler) updateClusterVersion(ctx context.Context, cluster *operator
 			}
 			// Update the local object as well so following logic sees the change
 			cluster.Status.CurrentVersion = cluster.Spec.Version
-			if cluster.Status.Phase != "Paused" {
+			if cluster.Status.Phase != "Paused" && cluster.Status.Phase != "Deploying" {
 				cluster.Status.Phase = "Deployed"
 			}
 		} else {
 			cluster.Status.CurrentVersion = cluster.Spec.Version
-			if cluster.Status.Phase != "Paused" {
+			if cluster.Status.Phase != "Paused" && cluster.Status.Phase != "Deploying" {
 				cluster.Status.Phase = "Deployed"
 			}
 			if err := r.Status().Update(ctx, cluster); err != nil {
@@ -132,11 +110,7 @@ func (r *Reconciler) updateClusterVersion(ctx context.Context, cluster *operator
 				return ctrl.Result{RequeueAfter: time.Minute}, err
 			}
 		}
-	} else {
-		// If version is already correct and we reached here, it's Deployed
-		if cluster.Status.Phase != "Deployed" && cluster.Status.Phase != "Paused" {
-			r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionTrue, operatorv1alpha1.ReasonReconcileSuccess, "Cluster is fully reconciled", "Deployed")
-		}
 	}
+
 	return ctrl.Result{}, nil
 }

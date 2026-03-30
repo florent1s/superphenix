@@ -53,7 +53,7 @@ config:
   argocd:
     chart:
       url: https://argoproj.github.io/argo-helm
-      version: 8.6.3
+      version: 9.4.17
     valuesConfigMap:
       name: superphenix-mgmt-argocd-config
     # Arbitrary values to be put in the ConfigMap under the "values" key
