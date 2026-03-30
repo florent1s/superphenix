@@ -14,9 +14,11 @@
 apiVersion: {{ $argocd.appVersion }}
 kind: Application
 metadata:
-  name: spx-{{ $app | lower }}
+  name: {{ $cluster.name }}-{{ $app | lower }}
   namespace: {{ $argocd.namespace }}
-  labels: {{ $labels | nindent 4 }}
+  labels:
+    operator.superphenix.net/clusterName: {{ $cluster.name }}
+    {{ $labels | nindent 4 }}
   annotations:
     {{- if hasKey $values "wave" }}
     argocd.argoproj.io/sync-wave: {{ $values.wave | quote }}

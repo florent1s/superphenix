@@ -33,7 +33,7 @@ const (
 	// ManagementArgoCDName is the Helm release name and ArgoCD Application name for the management ArgoCD instance.
 	ManagementArgoCDName = "superphenix-mgmt-argocd"
 	// ManagementSuperphenixName is the ArgoCD Application name for the superphenix-management chart.
-	ManagementSuperphenixName = "superphenix-mgmt-management"
+	ManagementSuperphenixName = "superphenix-management"
 
 	// ConfigMapKeyArgoCD is the key in the management ConfigMap holding ArgoCD Helm values.
 	ConfigMapKeyArgoCD = "argocd"

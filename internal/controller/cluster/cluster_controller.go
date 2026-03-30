@@ -30,7 +30,7 @@ const (
 	// FinalizerName is the name of the finalizer used to clean up the cluster when it is deleted.
 	FinalizerName = "operator.superphenix.net/finalizer"
 	// ClusterLabel is the label used to identify the cluster in ArgoCD.
-	ClusterLabel = "operator.superphenix.net/cluster-name"
+	ClusterLabel = "operator.superphenix.net/clusterName"
 )
 
 var (
@@ -79,6 +79,11 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 				},
 			},
 			handler.EnqueueRequestForOwner(mgr.GetScheme(), mgr.GetRESTMapper(), &operatorv1alpha1.Cluster{}),
+			// Only reconcile when the Application spec changes (generation bump).
+			// Annotation patches (e.g. argocd.argoproj.io/refresh) and ArgoCD status
+			// updates do not change the generation, so they are intentionally excluded
+			// to prevent the refresh annotation from triggering a reconcile loop.
+			builder.WithPredicates(predicate.GenerationChangedPredicate{}),
 		).
 		Named("cluster").
 		Complete(r)
@@ -251,6 +256,12 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 	if err := r.reconcileApplication(ctx, cluster); err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD Application")
 		return ctrl.Result{RequeueAfter: time.Minute}, nil
+	}
+
+	// Trigger a periodic refresh on every sub-application within the app of apps chart.
+	// This keeps child Applications in sync without relying solely on ArgoCD's internal polling.
+	if !cluster.Spec.PauseSync {
+		r.syncSubApplications(ctx, cluster)
 	}
 
 	// Update the current version and phase in status if everything else is healthy
