@@ -30,25 +30,44 @@ import (
 )
 
 const (
+	// ManagementArgoCDName is the Helm release name and ArgoCD Application name for the management ArgoCD instance.
 	ManagementArgoCDName = "superphenix-mgmt-argocd"
+	// ManagementSuperphenixName is the ArgoCD Application name for the superphenix-management chart.
+	ManagementSuperphenixName = "superphenix-mgmt-management"
+
+	// ConfigMapKeyArgoCD is the key in the management ConfigMap holding ArgoCD Helm values.
+	ConfigMapKeyArgoCD = "argocd"
+	// ConfigMapKeySuperphenix is the key in the management ConfigMap holding superphenix-management Helm values.
+	ConfigMapKeySuperphenix = "superphenix"
 )
 
 // Reconciler handles the reconciliation of management components.
 // It implements reconcile.Reconciler to handle ConfigMap updates.
 type Reconciler struct {
 	client.Client
-	Scheme                    *runtime.Scheme
-	Config                    *rest.Config
-	ArgoCDChartURL            string
-	ArgoCDChartVersion        string
-	ArgoCDValuesConfigMapName string
-	ArgoCDDefaultConfig       string
-	ArgoCDHAConfig            string
-	OperatorNamespace         string
-	HAEnabled                 bool
+	Scheme            *runtime.Scheme
+	Config            *rest.Config
+	OperatorNamespace string
+	HAEnabled         bool
+
+	// ValuesConfigMapName is the name of the general management ConfigMap.
+	// It holds Helm values for each component under dedicated sub-keys (see ConfigMapKey* constants).
+	ValuesConfigMapName string
+
+	// ArgoCD chart configuration.
+	ArgoCDChartURL      string
+	ArgoCDChartVersion  string
+	ArgoCDDefaultConfig string
+	ArgoCDHAConfig      string
+
+	// Management (superphenix-management) chart configuration.
+	ManagementChartURL      string
+	ManagementChartVersion  string
+	ManagementDefaultConfig string
+	ManagementHAConfig      string
 }
 
-// SetupWithManager registers the controller with the Manager, watching only the ArgoCD values ConfigMap.
+// SetupWithManager registers the controller with the Manager, watching only the management values ConfigMap.
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return builder.ControllerManagedBy(mgr).
 		Named("management-controller").
@@ -56,31 +75,37 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// Reconcile bootstraps and maintains the management stack (ArgoCD, Console, API...).
-// It is triggered by changes to the ArgoCD values ConfigMap and re-enqueues periodically as a safety net.
+// Reconcile bootstraps and maintains the full management stack (ArgoCD, Console, Auth...).
+// It is triggered by changes to the management values ConfigMap and re-enqueues periodically as a safety net.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	log := logf.FromContext(ctx)
 
-	// Ignore useless events for ConfigMaps other than the one we watch.
+	// Ignore spurious events for ConfigMaps other than the one we watch.
 	if req.Name != "" && !r.isTargetConfigMap(req.Name, req.Namespace) {
 		return reconcile.Result{}, nil
 	}
 
 	log.Info("Reconciling management components")
+
 	if err := r.reconcileManagementArgoCD(ctx); err != nil {
 		log.Error(err, "ArgoCD reconciliation failed")
+		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
+	}
+
+	if err := r.reconcileManagementStack(ctx); err != nil {
+		log.Error(err, "Management stack reconciliation failed")
 		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
 	}
 
 	return reconcile.Result{RequeueAfter: 10 * time.Minute}, nil
 }
 
-// isTargetConfigMap reports whether the given name and namespace identify the watched ArgoCD values ConfigMap.
+// isTargetConfigMap reports whether the given name and namespace identify the watched management values ConfigMap.
 func (r *Reconciler) isTargetConfigMap(name, namespace string) bool {
-	return name == r.ArgoCDValuesConfigMapName && namespace == r.OperatorNamespace
+	return name == r.ValuesConfigMapName && namespace == r.OperatorNamespace
 }
 
-// configMapPredicate limits reconciliation events to the ArgoCD values ConfigMap.
+// configMapPredicate limits reconciliation events to the management values ConfigMap.
 func (r *Reconciler) configMapPredicate() predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
@@ -115,6 +140,25 @@ func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	}
 
 	log.Info("Successfully reconciled ArgoCD")
+	return nil
+}
+
+// reconcileManagementStack creates or updates the ArgoCD Application for the superphenix-management chart,
+// which deploys the management console, authentication, and related services.
+func (r *Reconciler) reconcileManagementStack(ctx context.Context) error {
+	log := logf.FromContext(ctx)
+
+	vals, err := r.mergeManagementValues(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to merge management stack values: %w", err)
+	}
+
+	app := r.buildManagementApplication(vals)
+	if err := r.createOrUpdateArgoCDApplication(ctx, app); err != nil {
+		return err
+	}
+
+	log.Info("Successfully reconciled management stack")
 	return nil
 }
 
@@ -294,9 +338,47 @@ func (r *Reconciler) buildArgoCDApplication(vals map[string]interface{}) *unstru
 	}
 }
 
+// buildManagementApplication constructs the ArgoCD Application manifest for the superphenix-management chart,
+// which deploys the management console, authentication, and related services.
+func (r *Reconciler) buildManagementApplication(vals map[string]interface{}) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "argoproj.io/v1alpha1",
+			"kind":       "Application",
+			"metadata": map[string]interface{}{
+				"name":      ManagementSuperphenixName,
+				"namespace": r.OperatorNamespace,
+			},
+			"spec": map[string]interface{}{
+				"project": "default",
+				"source": map[string]interface{}{
+					"repoURL":        r.ManagementChartURL,
+					"targetRevision": r.ManagementChartVersion,
+					"chart":          "superphenix-management",
+					"helm": map[string]interface{}{
+						"valuesObject": vals,
+					},
+				},
+				"destination": map[string]interface{}{
+					"name":      "in-cluster",
+					"namespace": r.OperatorNamespace,
+				},
+				"syncPolicy": map[string]interface{}{
+					"automated": map[string]interface{}{
+						"prune":    true,
+						"selfHeal": true,
+					},
+				},
+			},
+		},
+	}
+}
+
 // createOrUpdateArgoCDApplication creates the ArgoCD Application if it does not exist, or updates it otherwise.
+// The application name is derived from app.GetName().
 func (r *Reconciler) createOrUpdateArgoCDApplication(ctx context.Context, app *unstructured.Unstructured) error {
 	log := logf.FromContext(ctx)
+	name := app.GetName()
 
 	existing := &unstructured.Unstructured{}
 	existing.SetGroupVersionKind(schema.GroupVersionKind{
@@ -305,22 +387,22 @@ func (r *Reconciler) createOrUpdateArgoCDApplication(ctx context.Context, app *u
 		Kind:    "Application",
 	})
 
-	err := r.Get(ctx, types.NamespacedName{Name: ManagementArgoCDName, Namespace: r.OperatorNamespace}, existing)
+	err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: r.OperatorNamespace}, existing)
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return fmt.Errorf("failed to get ArgoCD Application: %w", err)
+			return fmt.Errorf("failed to get ArgoCD Application %s: %w", name, err)
 		}
-		log.Info("Creating ArgoCD Application for self-management")
+		log.Info("Creating ArgoCD Application", "name", name)
 		if err := r.Create(ctx, app); err != nil {
-			return fmt.Errorf("failed to create ArgoCD Application: %w", err)
+			return fmt.Errorf("failed to create ArgoCD Application %s: %w", name, err)
 		}
 		return nil
 	}
 
-	log.Info("Updating ArgoCD Application for self-management")
+	log.Info("Updating ArgoCD Application", "name", name)
 	app.SetResourceVersion(existing.GetResourceVersion())
 	if err := r.Update(ctx, app); err != nil {
-		return fmt.Errorf("failed to update ArgoCD Application: %w", err)
+		return fmt.Errorf("failed to update ArgoCD Application %s: %w", name, err)
 	}
 
 	return nil
@@ -356,76 +438,86 @@ func loadYAMLFileValues(path string) (map[string]interface{}, bool, error) {
 	return vals, true, nil
 }
 
-// loadConfigMapValues fetches the ArgoCD values ConfigMap and deep-merges the "values" key into dst.
-func (r *Reconciler) loadConfigMapValues(ctx context.Context, dst map[string]interface{}) error {
+// loadConfigMapValues fetches the management values ConfigMap and deep-merges the given key into dst.
+func (r *Reconciler) loadConfigMapValues(ctx context.Context, key string, dst map[string]interface{}) error {
 	log := logf.FromContext(ctx)
 
 	cm := &corev1.ConfigMap{}
-	err := r.Get(ctx, types.NamespacedName{Name: r.ArgoCDValuesConfigMapName, Namespace: r.OperatorNamespace}, cm)
+	err := r.Get(ctx, types.NamespacedName{Name: r.ValuesConfigMapName, Namespace: r.OperatorNamespace}, cm)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			log.Info("ArgoCD values ConfigMap not found, using defaults only",
-				"name", r.ArgoCDValuesConfigMapName,
+			log.Info("Management values ConfigMap not found, using defaults only",
+				"name", r.ValuesConfigMapName,
 				"namespace", r.OperatorNamespace)
 			return nil
 		}
-		return fmt.Errorf("failed to get ArgoCD values ConfigMap: %w", err)
+		return fmt.Errorf("failed to get management values ConfigMap: %w", err)
 	}
 
-	data, ok := cm.Data["values"]
+	data, ok := cm.Data[key]
 	if !ok {
-		log.Info("ArgoCD values ConfigMap has no 'values' key, skipping",
-			"name", r.ArgoCDValuesConfigMapName,
-			"namespace", r.OperatorNamespace)
+		log.Info("Management values ConfigMap has no key, skipping",
+			"name", r.ValuesConfigMapName,
+			"key", key)
 		return nil
 	}
 
 	cmVals := make(map[string]interface{})
 	if err := yaml.Unmarshal([]byte(data), &cmVals); err != nil {
-		return fmt.Errorf("failed to unmarshal YAML from ConfigMap key 'values': %w", err)
+		return fmt.Errorf("failed to unmarshal YAML from ConfigMap key %q: %w", key, err)
 	}
 
 	mapDeepMerge(dst, cmVals)
 	return nil
 }
 
-// mergeArgoCDValues builds the final Helm values map by layering, in order:
-// default config, HA overrides (when enabled), then user overrides from the ConfigMap.
-func (r *Reconciler) mergeArgoCDValues(ctx context.Context) (map[string]interface{}, error) {
+// mergeValues builds a Helm values map by layering, in order:
+// base file defaults, HA overrides (when enabled), then user overrides from the given ConfigMap key.
+func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, configMapKey string) (map[string]interface{}, error) {
 	log := logf.FromContext(ctx)
 	merged := make(map[string]interface{})
 
-	if r.ArgoCDDefaultConfig != "" {
-		vals, found, err := loadYAMLFileValues(r.ArgoCDDefaultConfig)
+	if defaultConfig != "" {
+		vals, found, err := loadYAMLFileValues(defaultConfig)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load default ArgoCD values: %w", err)
+			return nil, fmt.Errorf("failed to load default values from %s: %w", defaultConfig, err)
 		}
 		if !found {
-			log.Info("Default ArgoCD config file not found", "path", r.ArgoCDDefaultConfig)
+			log.Info("Default config file not found", "path", defaultConfig)
 		} else {
 			mapDeepMerge(merged, vals)
 		}
 	}
 
-	if r.HAEnabled && r.ArgoCDHAConfig != "" {
-		vals, found, err := loadYAMLFileValues(r.ArgoCDHAConfig)
+	if r.HAEnabled && haConfig != "" {
+		vals, found, err := loadYAMLFileValues(haConfig)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load HA ArgoCD values: %w", err)
+			return nil, fmt.Errorf("failed to load HA values from %s: %w", haConfig, err)
 		}
 		if !found {
-			log.Info("HA ArgoCD config file not found", "path", r.ArgoCDHAConfig)
+			log.Info("HA config file not found", "path", haConfig)
 		} else {
 			mapDeepMerge(merged, vals)
 		}
 	}
 
-	if r.ArgoCDValuesConfigMapName != "" && r.OperatorNamespace != "" {
-		if err := r.loadConfigMapValues(ctx, merged); err != nil {
+	if r.ValuesConfigMapName != "" && r.OperatorNamespace != "" {
+		if err := r.loadConfigMapValues(ctx, configMapKey, merged); err != nil {
 			return nil, err
 		}
 	}
 
 	return merged, nil
+}
+
+// mergeArgoCDValues builds the final Helm values for the ArgoCD chart.
+func (r *Reconciler) mergeArgoCDValues(ctx context.Context) (map[string]interface{}, error) {
+	return r.mergeValues(ctx, r.ArgoCDDefaultConfig, r.ArgoCDHAConfig, ConfigMapKeyArgoCD)
+}
+
+// mergeManagementValues builds the final Helm values for the superphenix-management chart.
+func (r *Reconciler) mergeManagementValues(ctx context.Context) (map[string]interface{}, error) {
+	return r.mergeValues(ctx, r.ManagementDefaultConfig, r.ManagementHAConfig, ConfigMapKeySuperphenix)
 }
 
 // mapDeepMerge merges src into dst recursively, with src taking precedence.
