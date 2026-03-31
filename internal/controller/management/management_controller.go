@@ -31,6 +31,7 @@ import (
 
 const (
 	// ManagementArgoCDName is the Helm release name and ArgoCD Application name for the management ArgoCD instance.
+	// TODO: rename to superphenix-argocd
 	ManagementArgoCDName = "superphenix-mgmt-argocd"
 	// ManagementSuperphenixName is the ArgoCD Application name for the superphenix-management chart.
 	ManagementSuperphenixName = "superphenix-management"

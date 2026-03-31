@@ -13,28 +13,30 @@ import (
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
 
-// syncSubApplications triggers a refresh on the root Application and on every child Application
-// that belongs to the cluster.
+// syncSubApplications triggers an ArgoCD sync on the root Application and on every child
+// Application that belongs to the cluster.
 //
 // In the app of apps pattern, the root Application deploys a Helm chart that in turn contains
 // ArgoCD Application manifests. ArgoCD applies those manifests, creating child Applications that
 // each manage a specific component of the Superphenix stack. This function ensures the entire
-// Application tree is periodically re-evaluated so that ArgoCD detects and corrects drift without
-// relying solely on its own internal polling interval.
+// Application tree is periodically synced so that drift is corrected without relying solely on
+// ArgoCD's own internal polling interval.
 //
-// The mechanism is a refresh annotation: ArgoCD removes it once processed, so re-adding it on
-// every reconcile cycle (every 5 minutes) acts as a heartbeat-driven sync trigger. Failures are
-// non-fatal; individual errors are logged and the function continues with remaining Applications.
+// The mechanism is to set the operation.sync field directly on each Application object, which
+// is the programmatic equivalent of running `argocd app sync`. Because operation is a top-level
+// field (not under spec), patching it does not change the object's generation, so the
+// GenerationChangedPredicate on the Application watch is not triggered and no reconcile loop occurs.
+// Failures are non-fatal; individual errors are logged and the function continues with remaining Applications.
 func (r *Reconciler) syncSubApplications(ctx context.Context, cluster *operatorv1alpha1.Cluster) {
 	log := logf.FromContext(ctx)
 
-	// Also refresh the root Application itself so it re-evaluates the chart and propagates
+	// Also sync the root Application itself so it re-evaluates the chart and propagates
 	// any changes down to the sub-applications on the same cycle.
 	rootApp, err := r.fetchApplication(ctx, cluster.Name)
 	if err != nil {
-		log.Error(err, "Failed to fetch root Application for refresh")
-	} else if err := r.refreshApplication(ctx, rootApp); err != nil {
-		log.Error(err, "Failed to refresh root Application")
+		log.Error(err, "Failed to fetch root Application for sync")
+	} else if err := r.triggerApplicationSync(ctx, rootApp); err != nil {
+		log.Error(err, "Failed to sync root Application")
 	}
 
 	subApps, err := r.listSubApplications(ctx, cluster)
@@ -48,16 +50,16 @@ func (r *Reconciler) syncSubApplications(ctx context.Context, cluster *operatorv
 		return
 	}
 
-	refreshed := 0
+	synced := 0
 	for i := range subApps {
-		if err := r.refreshApplication(ctx, &subApps[i]); err != nil {
-			log.Error(err, "Failed to refresh sub-application", "name", subApps[i].GetName())
+		if err := r.triggerApplicationSync(ctx, &subApps[i]); err != nil {
+			log.Error(err, "Failed to sync sub-application", "name", subApps[i].GetName())
 			continue
 		}
-		refreshed++
+		synced++
 	}
 
-	log.Info("Periodic sync triggered", "cluster", cluster.Name, "subAppsRefreshed", refreshed, "subAppsTotal", len(subApps))
+	log.Info("Periodic sync triggered", "cluster", cluster.Name, "appsSynced", synced, "appsTotal", len(subApps))
 }
 
 // fetchApplication retrieves a single ArgoCD Application by name from the operator namespace.
@@ -98,24 +100,32 @@ func (r *Reconciler) listSubApplications(ctx context.Context, cluster *operatorv
 	return appList.Items, nil
 }
 
-// refreshApplication patches the ArgoCD refresh annotation onto the given Application.
-// ArgoCD's controller picks up the annotation, re-evaluates the Application's desired state,
-// and, because Applications are deployed with selfHeal:true, automatically syncs if out of sync.
-// ArgoCD removes the annotation after processing, making it safe to re-apply on the next cycle.
-func (r *Reconciler) refreshApplication(ctx context.Context, app *unstructured.Unstructured) error {
+// triggerApplicationSync triggers an immediate sync on the given ArgoCD Application by setting
+// the operation.sync field, which is the programmatic equivalent of `argocd app sync`.
+// ArgoCD detects the field, executes the sync, then clears it.
+// A sync is skipped if an operation is already in progress to avoid queue buildup.
+func (r *Reconciler) triggerApplicationSync(ctx context.Context, app *unstructured.Unstructured) error {
+	log := logf.FromContext(ctx)
+
+	// Don't start a new sync if one is already running.
+	phase, _, _ := unstructured.NestedString(app.Object, "status", "operationState", "phase")
+	if phase == "Running" {
+		log.Info("Application already syncing, skipping trigger", "name", app.GetName())
+		return nil
+	}
+
 	patch := client.MergeFrom(app.DeepCopy())
 
-	annotations := app.GetAnnotations()
-	if annotations == nil {
-		annotations = make(map[string]string)
+	if err := unstructured.SetNestedMap(app.Object, map[string]interface{}{
+		"sync": map[string]interface{}{},
+	}, "operation"); err != nil {
+		return fmt.Errorf("failed to build sync operation for Application %s: %w", app.GetName(), err)
 	}
-	annotations["argocd.argoproj.io/refresh"] = "normal"
-	app.SetAnnotations(annotations)
 
 	if err := r.Patch(ctx, app, patch); err != nil {
-		return fmt.Errorf("failed to patch refresh annotation on Application %s: %w", app.GetName(), err)
+		return fmt.Errorf("failed to trigger sync on Application %s: %w", app.GetName(), err)
 	}
 
-	logf.FromContext(ctx).Info("Refresh annotation set on Application", "name", app.GetName())
+	log.Info("Sync operation triggered on Application", "name", app.GetName())
 	return nil
 }
