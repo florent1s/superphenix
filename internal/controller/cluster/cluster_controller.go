@@ -3,6 +3,7 @@ package cluster
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -16,12 +17,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
@@ -54,11 +57,13 @@ type Reconciler struct {
 	DefaultRepoURL    string
 	DefaultChartName  string
 	DefaultVersion    string
+	// ArgoCDApplicationWatchStarted is true if the watch for ArgoCD Applications has been started.
+	ArgoCDApplicationWatchStarted bool
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	b := ctrl.NewControllerManagedBy(mgr).
 		For(&operatorv1alpha1.Cluster{}, builder.WithPredicates(predicate.Funcs{
 			UpdateFunc: func(e event.UpdateEvent) bool {
 				// Only reconcile if the generation has changed
@@ -70,23 +75,70 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findClustersForSecret),
-		).
-		Watches(
-			&unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"apiVersion": "argoproj.io/v1alpha1",
-					"kind":       "Application",
+		)
+
+	c, err := b.Named("cluster").Build(r)
+	if err != nil {
+		return err
+	}
+
+	// Start a background routine to watch for ArgoCD Application CRD
+	go r.watchArgoCDApplications(mgr, c)
+
+	return nil
+}
+
+func (r *Reconciler) watchArgoCDApplications(mgr ctrl.Manager, c controller.Controller) {
+	ctx := context.Background()
+	log := logf.Log.WithName("cluster").WithName("argocd-watch")
+
+	// Wait for cache to sync before checking CRD
+	if !mgr.GetCache().WaitForCacheSync(ctx) {
+		log.Error(nil, "Failed to sync cache")
+		return
+	}
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	timeout := time.After(5 * time.Minute)
+
+	for {
+		if _, err := mgr.GetRESTMapper().RESTMapping(schema.GroupKind{Group: "argoproj.io", Kind: "Application"}); err == nil {
+			log.Info("ArgoCD Application CRD found, starting watch")
+			err := c.Watch(
+				source.Kind[client.Object](mgr.GetCache(), &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"apiVersion": "argoproj.io/v1alpha1",
+						"kind":       "Application",
+					},
 				},
-			},
-			handler.EnqueueRequestForOwner(mgr.GetScheme(), mgr.GetRESTMapper(), &operatorv1alpha1.Cluster{}),
-			// Only reconcile when the Application spec changes (generation bump).
-			// Annotation patches (e.g. argocd.argoproj.io/refresh) and ArgoCD status
-			// updates do not change the generation, so they are intentionally excluded
-			// to prevent the refresh annotation from triggering a reconcile loop.
-			builder.WithPredicates(predicate.GenerationChangedPredicate{}),
-		).
-		Named("cluster").
-		Complete(r)
+					handler.EnqueueRequestForOwner(mgr.GetScheme(), mgr.GetRESTMapper(), &operatorv1alpha1.Cluster{}),
+					predicate.GenerationChangedPredicate{},
+				),
+			)
+			if err != nil {
+				log.Error(err, "Failed to start watch for ArgoCD Applications")
+				// We'll retry on the next tick
+			} else {
+				r.ArgoCDApplicationWatchStarted = true
+				log.Info("Successfully started watch for ArgoCD Applications")
+				return
+			}
+		} else {
+			log.Info("ArgoCD Application CRD not yet available, retrying in 10s...")
+		}
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// Continue loop
+		case <-timeout:
+			log.Error(nil, "ArgoCD Application CRD not found after 5 minutes, crashing")
+			os.Exit(1)
+		}
+	}
 }
 
 func (r *Reconciler) findClustersForSecret(ctx context.Context, secret client.Object) []reconcile.Request {
@@ -176,7 +228,12 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	r.updateArgoCDCondition(ctx, cluster, metav1.ConditionTrue, operatorv1alpha1.ReasonArgoCDCRDInstalled, "ArgoCD CRDs are installed")
 
 	// Handle the reconciling logic for the cluster
-	return r.reconcileCluster(ctx, cluster)
+	res, err := r.reconcileCluster(ctx, cluster)
+
+	// If the ArgoCD Application watch wasn't set up (e.g. CRDs were missing at startup),
+	// we should requeue more frequently to see if it's there now.
+	// However, we already have a checkArgoCDCRDs in Reconcile which handles this.
+	return res, err
 }
 
 // checkArgoCDCRDs verifies if the required ArgoCD CRDs are installed in the management cluster.

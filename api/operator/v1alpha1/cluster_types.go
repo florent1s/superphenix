@@ -60,6 +60,9 @@ const (
 	ReasonPaused = "Paused"
 	// ReasonResumed is used when the cluster synchronization is resumed.
 	ReasonResumed = "Resumed"
+
+	// ReasonDeleting is used when the cluster is being deleted.
+	ReasonDeleting = "Deleting"
 )
 
 // DeploymentMode defines whether the cluster is hyperconverged or decoupled.

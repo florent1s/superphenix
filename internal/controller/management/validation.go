@@ -3,6 +3,7 @@ package management
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/meta"
 
 	"github.com/Masterminds/semver/v3"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -101,7 +102,7 @@ func (r *Reconciler) getCurrentManagementVersion(ctx context.Context) (string, e
 
 	err := r.Get(ctx, types.NamespacedName{Name: ManagementSuperphenixName, Namespace: r.OperatorNamespace}, app)
 	if err != nil {
-		if apierrors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) || meta.IsNoMatchError(err) {
 			return "", nil
 		}
 		return "", err
