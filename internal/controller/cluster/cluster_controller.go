@@ -209,9 +209,9 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 	log := logf.FromContext(ctx)
 
 	// Set phase to Deploying at the start of reconciliation
-	//if cluster.Status.Phase == "" || cluster.Status.Phase == "Deployed" {
-	//	r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "Reconciling", "Reconciliation in progress", "Deploying")
-	//}
+	if cluster.Status.Phase == "" || cluster.Status.Phase == "Deployed" {
+		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "Reconciling", "Reconciliation in progress", "Deploying")
+	}
 
 	// Reconcile ArgoCD connection secret
 	if err := r.reconcileArgoCDSecret(ctx, cluster); err != nil {

@@ -16,7 +16,7 @@ apps:
   # YAML -- Pure YAML injected to the cluster from a Git repository
   yaml:
     enabled: false
-    modes: []
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
       enabled: false
       selfHeal: false
@@ -32,7 +32,7 @@ apps:
   # Argo -- ArgoCD applications injected to the cluster from a Git repository
   argo:
     enabled: false
-    modes: []
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
       enabled: true
       selfHeal: false
@@ -384,7 +384,7 @@ apps:
 
   kubevirt:
     wave: "5"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -401,7 +401,7 @@ apps:
   # CDI -- Kubevirt CDI
   cdi:
     wave: "5"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -464,7 +464,7 @@ apps:
 
   rook-local-cluster:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledStorage]
     automation:
       enabled: false
@@ -629,7 +629,7 @@ apps:
 
   rook-connection:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [DecoupledVirtualization]
     automation:
       enabled: false
@@ -655,7 +655,7 @@ apps:
       releaseName: "spx-rook-connection"
 
   volume-replicator:
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: true
@@ -673,7 +673,7 @@ apps:
 
   # Policies -- Used to enforce SPX RFCs and protect against bugs/attacks
   policies:
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -689,7 +689,7 @@ apps:
 
   # Talos-backup -- Used to run a CronJob that periodically pushes etcd snapshots to S3 storage
   talos-backup:
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
       enabled: true
@@ -706,7 +706,7 @@ apps:
   # Velero -- Used to execute disaster recovery across AZs
   velero:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -822,7 +822,7 @@ apps:
   # CSI-Addons -- Used to add features such as replications to the CSI
   csi-addons:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: true
@@ -840,7 +840,7 @@ apps:
   # CSI-Snapshotter -- Used to add VolumeSnapshots to the CSI
   csi-snapshotter:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -858,7 +858,7 @@ apps:
   # Kyverno -- Used to correctly set VolumeSnapshotClass/VolumeReplicationClass (ideally removed ASAP)
   kyverno:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: true
@@ -875,7 +875,7 @@ apps:
   # Snapscheduler -- Used to schedule snapshots of volumes
   snapscheduler:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: true
@@ -903,7 +903,7 @@ apps:
   # KaaS Controller -- extra CRDs and resources for KaaS
   kaas-controller:
     wave: "15"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -922,7 +922,7 @@ apps:
   # KaaS Datastore -- Deploys etcd clusters for Kamaji controlplanes through etcd-operator
   kaas-datastore:
     wave: "5"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -943,7 +943,7 @@ apps:
   # Kamaji -- Hosted k8s controlplanes
   kamaji:
     wave: "10"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -987,7 +987,7 @@ apps:
   # Cluster API operator -- Install providers for KaaS
   cluster-api-operator:
     wave: "15"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -1018,7 +1018,7 @@ apps:
   # ETCD operator -- Deploys datastores for the controlplanes
   etcd-operator:
     wave: "5"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
@@ -1043,7 +1043,7 @@ apps:
   # Traefik -- Gateway API & ingress controller
   traefik:
     wave: "0"
-    enabled: false
+    enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
       enabled: false
