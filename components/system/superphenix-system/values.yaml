@@ -100,8 +100,8 @@ apps:
           ingressClass: "spx-nginx"
           kind: DaemonSet
           containerPort:
-            http: 8080
-            https: 8443
+            http: 80
+            https: 443
           service:
             type: ClusterIP
             ports:

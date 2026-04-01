@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
@@ -31,8 +32,7 @@ import (
 
 const (
 	// ManagementArgoCDName is the Helm release name and ArgoCD Application name for the management ArgoCD instance.
-	// TODO: rename to superphenix-argocd
-	ManagementArgoCDName = "superphenix-mgmt-argocd"
+	ManagementArgoCDName = "superphenix-argocd"
 	// ManagementSuperphenixName is the ArgoCD Application name for the superphenix-management chart.
 	ManagementSuperphenixName = "superphenix-management"
 
@@ -88,6 +88,14 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 
 	log.Info("Reconciling management components")
 
+	// Validate management chart upgrade path and cluster compatibility
+	if err := r.validateManagementUpgrade(ctx, r.ManagementChartVersion); err != nil {
+		log.Error(err, "Validation of management upgrade failed")
+		// We stop here if validation fails.
+		// Note: We don't have a specific status for management yet, so we just log the error.
+		return reconcile.Result{RequeueAfter: 5 * time.Minute}, nil
+	}
+
 	if err := r.reconcileManagementArgoCD(ctx); err != nil {
 		log.Error(err, "ArgoCD reconciliation failed")
 		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
@@ -110,7 +118,16 @@ func (r *Reconciler) isTargetConfigMap(name, namespace string) bool {
 func (r *Reconciler) configMapPredicate() predicate.Predicate {
 	return predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			return r.isTargetConfigMap(e.ObjectNew.GetName(), e.ObjectNew.GetNamespace())
+			if !r.isTargetConfigMap(e.ObjectNew.GetName(), e.ObjectNew.GetNamespace()) {
+				return false
+			}
+			// Only reconcile if the data actually changed.
+			oldCm, ok1 := e.ObjectOld.(*corev1.ConfigMap)
+			newCm, ok2 := e.ObjectNew.(*corev1.ConfigMap)
+			if ok1 && ok2 {
+				return !reflect.DeepEqual(oldCm.Data, newCm.Data)
+			}
+			return true
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
 			return r.isTargetConfigMap(e.Object.GetName(), e.Object.GetNamespace())
@@ -400,6 +417,14 @@ func (r *Reconciler) createOrUpdateArgoCDApplication(ctx context.Context, app *u
 		return nil
 	}
 
+	// Only update if the spec actually changed to avoid spurious generation bumps.
+	existingSpec, _, _ := unstructured.NestedMap(existing.Object, "spec")
+	desiredSpec, _, _ := unstructured.NestedMap(app.Object, "spec")
+	if reflect.DeepEqual(existingSpec, desiredSpec) {
+		log.Info("ArgoCD Application spec unchanged, skipping update", "name", name)
+		return nil
+	}
+
 	log.Info("Updating ArgoCD Application", "name", name)
 	app.SetResourceVersion(existing.GetResourceVersion())
 	if err := r.Update(ctx, app); err != nil {
@@ -439,16 +464,16 @@ func loadYAMLFileValues(path string) (map[string]interface{}, bool, error) {
 	return vals, true, nil
 }
 
-// loadConfigMapValues fetches the management values ConfigMap and deep-merges the given key into dst.
-func (r *Reconciler) loadConfigMapValues(ctx context.Context, key string, dst map[string]interface{}) error {
+// loadConfigMapValuesFrom fetches the specified ConfigMap and deep-merges the given key into dst.
+func (r *Reconciler) loadConfigMapValuesFrom(ctx context.Context, name, key string, dst map[string]interface{}) error {
 	log := logf.FromContext(ctx)
 
 	cm := &corev1.ConfigMap{}
-	err := r.Get(ctx, types.NamespacedName{Name: r.ValuesConfigMapName, Namespace: r.OperatorNamespace}, cm)
+	err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: r.OperatorNamespace}, cm)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			log.Info("Management values ConfigMap not found, using defaults only",
-				"name", r.ValuesConfigMapName,
+				"name", name,
 				"namespace", r.OperatorNamespace)
 			return nil
 		}
@@ -458,7 +483,7 @@ func (r *Reconciler) loadConfigMapValues(ctx context.Context, key string, dst ma
 	data, ok := cm.Data[key]
 	if !ok {
 		log.Info("Management values ConfigMap has no key, skipping",
-			"name", r.ValuesConfigMapName,
+			"name", name,
 			"key", key)
 		return nil
 	}
@@ -503,7 +528,7 @@ func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, c
 	}
 
 	if r.ValuesConfigMapName != "" && r.OperatorNamespace != "" {
-		if err := r.loadConfigMapValues(ctx, configMapKey, merged); err != nil {
+		if err := r.loadConfigMapValuesFrom(ctx, r.ValuesConfigMapName, configMapKey, merged); err != nil {
 			return nil, err
 		}
 	}

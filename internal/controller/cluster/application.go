@@ -2,13 +2,13 @@ package cluster
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"maps"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	kjson "k8s.io/apimachinery/pkg/util/json"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -83,6 +83,13 @@ func (r *Reconciler) propagateApplicationStatus(ctx context.Context, cluster *op
 		reason = operatorv1alpha1.ReasonArgoCDSyncing
 		message = "ArgoCD Application is syncing"
 		phase = "Deploying"
+	case "":
+		// ArgoCD has not evaluated the Application yet (e.g. just created or operator restarted).
+		// Preserve the current phase rather than flipping to Error.
+		status = metav1.ConditionUnknown
+		reason = operatorv1alpha1.ReasonArgoCDUnknown
+		message = "ArgoCD Application sync status is not yet available"
+		phase = "Unknown"
 	default:
 		status = metav1.ConditionFalse
 		reason = operatorv1alpha1.ReasonArgoCDSyncFailed
@@ -165,11 +172,6 @@ func (r *Reconciler) setApplicationOwnership(cluster *operatorv1alpha1.Cluster, 
 
 // buildApplicationSpec creates the specs of the cluster application.
 func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map[string]interface{} {
-	destName := cluster.Name
-	if cluster.Spec.Connection.Mode == operatorv1alpha1.ConnectionModeLocal {
-		destName = "in-cluster"
-	}
-
 	repoURL := r.DefaultRepoURL
 	if cluster.Spec.RepoURL != "" {
 		repoURL = cluster.Spec.RepoURL
@@ -192,6 +194,14 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			"PruneLast=true",
 			"SkipDryRunOnMissingResource=true",
 		},
+		/*"retry": map[string]interface{}{
+			"limit": int64(2),
+			"backoff": map[string]interface{}{
+				"duration":    "30s",
+				"factor":      int64(2),
+				"maxDuration": "3m",
+			},
+		},*/
 	}
 
 	if !cluster.Spec.PauseSync {
@@ -212,7 +222,7 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			},
 		},
 		"destination": map[string]interface{}{
-			"name":      destName,
+			"name":      "in-cluster",
 			"namespace": r.OperatorNamespace,
 		},
 		"syncPolicy": syncPolicy,
@@ -246,7 +256,11 @@ func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster
 
 	if cluster.Spec.SystemConfiguration != nil {
 		var systemConfig map[string]interface{}
-		if err := json.Unmarshal(cluster.Spec.SystemConfiguration.Raw, &systemConfig); err == nil {
+		// Use k8s JSON unmarshaler (PreserveInts) so integer values like port numbers
+		// decode as int64 — matching what the API server returns when reading the spec back.
+		// Standard encoding/json decodes all numbers as float64, which causes a type mismatch
+		// in CreateOrUpdate's DeepEqual check and triggers an infinite reconcile loop.
+		if err := kjson.Unmarshal(cluster.Spec.SystemConfiguration.Raw, &systemConfig); err == nil {
 			maps.Copy(values, systemConfig)
 		}
 	}

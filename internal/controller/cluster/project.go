@@ -126,12 +126,13 @@ func (r *Reconciler) buildAppProjectSpec(cluster *operatorv1alpha1.Cluster) map[
 	if cluster.Spec.PauseSync {
 		spec["syncWindows"] = []interface{}{
 			map[string]interface{}{
-				"kind":       "deny",
-				"schedule":   "0 0 * * *", // We use a dummy schedule as we want it to be always active
-				"duration":   "24h",       // Cover the whole day
-				"manualSync": false,
-				"clusters":   []interface{}{destName, "in-cluster"},
-				"namespaces": []interface{}{"*"},
+				"kind":         "deny",
+				"schedule":     "0 0 * * *", // We use a dummy schedule as we want it to be always active
+				"duration":     "24h",       // Cover the whole day
+				"manualSync":   false,
+				"applications": []interface{}{"*"},
+				"clusters":     []interface{}{destName, "in-cluster"},
+				"namespaces":   []interface{}{"*"},
 			},
 		}
 	}

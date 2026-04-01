@@ -13,6 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
 
 var _ = Describe("Management Controller", func() {
@@ -94,7 +96,7 @@ var _ = Describe("Management Controller", func() {
 					Namespace: argoNamespace,
 				},
 				Data: map[string]string{
-					"values": "server:\n  service:\n    type: LoadBalancer\n  additional:\n    key: value",
+					ConfigMapKeyArgoCD: "server:\n  service:\n    type: LoadBalancer\n  additional:\n    key: value",
 				},
 			}
 			Expect(k8sClient.Create(ctx, cm)).To(Succeed())
@@ -114,13 +116,13 @@ var _ = Describe("Management Controller", func() {
 			Expect(os.WriteFile(haPath, []byte(haValues), 0644)).To(Succeed())
 
 			mgmtReconciler := &Reconciler{
-				Client:                    k8sClient,
-				Scheme:                    k8sClient.Scheme(),
-				OperatorNamespace:         argoNamespace,
-				ArgoCDValuesConfigMapName: cmName,
-				ArgoCDDefaultConfig:       defaultPath,
-				ArgoCDHAConfig:            haPath,
-				HAEnabled:                 true,
+				Client:              k8sClient,
+				Scheme:              k8sClient.Scheme(),
+				OperatorNamespace:   argoNamespace,
+				ValuesConfigMapName: cmName,
+				ArgoCDDefaultConfig: defaultPath,
+				ArgoCDHAConfig:      haPath,
+				HAEnabled:           true,
 			}
 
 			By("Calling mergeArgoCDValues")
@@ -167,16 +169,16 @@ var _ = Describe("Management Controller", func() {
 					Namespace: argoNamespace,
 				},
 				Data: map[string]string{
-					"values": "test: original",
+					ConfigMapKeyArgoCD: "test: original",
 				},
 			}
 			Expect(k8sClient.Create(ctx, cm)).To(Succeed())
 
 			mgmtReconciler := &Reconciler{
-				Client:                    k8sClient,
-				Scheme:                    k8sClient.Scheme(),
-				OperatorNamespace:         argoNamespace,
-				ArgoCDValuesConfigMapName: cmName,
+				Client:              k8sClient,
+				Scheme:              k8sClient.Scheme(),
+				OperatorNamespace:   argoNamespace,
+				ValuesConfigMapName: cmName,
 			}
 
 			By("Manually calling Reconcile with the ConfigMap request")
@@ -222,7 +224,7 @@ var _ = Describe("Management Controller", func() {
 					Namespace: argoNamespace,
 				},
 				Data: map[string]string{
-					"values": "server:\n  service:\n    type: null\n  additional: null",
+					ConfigMapKeyArgoCD: "server:\n  service:\n    type: null\n  additional: null",
 				},
 			}
 			Expect(k8sClient.Create(ctx, cm)).To(Succeed())
@@ -237,11 +239,11 @@ var _ = Describe("Management Controller", func() {
 			Expect(os.WriteFile(defaultPath, []byte(defaultValues), 0644)).To(Succeed())
 
 			mgmtReconciler := &Reconciler{
-				Client:                    k8sClient,
-				Scheme:                    k8sClient.Scheme(),
-				OperatorNamespace:         argoNamespace,
-				ArgoCDValuesConfigMapName: cmName,
-				ArgoCDDefaultConfig:       defaultPath,
+				Client:              k8sClient,
+				Scheme:              k8sClient.Scheme(),
+				OperatorNamespace:   argoNamespace,
+				ValuesConfigMapName: cmName,
+				ArgoCDDefaultConfig: defaultPath,
 			}
 
 			By("Calling mergeArgoCDValues")
@@ -280,7 +282,7 @@ var _ = Describe("Management Controller", func() {
 					Namespace: argoNamespace,
 				},
 				Data: map[string]string{
-					"values": "topLevel: null",
+					ConfigMapKeyArgoCD: "topLevel: null",
 				},
 			}
 			Expect(k8sClient.Create(ctx, cm)).To(Succeed())
@@ -295,11 +297,11 @@ var _ = Describe("Management Controller", func() {
 			Expect(os.WriteFile(defaultPath, []byte(defaultValues), 0644)).To(Succeed())
 
 			mgmtReconciler := &Reconciler{
-				Client:                    k8sClient,
-				Scheme:                    k8sClient.Scheme(),
-				OperatorNamespace:         argoNamespace,
-				ArgoCDValuesConfigMapName: cmName,
-				ArgoCDDefaultConfig:       defaultPath,
+				Client:              k8sClient,
+				Scheme:              k8sClient.Scheme(),
+				OperatorNamespace:   argoNamespace,
+				ValuesConfigMapName: cmName,
+				ArgoCDDefaultConfig: defaultPath,
 			}
 
 			By("Calling mergeArgoCDValues")
@@ -311,6 +313,150 @@ var _ = Describe("Management Controller", func() {
 			Expect(hasTopLevel).To(BeFalse(), "topLevel should be removed because it was null in override")
 
 			Expect(vals["otherKey"]).To(Equal("otherValue"))
+		})
+	})
+
+	Context("Validation", func() {
+		ctx := context.Background()
+
+		It("should fail if cluster version is not supported by management version", func() {
+			mgmtReconciler := &Reconciler{
+				Client:                 k8sClient,
+				OperatorNamespace:      "default",
+				ManagementChartVersion: "1.1.0",
+			}
+
+			By("Creating an incompatible cluster")
+			cluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "incompatible-cluster",
+					Namespace: "default",
+				},
+				Spec: operatorv1alpha1.ClusterSpec{
+					Version:          "0.9.0", // 1.1.0 requires >= 1.0.0
+					Region:           "us-east-1",
+					AvailabilityZone: "us-east-1a",
+					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeLocal,
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, cluster)
+			}()
+
+			err := mgmtReconciler.validateManagementUpgrade(ctx, "1.1.0")
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("is not supported by management version 1.1.0"))
+		})
+
+		It("should succeed if all cluster versions are supported", func() {
+			mgmtReconciler := &Reconciler{
+				Client:                 k8sClient,
+				OperatorNamespace:      "default",
+				ManagementChartVersion: "1.1.0",
+			}
+
+			By("Creating a compatible cluster")
+			cluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "compatible-cluster",
+					Namespace: "default",
+				},
+				Spec: operatorv1alpha1.ClusterSpec{
+					Version:          "1.0.0", // 1.1.0 requires >= 1.0.0
+					Region:           "us-east-1",
+					AvailabilityZone: "us-east-1a",
+					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeLocal,
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, cluster)
+			}()
+
+			err := mgmtReconciler.validateManagementUpgrade(ctx, "1.1.0")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("should fail if management upgrade path is not supported", func() {
+			mgmtReconciler := &Reconciler{
+				Client:            k8sClient,
+				OperatorNamespace: "default",
+			}
+
+			By("Creating an existing ArgoCD Application with an old version")
+			app := &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "argoproj.io/v1alpha1",
+					"kind":       "Application",
+					"metadata": map[string]interface{}{
+						"name":      ManagementSuperphenixName,
+						"namespace": "default",
+					},
+					"spec": map[string]interface{}{
+						"project": "default",
+						"source": map[string]interface{}{
+							"repoURL":        "https://example.com/charts",
+							"targetRevision": "0.9.0", // 1.1.0 requires >= 1.0.0
+						},
+						"destination": map[string]interface{}{
+							"server":    "https://kubernetes.default.svc",
+							"namespace": "default",
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, app)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, app)
+			}()
+
+			err := mgmtReconciler.validateManagementUpgrade(ctx, "1.1.0")
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("management upgrade from 0.9.0 to 1.1.0 is not supported"))
+		})
+
+		It("should succeed if management upgrade path is supported", func() {
+			mgmtReconciler := &Reconciler{
+				Client:            k8sClient,
+				OperatorNamespace: "default",
+			}
+
+			By("Creating an existing ArgoCD Application with a compatible version")
+			app := &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "argoproj.io/v1alpha1",
+					"kind":       "Application",
+					"metadata": map[string]interface{}{
+						"name":      ManagementSuperphenixName,
+						"namespace": "default",
+					},
+					"spec": map[string]interface{}{
+						"project": "default",
+						"source": map[string]interface{}{
+							"repoURL":        "https://example.com/charts",
+							"targetRevision": "1.0.0", // 1.1.0 requires >= 1.0.0
+						},
+						"destination": map[string]interface{}{
+							"server":    "https://kubernetes.default.svc",
+							"namespace": "default",
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, app)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, app)
+			}()
+
+			err := mgmtReconciler.validateManagementUpgrade(ctx, "1.1.0")
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })

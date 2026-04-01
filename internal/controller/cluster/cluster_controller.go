@@ -274,24 +274,5 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 }
 
 func (r *Reconciler) updateArgoCDCondition(ctx context.Context, cluster *operatorv1alpha1.Cluster, status metav1.ConditionStatus, reason, message string) {
-	// Check if condition already exists with same values
-	for _, c := range cluster.Status.Conditions {
-		if c.Type == operatorv1alpha1.ConditionTypeArgoCDInstalled && c.Status == status && c.Reason == reason {
-			return
-		}
-	}
-
-	patch := client.MergeFrom(cluster.DeepCopy())
-	condition := metav1.Condition{
-		Type:               operatorv1alpha1.ConditionTypeArgoCDInstalled,
-		Status:             status,
-		Reason:             reason,
-		Message:            message,
-		LastTransitionTime: metav1.Now(),
-		ObservedGeneration: cluster.Generation,
-	}
-	r.setCondition(&cluster.Status.Conditions, condition)
-	if err := r.Status().Patch(ctx, cluster, patch); err != nil {
-		logf.FromContext(ctx).Error(err, "Failed to patch ArgoCD condition")
-	}
+	r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeArgoCDInstalled, status, reason, message)
 }

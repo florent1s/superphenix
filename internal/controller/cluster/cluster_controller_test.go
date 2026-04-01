@@ -292,6 +292,27 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(ok).To(BeTrue())
 			Expect(tlsConfig["insecure"]).To(Equal(true))
 
+			By("Verifying that multiple reconciles do not update the status if nothing changed")
+			err = k8sClient.Get(ctx, typeNamespacedName, latestCluster)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Perform one extra reconcile to stabilize any remaining fields (e.g. KubernetesVersion or CurrentVersion patches)
+			_, _ = controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: typeNamespacedName,
+			})
+			err = k8sClient.Get(ctx, typeNamespacedName, latestCluster)
+			Expect(err).NotTo(HaveOccurred())
+			resourceVersionBefore := latestCluster.GetResourceVersion()
+
+			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: typeNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = k8sClient.Get(ctx, typeNamespacedName, latestCluster)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(latestCluster.GetResourceVersion()).To(Equal(resourceVersionBefore), "ResourceVersion should not change when nothing changed")
+
 			By("Creating a cluster with remote connection")
 			mgmtClusterName := "remote-cluster"
 			mgmtClusterNamespacedName := types.NamespacedName{
@@ -984,6 +1005,15 @@ var _ = Describe("Cluster Controller", func() {
 			syncOptions, found, _ := unstructured.NestedSlice(syncPolicy, "syncOptions")
 			Expect(found).To(BeTrue())
 			Expect(syncOptions).To(ContainElement("SkipDryRunOnMissingResource=true"))
+
+			retry, found, _ := unstructured.NestedMap(syncPolicy, "retry")
+			Expect(found).To(BeTrue())
+			Expect(retry["limit"]).To(Equal(int64(2)))
+			backoff, found, _ := unstructured.NestedMap(retry, "backoff")
+			Expect(found).To(BeTrue())
+			Expect(backoff["duration"]).To(Equal("30s"))
+			Expect(backoff["factor"]).To(Equal(int64(2)))
+			Expect(backoff["maxDuration"]).To(Equal("3m"))
 
 			// Verify ArgoCD AppProject spec
 			project := &unstructured.Unstructured{}

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -32,6 +31,33 @@ func (r *Reconciler) updateStatus(ctx context.Context, cluster *operatorv1alpha1
 
 func (r *Reconciler) updateStatusWithPhase(ctx context.Context, cluster *operatorv1alpha1.Cluster, condType string, status metav1.ConditionStatus, reason, message string, phase string) {
 	log := logf.FromContext(ctx)
+
+	var existingCondition *metav1.Condition
+	for i := range cluster.Status.Conditions {
+		if cluster.Status.Conditions[i].Type == condType {
+			existingCondition = &cluster.Status.Conditions[i]
+			break
+		}
+	}
+
+	// Check if any change is needed
+	changed := false
+	if phase != "" && cluster.Status.Phase != phase {
+		changed = true
+	}
+	if cluster.Status.ObservedGeneration != cluster.Generation {
+		changed = true
+	}
+	if existingCondition == nil {
+		changed = true
+	} else if existingCondition.Status != status || existingCondition.Reason != reason || existingCondition.Message != message {
+		changed = true
+	}
+
+	if !changed {
+		return
+	}
+
 	patch := client.MergeFrom(cluster.DeepCopy())
 
 	if phase != "" {
@@ -43,13 +69,16 @@ func (r *Reconciler) updateStatusWithPhase(ctx context.Context, cluster *operato
 		Status:             status,
 		Reason:             reason,
 		Message:            message,
-		LastTransitionTime: metav1.Now(),
 		ObservedGeneration: cluster.Generation,
 	}
 
-	// Ensure opposite conditions are updated too
-	r.setCondition(&cluster.Status.Conditions, condition)
+	if existingCondition != nil && existingCondition.Status == status && existingCondition.Reason == reason && existingCondition.Message == message {
+		condition.LastTransitionTime = existingCondition.LastTransitionTime
+	} else {
+		condition.LastTransitionTime = metav1.Now()
+	}
 
+	r.setCondition(&cluster.Status.Conditions, condition)
 	cluster.Status.ObservedGeneration = cluster.Generation
 
 	if err := r.Status().Patch(ctx, cluster, patch); err != nil {
@@ -61,19 +90,17 @@ func (r *Reconciler) updateStatusWithPhase(ctx context.Context, cluster *operato
 func (r *Reconciler) updateKubernetesVersion(ctx context.Context, cluster *operatorv1alpha1.Cluster, k8sVersion string) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 
-	if cluster.Status.KubernetesVersion != k8sVersion {
-		log.Info("Updating Kubernetes version", "oldVersion", cluster.Status.KubernetesVersion, "newVersion", k8sVersion)
-		// Refresh object to avoid conflict
-		latest := &operatorv1alpha1.Cluster{}
-		if err := r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, latest); err == nil {
-			latest.Status.KubernetesVersion = k8sVersion
-			if err := r.Status().Update(ctx, latest); err != nil {
-				log.Error(err, "Failed to update cluster status with kubernetes version")
-				return ctrl.Result{RequeueAfter: time.Minute}, err
-			}
-			// Update the local object as well
-			cluster.Status.KubernetesVersion = k8sVersion
-		}
+	if cluster.Status.KubernetesVersion == k8sVersion {
+		return ctrl.Result{}, nil
+	}
+
+	log.Info("Updating Kubernetes version", "oldVersion", cluster.Status.KubernetesVersion, "newVersion", k8sVersion)
+	patch := client.MergeFrom(cluster.DeepCopy())
+	cluster.Status.KubernetesVersion = k8sVersion
+
+	if err := r.Status().Patch(ctx, cluster, patch); err != nil {
+		log.Error(err, "Failed to patch cluster status with kubernetes version")
+		return ctrl.Result{RequeueAfter: time.Minute}, err
 	}
 	return ctrl.Result{}, nil
 }
@@ -82,34 +109,23 @@ func (r *Reconciler) updateKubernetesVersion(ctx context.Context, cluster *opera
 func (r *Reconciler) updateClusterVersion(ctx context.Context, cluster *operatorv1alpha1.Cluster) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 
-	if cluster.Status.CurrentVersion != cluster.Spec.Version {
-		log.Info("Updating current version", "oldVersion", cluster.Status.CurrentVersion, "newVersion", cluster.Spec.Version)
-		// Refresh object to avoid conflict
-		latest := &operatorv1alpha1.Cluster{}
-		if err := r.Get(ctx, types.NamespacedName{Name: cluster.Name, Namespace: cluster.Namespace}, latest); err == nil {
-			latest.Status.CurrentVersion = cluster.Spec.Version
-			if cluster.Status.Phase != "Paused" && cluster.Status.Phase != "Deploying" {
-				latest.Status.Phase = "Deployed"
-			}
-			if err := r.Status().Update(ctx, latest); err != nil {
-				log.Error(err, "Failed to update cluster status with new version")
-				return ctrl.Result{RequeueAfter: time.Minute}, err
-			}
-			// Update the local object as well so following logic sees the change
-			cluster.Status.CurrentVersion = cluster.Spec.Version
-			if cluster.Status.Phase != "Paused" && cluster.Status.Phase != "Deploying" {
-				cluster.Status.Phase = "Deployed"
-			}
-		} else {
-			cluster.Status.CurrentVersion = cluster.Spec.Version
-			if cluster.Status.Phase != "Paused" && cluster.Status.Phase != "Deploying" {
-				cluster.Status.Phase = "Deployed"
-			}
-			if err := r.Status().Update(ctx, cluster); err != nil {
-				log.Error(err, "Failed to update cluster status with new version")
-				return ctrl.Result{RequeueAfter: time.Minute}, err
-			}
-		}
+	newPhase := cluster.Status.Phase
+	if cluster.Status.Phase != "Paused" && cluster.Status.Phase != "Deploying" {
+		newPhase = "Deployed"
+	}
+
+	if cluster.Status.CurrentVersion == cluster.Spec.Version && cluster.Status.Phase == newPhase {
+		return ctrl.Result{}, nil
+	}
+
+	log.Info("Updating current version", "oldVersion", cluster.Status.CurrentVersion, "newVersion", cluster.Spec.Version, "phase", newPhase)
+	patch := client.MergeFrom(cluster.DeepCopy())
+	cluster.Status.CurrentVersion = cluster.Spec.Version
+	cluster.Status.Phase = newPhase
+
+	if err := r.Status().Patch(ctx, cluster, patch); err != nil {
+		log.Error(err, "Failed to patch cluster status with new version")
+		return ctrl.Result{RequeueAfter: time.Minute}, err
 	}
 
 	return ctrl.Result{}, nil
