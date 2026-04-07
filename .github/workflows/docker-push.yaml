@@ -1,0 +1,71 @@
+name: Push Docker Images to GHCR
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  push-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Images
+        run: |
+          set -e
+          REGISTRY="ghcr.io/${{ github.repository_owner }}"
+
+          # Find all "docker" directories within components
+          find components -type d -name "docker" | while read -r docker_dir; do
+            if [ -f "$docker_dir/Dockerfile" ]; then
+              # Get the component name (parent directory of the docker folder)
+              COMPONENT_NAME=$(basename "$(dirname "$docker_dir")")
+              IMAGE_NAME="${REGISTRY}/${COMPONENT_NAME}"
+              
+              echo "Processing Docker image for component: $COMPONENT_NAME"
+              echo "Directory: $docker_dir"
+
+              # Determine the tag
+              TAGS=""
+              if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+                # Tagged build
+                TAGS="${IMAGE_NAME}:${{ github.ref_name }}"
+              elif [[ "${{ github.ref_name }}" == "main" ]]; then
+                # Main branch build
+                TAGS="${IMAGE_NAME}:latest"
+              fi
+
+              if [ -n "$TAGS" ]; then
+                echo "Building and pushing $TAGS"
+                # Use --tag for each tag identified
+                docker build -t "$TAGS" "$docker_dir"
+                docker push "$TAGS"
+              else
+                echo "No tag determined (not on main or tag), skipping push."
+                docker build -t "${IMAGE_NAME}:temp" "$docker_dir"
+              fi
+            else
+              echo "No Dockerfile found in $docker_dir, skipping."
+            fi
+          done
