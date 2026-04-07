@@ -56,14 +56,29 @@ jobs:
                 TAGS="${IMAGE_NAME}:latest"
               fi
 
-              if [ -n "$TAGS" ]; then
-                echo "Building and pushing $TAGS"
-                # Use --tag for each tag identified
-                docker build -t "$TAGS" "$docker_dir"
-                docker push "$TAGS"
+              # Check if a custom make target exists for this component
+              MAKE_TARGET="docker-build-${COMPONENT_NAME}"
+              if grep -q "^${MAKE_TARGET}:" Makefile; then
+                echo "Found specific make target: $MAKE_TARGET"
+                if [ -n "$TAGS" ]; then
+                  echo "Building and pushing $TAGS using make"
+                  make "$MAKE_TARGET" IMG="$TAGS"
+                  docker push "$TAGS"
+                else
+                  echo "No tag determined, building temp image using make"
+                  make "$MAKE_TARGET" IMG="${IMAGE_NAME}:temp"
+                fi
               else
-                echo "No tag determined (not on main or tag), skipping push."
-                docker build -t "${IMAGE_NAME}:temp" "$docker_dir"
+                if [ -n "$TAGS" ]; then
+                  echo "Building and pushing $TAGS"
+                  # Use --tag for each tag identified
+                  # Run from project root to ensure Docker context has access to go.mod etc.
+                  docker build -t "$TAGS" -f "$docker_dir/Dockerfile" .
+                  docker push "$TAGS"
+                else
+                  echo "No tag determined (not on main or tag), skipping push."
+                  docker build -t "${IMAGE_NAME}:temp" -f "$docker_dir/Dockerfile" .
+                fi
               fi
             else
               echo "No Dockerfile found in $docker_dir, skipping."

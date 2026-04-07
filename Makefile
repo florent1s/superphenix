@@ -120,6 +120,9 @@ run: manifests generate fmt vet ## Run a controller from your host.
 docker-build: ## Build docker image with the manager.
 	$(CONTAINER_TOOL) build -t ${IMG} -f components/system/superphenix-operator/docker/Dockerfile .
 
+.PHONY: docker-build-superphenix-operator
+docker-build-superphenix-operator: docker-build ## Specific target for superphenix-operator image build.
+
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
 	$(CONTAINER_TOOL) push ${IMG}
