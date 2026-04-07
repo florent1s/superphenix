@@ -1,7 +1,7 @@
 FROM python:3.10.19-trixie
 
-COPY parser.py /parser.py
-COPY parser.sh /parser.sh
+COPY components/dependencies/uuidv5/parser.py /parser.py
+COPY components/dependencies/uuidv5/parser.sh /parser.sh
 RUN chmod 777 /parser.sh
 RUN apt-get update && apt-get install -y curl git tini
 
@@ -12,7 +12,7 @@ RUN ./get_helm.sh
 RUN groupadd -g 999 argocd
 RUN useradd -m -u 999 -g 999 -s /bin/bash argocd
 
-COPY clone.sh /clone.sh
+COPY components/dependencies/uuidv5/clone.sh /clone.sh
 RUN chmod +x /clone.sh
 
 ENTRYPOINT ["tini", "--"]

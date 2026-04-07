@@ -10,5 +10,9 @@
 !go.mod
 !go.sum
 
+# Re-include scripts and python files for uuidv5
+!components/dependencies/uuidv5/*.sh
+!components/dependencies/uuidv5/*.py
+
 # Re-include YAML files for embedding
 !**/*.yaml
