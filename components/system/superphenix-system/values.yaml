@@ -307,7 +307,7 @@ apps:
       chart: "loki"
       releaseName: "loki"
       values:
-        deploymentMode: SingleBinary
+        deploymentTopology: SingleBinary
         global:
           clusterDomain: ""
           dnsService: "coredns"

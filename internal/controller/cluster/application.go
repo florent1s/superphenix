@@ -233,10 +233,10 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster) map[string]interface{} {
 	values := map[string]interface{}{
 		"cluster": map[string]interface{}{
-			"name":             cluster.Name,
-			"region":           cluster.Spec.Region,
-			"availabilityZone": cluster.Spec.AvailabilityZone,
-			"deploymentMode":   string(cluster.Spec.DeploymentMode),
+			"name":               cluster.Name,
+			"region":             cluster.Spec.Region,
+			"availabilityZone":   cluster.Spec.AvailabilityZone,
+			"deploymentTopology": string(cluster.Spec.DeploymentTopology),
 		},
 		"argocd": map[string]interface{}{
 			"namespace": r.OperatorNamespace,

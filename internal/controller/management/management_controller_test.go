@@ -333,10 +333,10 @@ var _ = Describe("Management Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					Version:          "0.9.0", // 1.1.0 requires >= 1.0.0
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
+					Version:            "0.9.0", // 1.1.0 requires >= 1.0.0
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},
@@ -366,10 +366,10 @@ var _ = Describe("Management Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					Version:          "1.0.0", // 1.1.0 requires >= 1.0.0
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
+					Version:            "1.0.0", // 1.1.0 requires >= 1.0.0
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},

@@ -65,16 +65,16 @@ const (
 	ReasonDeleting = "Deleting"
 )
 
-// DeploymentMode defines whether the cluster is hyperconverged or decoupled.
+// DeploymentTopology defines whether the cluster is hyperconverged or decoupled.
 // +kubebuilder:validation:Enum=Hyperconverged;Decoupled
-type DeploymentMode string
+type DeploymentTopology string
 
 const (
-	// DeploymentModeHyperconverged - Storage and virtualization run on the same cluster.
-	DeploymentModeHyperconverged DeploymentMode = "Hyperconverged"
+	// DeploymentTopologyHyperconverged - Storage and virtualization run on the same cluster.
+	DeploymentTopologyHyperconverged DeploymentTopology = "Hyperconverged"
 
-	// DeploymentModeDecoupled - Storage and virtualization run on separate clusters.
-	DeploymentModeDecoupled DeploymentMode = "Decoupled"
+	// DeploymentTopologyDecoupled - Storage and virtualization run on separate clusters.
+	DeploymentTopologyDecoupled DeploymentTopology = "Decoupled"
 )
 
 // ClusterType defines the type of cluster when in Decoupled mode.
@@ -91,13 +91,13 @@ const (
 
 // ClusterSpec defines the desired state of Cluster.
 type ClusterSpec struct {
-	// DeploymentMode defines whether the cluster is hyperconverged or decoupled.
+	// DeploymentTopology defines whether the cluster is hyperconverged or decoupled.
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:Enum=Hyperconverged;Decoupled
-	DeploymentMode DeploymentMode `json:"deploymentMode,omitempty"`
+	DeploymentTopology DeploymentTopology `json:"deploymentTopology,omitempty"`
 
-	// Type specifies the cluster type (Storage or Virtualization) when DeploymentMode is Decoupled.
-	// This field can only be set when DeploymentMode is Decoupled and is ignored otherwise.
+	// Type specifies the cluster type (Storage or Virtualization) when DeploymentTopology is Decoupled.
+	// This field can only be set when DeploymentTopology is Decoupled and is ignored otherwise.
 	// +optional
 	Type *ClusterType `json:"type,omitempty"`
 
@@ -217,7 +217,7 @@ type ClusterStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced
-// +kubebuilder:printcolumn:name="Mode",type=string,JSONPath=`.spec.deploymentMode`
+// +kubebuilder:printcolumn:name="Topology",type=string,JSONPath=`.spec.deploymentTopology`
 // +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.type`
 // +kubebuilder:printcolumn:name="Region",type=string,JSONPath=`.spec.region`
 // +kubebuilder:printcolumn:name="AZ",type=string,JSONPath=`.spec.availabilityZone`

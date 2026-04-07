@@ -4,9 +4,9 @@
 {{ $labels := include "superphenix-system.labels" . }}
 
 {{- range $app, $values := .Values.apps }}
-{{- $currentMode := $.Values.cluster.deploymentMode }}
-{{- if eq $.Values.cluster.deploymentMode "Decoupled" }}
-  {{- $currentMode = printf "%s%s" $.Values.cluster.deploymentMode $.Values.cluster.type }}
+{{- $currentMode := $.Values.cluster.deploymentTopology }}
+{{- if eq $.Values.cluster.deploymentTopology "Decoupled" }}
+{{- $currentMode = printf "%s%s" $.Values.cluster.deploymentTopology $.Values.cluster.type }}
 {{- end }}
 {{- if and (eq $values.enabled true) (eq $disableAll false) (has $currentMode (default (list) $values.modes)) }}
 

@@ -41,10 +41,10 @@ var _ = Describe("Cluster Controller", func() {
 						Namespace: "default",
 					},
 					Spec: operatorv1alpha1.ClusterSpec{
-						DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-						Region:           "us-east-1",
-						AvailabilityZone: "us-east-1a",
-						Version:          "1.0.0",
+						DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+						Region:             "us-east-1",
+						AvailabilityZone:   "us-east-1a",
+						Version:            "1.0.0",
 						Connection: &operatorv1alpha1.ClusterConnectionSpec{
 							Mode: operatorv1alpha1.ConnectionModeLocal,
 						},
@@ -325,10 +325,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 						URL:  "https://remote-cluster:6443",
@@ -384,10 +384,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 					},
@@ -443,10 +443,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 						URL:  "https://localhost:6443",
@@ -523,10 +523,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 						URL:  "https://localhost:6443",
@@ -603,10 +603,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},
@@ -789,10 +789,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeRemote,
 						URL:  "https://trigger-cluster:6443",
@@ -890,10 +890,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: otherNamespace,
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},
@@ -950,10 +950,10 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: clusterNamespace,
 				},
 				Spec: operatorv1alpha1.ClusterSpec{
-					DeploymentMode:   operatorv1alpha1.DeploymentModeHyperconverged,
-					Region:           "us-east-1",
-					AvailabilityZone: "us-east-1a",
-					Version:          "1.0.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},

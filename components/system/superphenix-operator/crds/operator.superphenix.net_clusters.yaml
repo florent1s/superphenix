@@ -15,8 +15,8 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.deploymentMode
-      name: Mode
+    - jsonPath: .spec.deploymentTopology
+      name: Topology
       type: string
     - jsonPath: .spec.type
       name: Type
@@ -110,7 +110,7 @@ spec:
                 required:
                 - mode
                 type: object
-              deploymentMode:
+              deploymentTopology:
                 allOf:
                 - enum:
                   - Hyperconverged
@@ -118,7 +118,7 @@ spec:
                 - enum:
                   - Hyperconverged
                   - Decoupled
-                description: DeploymentMode defines whether the cluster is hyperconverged
+                description: DeploymentTopology defines whether the cluster is hyperconverged
                   or decoupled.
                 type: string
               pauseSync:
@@ -143,8 +143,8 @@ spec:
                 x-kubernetes-preserve-unknown-fields: true
               type:
                 description: |-
-                  Type specifies the cluster type (Storage or Virtualization) when DeploymentMode is Decoupled.
-                  This field can only be set when DeploymentMode is Decoupled and is ignored otherwise.
+                  Type specifies the cluster type (Storage or Virtualization) when DeploymentTopology is Decoupled.
+                  This field can only be set when DeploymentTopology is Decoupled and is ignored otherwise.
                 enum:
                 - Storage
                 - Virtualization
@@ -159,7 +159,7 @@ spec:
             required:
             - availabilityZone
             - connection
-            - deploymentMode
+            - deploymentTopology
             - region
             type: object
           status:
