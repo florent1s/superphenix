@@ -16,18 +16,21 @@ spec:
   disabled: {{ $schedule.paused | default false }}
   claimSelector:
     matchLabels:
+      {{- with $schedule.labelSelector }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
       superphenix.net/organizationID: spx-{{ $.Values.organizationID }}
       superphenix.net/projectID: spx-{{ $.Values.projectID }}
   
   retention:
     {{- if and $schedule.retention $schedule.retention.maxCount }}
-    maxCount: {{ min $schedule.retention.maxCount 31 }}
+    maxCount: {{ min $schedule.retention.maxCount 40 }}
     {{- else }}
     maxCount: 7
     {{- end }}
 
     {{- if and $schedule.retention $schedule.retention.expiryTime }}
-    expires: {{ printf "%dh" (min $schedule.retention.expiryTime 744 | int) | quote }}
+    expires: {{ printf "%dh" (min $schedule.retention.expiryTime 960 | int) | quote }}
     {{- end }}
 
   {{- $sched := required "Must provide a schedule" $schedule.schedule }}  

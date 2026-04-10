@@ -240,16 +240,18 @@ diskSnapshotSchedules:
 #    paused: false
 #    # -- Retention settings
 #    retention:
-#      # -- Number of snapshots to keep (max is 31, default is 7)
-#      maxCount: 31
-#      # -- Number of hours to keep the snapshot (optional, max is 744, cumulative with `.maxCount`)
-#      expiryTime: 744 # 1 month
+#      # -- Number of snapshots to keep (max is 40, default is 7)
+#      maxCount: 40
+#      # -- Number of hours to keep the snapshot (optional, max is 960, cumulative with `.maxCount`)
+#      expiryTime: 960 # 40 days
 #    # -- Schedule on which to run the snapshots
 #    schedule:
 #      # -- Frequency at which to run the snapshots (values: weekly, daily)
 #      frequency: "daily"
 #      # -- CRON expression, mutually exclusive with `.frequency`
 #      cron: "0 * * * *"
+#    # -- Label selector to target a set of disks. Targets all disks in the project if omitted.
+#    labelSelector: {}
 
 # -- Each key defines a new VM, each key should be unique.
 # See values.yaml for the complete syntax.
