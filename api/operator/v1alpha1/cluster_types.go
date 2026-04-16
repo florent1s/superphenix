@@ -23,13 +23,6 @@ const (
 	// ReasonInvalidVersion is used when the requested version change is invalid.
 	ReasonInvalidVersion = "InvalidVersion"
 
-	// ConditionTypeArgoCDInstalled represents the status of ArgoCD CRDs installation.
-	ConditionTypeArgoCDInstalled = "ArgoCDInstalled"
-	// ReasonArgoCDCRDInstalled is used when the ArgoCD CRDs are successfully installed.
-	ReasonArgoCDCRDInstalled = "ArgoCDCRDInstalled"
-	// ReasonArgoCDCRDMissing is used when the ArgoCD CRDs are not installed in the cluster.
-	ReasonArgoCDCRDMissing = "ArgoCDCRDMissing"
-
 	// ConditionTypeArgoCDSynced represents the synchronization status of the cluster's ArgoCD Application.
 	ConditionTypeArgoCDSynced = "ArgoCDSynced"
 	// ReasonArgoCDSynced is used when the ArgoCD Application is synced.
@@ -212,6 +205,10 @@ type ClusterStatus struct {
 	// ObservedGeneration reflects the generation of the most recently observed Cluster.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// LastSync is the last time a sync was performed on the cluster.
+	// +optional
+	LastSync *metav1.Time `json:"lastSync,omitempty"`
 }
 
 // +kubebuilder:object:root=true

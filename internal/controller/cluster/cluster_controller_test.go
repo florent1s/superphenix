@@ -72,6 +72,7 @@ var _ = Describe("Cluster Controller", func() {
 				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
 				DefaultChartName:  "superphenix-system",
 				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -446,6 +447,7 @@ var _ = Describe("Cluster Controller", func() {
 				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
 				DefaultChartName:  "superphenix-system",
 				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -510,6 +512,7 @@ var _ = Describe("Cluster Controller", func() {
 				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
 				DefaultChartName:  "superphenix-system",
 				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -590,6 +593,7 @@ var _ = Describe("Cluster Controller", func() {
 				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
 				DefaultChartName:  "superphenix-system",
 				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
@@ -629,6 +633,7 @@ var _ = Describe("Cluster Controller", func() {
 				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
 				DefaultChartName:  "superphenix-system",
 				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
 			}
 
 			// Use a different name to avoid conflicts with other tests if they are running in parallel or if BeforeEach/AfterEach is tricky
@@ -951,6 +956,7 @@ var _ = Describe("Cluster Controller", func() {
 				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
 				DefaultChartName:  "superphenix-system",
 				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
 			}
 
 			By("Reconciling the cluster in another namespace")
@@ -1012,6 +1018,7 @@ var _ = Describe("Cluster Controller", func() {
 				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
 				DefaultChartName:  "superphenix-system",
 				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{

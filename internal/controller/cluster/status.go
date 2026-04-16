@@ -177,8 +177,11 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	// 4. Final Ready Condition Check
 	r.updateReadyCondition(cluster)
 
-	// 5. Update ObservedGeneration
+	// 5. Update ObservedGeneration and LastSync
 	cluster.Status.ObservedGeneration = cluster.Generation
+	if oldStatus != nil {
+		cluster.Status.LastSync = oldStatus.LastSync
+	}
 
 	// 6. Set LastTransitionTime for all conditions
 	now := metav1.Now()

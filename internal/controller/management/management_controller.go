@@ -15,6 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -88,6 +89,12 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 
 	log.Info("Reconciling management components")
 
+	// Check if ArgoCD CRDs are installed on the management cluster
+	if err := r.checkArgoCDCRDs(ctx); err != nil {
+		log.Error(err, "ArgoCD CRDs are missing on the management cluster")
+		return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
+	}
+
 	// Validate management chart upgrade path and cluster compatibility
 	if err := r.validateManagementUpgrade(ctx, r.ManagementChartVersion); err != nil {
 		log.Error(err, "Validation of management upgrade failed")
@@ -107,6 +114,26 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	}
 
 	return reconcile.Result{RequeueAfter: 10 * time.Minute}, nil
+}
+
+// checkArgoCDCRDs verifies if the required ArgoCD CRDs are installed in the management cluster.
+func (r *Reconciler) checkArgoCDCRDs(ctx context.Context) error {
+	gvks := []schema.GroupVersionKind{
+		{Group: "argoproj.io", Version: "v1alpha1", Kind: "Application"},
+		{Group: "argoproj.io", Version: "v1alpha1", Kind: "AppProject"},
+	}
+
+	for _, gvk := range gvks {
+		_, err := r.RESTMapper().RESTMapping(gvk.GroupKind(), gvk.Version)
+		if err != nil {
+			if meta.IsNoMatchError(err) {
+				return fmt.Errorf("ArgoCD CRD %s not found", gvk.Kind)
+			}
+			return err
+		}
+	}
+
+	return nil
 }
 
 // isTargetConfigMap reports whether the given name and namespace identify the watched management values ConfigMap.

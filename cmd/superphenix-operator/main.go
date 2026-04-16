@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"os"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -60,6 +61,7 @@ func main() {
 	var defaultRepoURL string
 	var defaultChartName string
 	var defaultVersion string
+	var syncPeriod time.Duration
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -88,6 +90,7 @@ func main() {
 	flag.StringVar(&defaultRepoURL, "default-repo-url", "ghcr.io/super-phenix/charts/superphenix-system", "The default repository URL for the Superphenix system chart")
 	flag.StringVar(&defaultChartName, "default-chart-name", "superphenix-system", "The default chart name for the Superphenix system chart")
 	flag.StringVar(&defaultVersion, "default-version", "0.0.0-latest", "The default version for the Superphenix system chart")
+	flag.DurationVar(&syncPeriod, "sync-period", 5*time.Minute, "The interval at which to periodically resync sub-applications")
 	flag.StringVar(&operatorNamespace, "operator-namespace", os.Getenv("OPERATOR_NAMESPACE"), "The namespace where the operator is deployed")
 	flag.BoolVar(&isManagementCluster, "is-management-cluster", false, "Whether this operator is running on a management cluster and should reconcile management components")
 	opts := zap.Options{
@@ -196,6 +199,7 @@ func main() {
 		DefaultRepoURL:    defaultRepoURL,
 		DefaultChartName:  defaultChartName,
 		DefaultVersion:    defaultVersion,
+		SyncPeriod:        syncPeriod,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "Cluster")
 		os.Exit(1)
@@ -204,18 +208,18 @@ func main() {
 	if isManagementCluster {
 		setupLog.Info("Setting up management components reconciler")
 		if err := (&management.Reconciler{
-			Client:                  mgr.GetClient(),
-			Scheme:                  mgr.GetScheme(),
-			Config:                  mgr.GetConfig(),
-			OperatorNamespace:       operatorNamespace,
-			ValuesConfigMapName:     valuesConfigMapName,
-			HAEnabled:               haEnabled,
-			ArgoCDChartURL:          argocdChartURL,
-			ArgoCDChartVersion:      argocdChartVersion,
-			ArgoCDDefaultConfig:     argocdDefaultConfig,
-			ArgoCDHAConfig:          argocdHAConfig,
-			ManagementChartURL:      managementChartURL,
-			ManagementChartVersion:  managementChartVersion,
+			Client:                 mgr.GetClient(),
+			Scheme:                 mgr.GetScheme(),
+			Config:                 mgr.GetConfig(),
+			OperatorNamespace:      operatorNamespace,
+			ValuesConfigMapName:    valuesConfigMapName,
+			HAEnabled:              haEnabled,
+			ArgoCDChartURL:         argocdChartURL,
+			ArgoCDChartVersion:     argocdChartVersion,
+			ArgoCDDefaultConfig:    argocdDefaultConfig,
+			ArgoCDHAConfig:         argocdHAConfig,
+			ManagementChartURL:     managementChartURL,
+			ManagementChartVersion: managementChartVersion,
 		}).SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "Failed to create management controller")
 			os.Exit(1)

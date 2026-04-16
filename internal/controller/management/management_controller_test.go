@@ -61,9 +61,9 @@ var _ = Describe("Management Controller", func() {
 				Version: "v1alpha1",
 				Kind:    "Application",
 			})
-			err = k8sClient.Get(ctx, types.NamespacedName{Name: "superphenix-mgmt-argocd", Namespace: argoNamespace}, app)
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: "superphenix-argocd", Namespace: argoNamespace}, app)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(app.GetName()).To(Equal("superphenix-mgmt-argocd"))
+			Expect(app.GetName()).To(Equal("superphenix-argocd"))
 
 			By("Verifying the ArgoCD Application uses valuesObject")
 			spec, ok := app.Object["spec"].(map[string]interface{})

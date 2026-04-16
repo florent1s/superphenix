@@ -30,8 +30,6 @@ import (
 func (r *Reconciler) syncSubApplications(ctx context.Context, cluster *operatorv1alpha1.Cluster) {
 	log := logf.FromContext(ctx)
 
-	return // Debug for now
-
 	// Also sync the root Application itself so it re-evaluates the chart and propagates
 	// any changes down to the sub-applications on the same cycle.
 	rootApp, err := r.fetchApplication(ctx, cluster.Name)
