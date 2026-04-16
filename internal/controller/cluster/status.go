@@ -101,6 +101,10 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 			// This covers both SecretNotFound and other 404s during reconciliation
 			reason = operatorv1alpha1.ReasonSecretNotFound
 			condType = operatorv1alpha1.ConditionTypeReachable
+		} else if strings.Contains(reconcileErr.Error(), "failed to reconcile clusters ConfigMap") {
+			reason = operatorv1alpha1.ReasonConfigMapReconcileFailed
+		} else if strings.Contains(reconcileErr.Error(), "failed to remove cluster from configmap") {
+			reason = operatorv1alpha1.ReasonConfigMapCleanupFailed
 		}
 
 		r.setCondition(&cluster.Status.Conditions, metav1.Condition{

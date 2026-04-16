@@ -40,6 +40,7 @@ spec:
             - --argocd-chart-url={{ .Values.config.argocd.chart.url }}
             - --argocd-chart-version={{ .Values.config.argocd.chart.version }}
             - --values-configmap-name={{ .Values.config.valuesConfigMap.name }}
+            - --clusters-configmap-name={{ .Values.config.clustersConfigMap.name }}
             - --operator-namespace=$(OPERATOR_NAMESPACE)
             - --argocd-default-config=/etc/superphenix/argocd/default/values.yaml
             - --argocd-ha-config=/etc/superphenix/argocd/ha/values.yaml

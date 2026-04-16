@@ -50,6 +50,7 @@ func main() {
 	var argocdChartURL string
 	var argocdChartVersion string
 	var valuesConfigMapName string
+	var clustersConfigMapName string
 	var isManagementCluster bool
 	var operatorNamespace string
 	var tlsOpts []func(*tls.Config)
@@ -82,6 +83,7 @@ func main() {
 	flag.StringVar(&argocdChartURL, "argocd-chart-url", "https://argoproj.github.io/argo-helm", "The URL of the ArgoCD chart repository")
 	flag.StringVar(&argocdChartVersion, "argocd-chart-version", "9.4.17", "The version of the ArgoCD chart")
 	flag.StringVar(&valuesConfigMapName, "values-configmap-name", "superphenix-mgmt-values", "The name of the general management ConfigMap holding Helm values for each component under dedicated sub-keys")
+	flag.StringVar(&clustersConfigMapName, "clusters-configmap-name", "superphenix-clusters-config", "The name of the ConfigMap where all clusters will append their configuration")
 	flag.StringVar(&argocdDefaultConfig, "argocd-default-config", "/etc/superphenix/argocd/default/values.yaml", "Path to the default ArgoCD configuration file")
 	flag.StringVar(&argocdHAConfig, "argocd-ha-config", "/etc/superphenix/argocd/ha/values.yaml", "Path to the HA ArgoCD configuration file")
 	flag.BoolVar(&haEnabled, "ha-enabled", false, "Whether to enable HA for ArgoCD")
@@ -193,13 +195,14 @@ func main() {
 	}
 
 	if err := (&cluster.Reconciler{
-		Client:            mgr.GetClient(),
-		Scheme:            mgr.GetScheme(),
-		OperatorNamespace: operatorNamespace,
-		DefaultRepoURL:    defaultRepoURL,
-		DefaultChartName:  defaultChartName,
-		DefaultVersion:    defaultVersion,
-		SyncPeriod:        syncPeriod,
+		Client:                mgr.GetClient(),
+		Scheme:                mgr.GetScheme(),
+		OperatorNamespace:     operatorNamespace,
+		ClustersConfigMapName: clustersConfigMapName,
+		DefaultRepoURL:        defaultRepoURL,
+		DefaultChartName:      defaultChartName,
+		DefaultVersion:        defaultVersion,
+		SyncPeriod:            syncPeriod,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "Cluster")
 		os.Exit(1)

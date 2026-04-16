@@ -40,5 +40,9 @@ func (r *Reconciler) cleanupCluster(ctx context.Context, cluster *operatorv1alph
 	}
 
 	log.Info("All ArgoCD applications deleted for cluster", "Name", cluster.Name)
+	// Remove the cluster entry from the shared ConfigMap
+	if err := r.removeClusterFromConfigMap(ctx, cluster); err != nil {
+		return fmt.Errorf("failed to remove cluster from configmap: %w", err)
+	}
 	return nil
 }

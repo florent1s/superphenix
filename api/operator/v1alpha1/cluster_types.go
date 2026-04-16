@@ -46,6 +46,10 @@ const (
 	ReasonApplicationReconcileFailed = "ApplicationReconcileFailed"
 	// ReasonAppProjectReconcileFailed is used when the ArgoCD project reconciliation fails.
 	ReasonAppProjectReconcileFailed = "AppProjectReconcileFailed"
+	// ReasonConfigMapReconcileFailed is used when the clusters ConfigMap reconciliation fails.
+	ReasonConfigMapReconcileFailed = "ConfigMapReconcileFailed"
+	// ReasonConfigMapCleanupFailed is used when removing the cluster from the clusters ConfigMap fails.
+	ReasonConfigMapCleanupFailed = "ConfigMapCleanupFailed"
 
 	// ConditionTypePaused represents the status when the cluster synchronization is paused.
 	ConditionTypePaused = "Paused"

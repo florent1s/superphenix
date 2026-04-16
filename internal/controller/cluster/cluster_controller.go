@@ -40,19 +40,20 @@ var (
 // +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=operator.superphenix.net,resources=clusters/finalizers,verbs=update
 // +kubebuilder:rbac:groups=argoproj.io,resources=applications;appprojects,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=secrets;configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups="*",resources="*",verbs="*"
 
 // Reconciler reconciles a Cluster object.
 type Reconciler struct {
 	client.Client
-	Scheme            *runtime.Scheme
-	OperatorNamespace string
-	DefaultRepoURL    string
-	DefaultChartName  string
-	DefaultVersion    string
-	SyncPeriod        time.Duration
+	Scheme                *runtime.Scheme
+	OperatorNamespace     string
+	ClustersConfigMapName string
+	DefaultRepoURL        string
+	DefaultChartName      string
+	DefaultVersion        string
+	SyncPeriod            time.Duration
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -133,6 +134,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		// The cluster is being deleted and the finalizer is present, so clean it up
 		if controllerutil.ContainsFinalizer(cluster, FinalizerName) {
 			if err := r.cleanupCluster(ctx, cluster); err != nil {
+				// Update status with the cleanup error
+				if _, syncErr := r.syncStatus(ctx, cluster, nil, "", err); syncErr != nil {
+					logf.FromContext(ctx).Error(syncErr, "Failed to update status after cleanup failure")
+				}
 				return ctrl.Result{RequeueAfter: time.Minute}, err
 			}
 
@@ -211,6 +216,14 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		// Validate cluster configuration
 		if err := r.validate(ctx, cluster); err != nil {
 			reconcileErr = err
+		}
+	}
+
+	if reconcileErr == nil {
+		// Reconcile the cluster configuration in the shared ConfigMap
+		if err := r.reconcileClustersConfigMap(ctx, cluster); err != nil {
+			log.Error(err, "Failed to reconcile clusters ConfigMap")
+			reconcileErr = fmt.Errorf("failed to reconcile clusters ConfigMap: %w", err)
 		}
 	}
 

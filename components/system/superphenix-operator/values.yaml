@@ -55,6 +55,10 @@ config:
   valuesConfigMap:
     name: superphenix-mgmt-values
 
+  # ConfigMap where all clusters will append their configuration.
+  clustersConfigMap:
+    name: superphenix-clusters-config
+
   argocd:
     chart:
       url: https://argoproj.github.io/argo-helm
