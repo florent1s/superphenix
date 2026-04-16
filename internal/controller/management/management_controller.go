@@ -15,7 +15,6 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -29,9 +28,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
+
+	"github.com/super-phenix/superphenix/pkg/argocd"
 )
 
 const (
+	// ControllerName is the name of the management controller.
+	ControllerName = "management-controller"
+
 	// ManagementArgoCDName is the Helm release name and ArgoCD Application name for the management ArgoCD instance.
 	ManagementArgoCDName = "superphenix-argocd"
 	// ManagementSuperphenixName is the ArgoCD Application name for the superphenix-management chart.
@@ -47,13 +51,17 @@ const (
 // It implements reconcile.Reconciler to handle ConfigMap updates.
 type Reconciler struct {
 	client.Client
-	Scheme            *runtime.Scheme
-	Config            *rest.Config
+	Scheme *runtime.Scheme
+	Config *rest.Config
+
+	// OperatorNamespace is where we're deploying this operator.
 	OperatorNamespace string
-	HAEnabled         bool
+
+	// HAEnabled indicates whether High Availability mode is enabled for management components.
+	HAEnabled bool
 
 	// ValuesConfigMapName is the name of the general management ConfigMap.
-	// It holds Helm values for each component under dedicated sub-keys (see ConfigMapKey* constants).
+	// It holds Helm values for each component under dedicated subkeys (see ConfigMapKey* constants).
 	ValuesConfigMapName string
 
 	// ArgoCD chart configuration.
@@ -70,70 +78,50 @@ type Reconciler struct {
 }
 
 // SetupWithManager registers the controller with the Manager, watching only the management values ConfigMap.
-func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return builder.ControllerManagedBy(mgr).
-		Named("management-controller").
+func (r *Reconciler) SetupWithManager(manager ctrl.Manager) error {
+	return builder.ControllerManagedBy(manager).
+		Named(ControllerName).
 		For(&corev1.ConfigMap{}, builder.WithPredicates(r.configMapPredicate())).
 		Complete(r)
 }
 
 // Reconcile bootstraps and maintains the full management stack (ArgoCD, Console, Auth...).
 // It is triggered by changes to the management values ConfigMap and re-enqueues periodically as a safety net.
-func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
+func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	log := logf.FromContext(ctx)
 
 	// Ignore spurious events for ConfigMaps other than the one we watch.
-	if req.Name != "" && !r.isTargetConfigMap(req.Name, req.Namespace) {
+	if request.Name != "" && !r.isTargetConfigMap(request.Name, request.Namespace) {
 		return reconcile.Result{}, nil
 	}
 
 	log.Info("Reconciling management components")
 
-	// Check if ArgoCD CRDs are installed on the management cluster
-	if err := r.checkArgoCDCRDs(ctx); err != nil {
-		log.Error(err, "ArgoCD CRDs are missing on the management cluster")
-		return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
-	}
-
-	// Validate management chart upgrade path and cluster compatibility
+	// Validate management chart upgrade path and cluster compatibility.
 	if err := r.validateManagementUpgrade(ctx, r.ManagementChartVersion); err != nil {
 		log.Error(err, "Validation of management upgrade failed")
-		// We stop here if validation fails.
-		// Note: We don't have a specific status for management yet, so we just log the error.
 		return reconcile.Result{RequeueAfter: 5 * time.Minute}, nil
 	}
 
+	// Reconcile the management ArgoCD instance.
 	if err := r.reconcileManagementArgoCD(ctx); err != nil {
 		log.Error(err, "ArgoCD reconciliation failed")
 		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
 	}
 
+	// Check if ArgoCD CRDs are installed on the management cluster, as we can't proceed without them.
+	if err := argocd.CheckCRDs(ctx, r.RESTMapper()); err != nil {
+		log.Error(err, "ArgoCD CRDs are missing on the management cluster")
+		return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
+	}
+
+	// Reconcile the management stack (console, auth, api, ...).
 	if err := r.reconcileManagementStack(ctx); err != nil {
 		log.Error(err, "Management stack reconciliation failed")
 		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
 	}
 
 	return reconcile.Result{RequeueAfter: 10 * time.Minute}, nil
-}
-
-// checkArgoCDCRDs verifies if the required ArgoCD CRDs are installed in the management cluster.
-func (r *Reconciler) checkArgoCDCRDs(ctx context.Context) error {
-	gvks := []schema.GroupVersionKind{
-		{Group: "argoproj.io", Version: "v1alpha1", Kind: "Application"},
-		{Group: "argoproj.io", Version: "v1alpha1", Kind: "AppProject"},
-	}
-
-	for _, gvk := range gvks {
-		_, err := r.RESTMapper().RESTMapping(gvk.GroupKind(), gvk.Version)
-		if err != nil {
-			if meta.IsNoMatchError(err) {
-				return fmt.Errorf("ArgoCD CRD %s not found", gvk.Kind)
-			}
-			return err
-		}
-	}
-
-	return nil
 }
 
 // isTargetConfigMap reports whether the given name and namespace identify the watched management values ConfigMap.
@@ -148,13 +136,8 @@ func (r *Reconciler) configMapPredicate() predicate.Predicate {
 			if !r.isTargetConfigMap(e.ObjectNew.GetName(), e.ObjectNew.GetNamespace()) {
 				return false
 			}
-			// Only reconcile if the data actually changed.
-			oldCm, ok1 := e.ObjectOld.(*corev1.ConfigMap)
-			newCm, ok2 := e.ObjectNew.(*corev1.ConfigMap)
-			if ok1 && ok2 {
-				return !reflect.DeepEqual(oldCm.Data, newCm.Data)
-			}
-			return true
+			// Only reconcile if the generation actually changed.
+			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
 			return r.isTargetConfigMap(e.Object.GetName(), e.Object.GetNamespace())
@@ -290,7 +273,7 @@ func locateAndLoadArgoCDChart(clientInstall *action.Install, helmSettings *cli.E
 	return ch, nil
 }
 
-// runHelmInstall executes the Helm install for the given chart.
+// runHelmInstall executes the Helm installation for the given chart.
 // Namespace-not-found errors are silenced because they are a known envtest limitation.
 func runHelmInstall(ctx context.Context, clientInstall *action.Install, ch *chart.Chart) error {
 	log := logf.FromContext(ctx)
@@ -463,13 +446,12 @@ func (r *Reconciler) createOrUpdateArgoCDApplication(ctx context.Context, app *u
 
 // ensureArgoCDSelfManaged creates or updates the ArgoCD Application that hands ArgoCD's lifecycle to itself.
 func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
-	vals, err := r.mergeArgoCDValues(ctx)
+	values, err := r.mergeArgoCDValues(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to merge ArgoCD values: %w", err)
 	}
 
-	app := r.buildArgoCDApplication(vals)
-	return r.createOrUpdateArgoCDApplication(ctx, app)
+	return r.createOrUpdateArgoCDApplication(ctx, r.buildArgoCDApplication(values))
 }
 
 // loadYAMLFileValues reads the YAML file at path and unmarshals it into a map.
