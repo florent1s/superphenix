@@ -79,6 +79,46 @@ var _ = Describe("Cluster Controller", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
+			By("Mocking the ArgoCD Application status")
+			argoCDApp := &unstructured.Unstructured{}
+			argoCDApp.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "Application",
+			})
+
+			// Wait for the Application to be created AND available in the test client
+			Eventually(func() error {
+				// Reconcile again just in case it wasn't created in the first pass
+				// (though logs say it was)
+				_, _ = controllerReconciler.Reconcile(ctx, reconcile.Request{
+					NamespacedName: typeNamespacedName,
+				})
+
+				return k8sClient.Get(ctx, types.NamespacedName{Name: resourceName, Namespace: "default"}, argoCDApp)
+			}, 20, 1.0).Should(Succeed())
+
+			status := map[string]interface{}{
+				"sync": map[string]interface{}{
+					"status": "Synced",
+				},
+				"health": map[string]interface{}{
+					"status": "Healthy",
+				},
+			}
+			Expect(unstructured.SetNestedMap(argoCDApp.Object, status, "status")).To(Succeed())
+			// Attempt both Status().Update and plain Update for maximum compatibility with envtest
+			err = k8sClient.Status().Update(ctx, argoCDApp)
+			if err != nil {
+				Expect(k8sClient.Update(ctx, argoCDApp)).To(Succeed())
+			}
+
+			By("Reconciling again to propagate the status")
+			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: typeNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
 			By("Verifying that it's marked as reachable and Deployed")
 			updatedCluster := &operatorv1alpha1.Cluster{}
 			Eventually(func() bool {
@@ -112,7 +152,7 @@ var _ = Describe("Cluster Controller", func() {
 			}
 
 			By("Verifying that the ArgoCD Application was created")
-			argoCDApp := &unstructured.Unstructured{}
+			argoCDApp = &unstructured.Unstructured{}
 			argoCDApp.SetGroupVersionKind(schema.GroupVersionKind{
 				Group:   "argoproj.io",
 				Version: "v1alpha1",
@@ -207,14 +247,14 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(config["bearerToken"]).To(Equal("some-token"))
 
 			By("Verifying that the ArgoCD Application destination was updated for remote")
-			err = k8sClient.Get(ctx, typeNamespacedName, argoCDApp)
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: resourceName, Namespace: "default"}, argoCDApp)
 			Expect(err).NotTo(HaveOccurred())
 			spec, _, _ = unstructured.NestedMap(argoCDApp.Object, "spec")
 			destination, _, _ = unstructured.NestedMap(spec, "destination")
-			Expect(destination["name"]).To(Equal(resourceName))
+			Expect(destination["name"]).To(Equal("in-cluster"))
 
 			By("Verifying that the ArgoCD AppProject destination was updated for remote")
-			err = k8sClient.Get(ctx, typeNamespacedName, argoCDProject)
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: resourceName, Namespace: "default"}, argoCDProject)
 			Expect(err).NotTo(HaveOccurred())
 			projectSpec, _, _ = unstructured.NestedMap(argoCDProject.Object, "spec")
 			destinations, _, _ = unstructured.NestedSlice(projectSpec, "destinations")

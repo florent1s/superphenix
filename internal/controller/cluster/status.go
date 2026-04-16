@@ -46,6 +46,8 @@ Transitions:
    - When ArgoCD sync status is anything other than Synced, OutOfSync, Syncing, or Unknown.
 */
 
+// setCondition adds or updates a condition in the status conditions slice.
+// If a condition of the same type already exists, it is updated only if the status, reason, or message has changed.
 func (r *Reconciler) setCondition(conditions *[]metav1.Condition, newCondition metav1.Condition) {
 	for i, c := range *conditions {
 		if c.Type == newCondition.Type {
@@ -59,6 +61,7 @@ func (r *Reconciler) setCondition(conditions *[]metav1.Condition, newCondition m
 	*conditions = append(*conditions, newCondition)
 }
 
+// isSynced checks if the Cluster's ArgoCDSynced condition is True.
 func (r *Reconciler) isSynced(cluster *operatorv1alpha1.Cluster) bool {
 	for _, c := range cluster.Status.Conditions {
 		if c.Type == operatorv1alpha1.ConditionTypeArgoCDSynced && c.Status == metav1.ConditionTrue {
@@ -70,6 +73,7 @@ func (r *Reconciler) isSynced(cluster *operatorv1alpha1.Cluster) bool {
 
 // syncStatus centralizes the cluster status and phase management.
 // It determines the final status based on the connectivity, ArgoCD application status, and spec.
+// It also updates versions, conditions, phase, and handles the status patch to the Kubernetes API.
 func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, app *unstructured.Unstructured, k8sVersion string, reconcileErr error) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 	oldStatus := cluster.Status.DeepCopy()
@@ -157,16 +161,6 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 		if cluster.Status.Phase != "" {
 			phase = cluster.Status.Phase
 		}
-
-		// WORKAROUND FOR TESTS: In local mode tests, we might not have ArgoCD syncing.
-		// If we are reconciling a local cluster and everything else is fine, assume Deployed.
-		if cluster.Spec.Connection.Mode == operatorv1alpha1.ConnectionModeLocal && reconcileErr == nil {
-			if cluster.Status.CurrentVersion != cluster.Spec.Version {
-				log.Info("Updating current version (local mode)", "oldVersion", cluster.Status.CurrentVersion, "newVersion", cluster.Spec.Version)
-				cluster.Status.CurrentVersion = cluster.Spec.Version
-			}
-			phase = "Deployed"
-		}
 	}
 
 	// If we are "Deployed" but version mismatch, we should be "Deploying"
@@ -224,6 +218,8 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	return ctrl.Result{}, nil
 }
 
+// applyApplicationStatus propagates the status of the ArgoCD Application to the Cluster resource.
+// It maps ArgoCD sync and health statuses to Cluster conditions and phases.
 func (r *Reconciler) applyApplicationStatus(cluster *operatorv1alpha1.Cluster, app *unstructured.Unstructured) {
 	healthStatus, _, _ := unstructured.NestedString(app.Object, "status", "health", "status")
 	syncStatus, _, _ := unstructured.NestedString(app.Object, "status", "sync", "status")
@@ -289,6 +285,8 @@ func (r *Reconciler) applyApplicationStatus(cluster *operatorv1alpha1.Cluster, a
 	cluster.Status.Phase = phase
 }
 
+// updateReadyCondition calculates the aggregate Ready condition for the Cluster.
+// It considers reachability, ArgoCD synchronization status, and any reconciliation errors.
 func (r *Reconciler) updateReadyCondition(cluster *operatorv1alpha1.Cluster) {
 	reachable := false
 	var reachableCond *metav1.Condition
