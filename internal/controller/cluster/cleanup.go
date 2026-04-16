@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
@@ -37,7 +36,6 @@ func (r *Reconciler) cleanupCluster(ctx context.Context, cluster *operatorv1alph
 		}
 
 		log.Info("Waiting for ArgoCD applications to be deleted", "cluster", cluster.Name, "applications", appNames)
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonDeleting, fmt.Sprintf("Waiting for %d ArgoCD applications to be deleted", len(appNames)), "Error")
 		return fmt.Errorf("waiting for %d ArgoCD applications to be deleted", len(appNames))
 	}
 

@@ -11,7 +11,7 @@ kind: DataVolume
 metadata:
   name: {{ $effectiveID | quote }}
   annotations:
-    # We need to use a specialized network that is not restricted by client policies or lack of connectivity
+    # We need to use a specialized network not restricted by client policies or lack of connectivity
     v1.multus-cni.io/default-network: kube-system/system-isolated-egress
     # If the DV is created AFTER its PVC because the PVC was restored through a VMRestore/VolumeRestore, we need the DV to adopt it
     # Without this annotation, the CDI's webhook would reject the DV's creation because its destination PVC already exists

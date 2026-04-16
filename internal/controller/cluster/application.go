@@ -2,10 +2,8 @@ package cluster
 
 import (
 	"context"
-	"fmt"
 	"maps"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	kjson "k8s.io/apimachinery/pkg/util/json"
@@ -18,7 +16,7 @@ import (
 // reconcileApplication ensures an ArgoCD Application exists for each cluster.
 // This application is used as the root of all the deployments done on each cluster.
 // It uses the App of Apps pattern to deploy in cascade the entire Superphenix stack.
-func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
+func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operatorv1alpha1.Cluster) (*unstructured.Unstructured, error) {
 	log := logf.FromContext(ctx)
 
 	app := r.initApplication(cluster)
@@ -36,111 +34,12 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 
 	if err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD Application")
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonApplicationReconcileFailed, err.Error(), "Error")
-		return err
+		return nil, err
 	}
 
 	log.Info("Successfully reconciled ArgoCD Application", "Application.Name", app.GetName())
 
-	if cluster.Spec.PauseSync {
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypePaused, metav1.ConditionTrue, operatorv1alpha1.ReasonPaused, "Synchronization is paused", "Paused")
-	} else {
-		// Propagate ArgoCD Application status to Cluster status
-		r.propagateApplicationStatus(ctx, cluster, app)
-	}
-
-	return nil
-}
-
-// propagateApplicationStatus propagates the ArgoCD Application status to the Cluster status.
-func (r *Reconciler) propagateApplicationStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, app *unstructured.Unstructured) {
-	healthStatus, _, _ := unstructured.NestedString(app.Object, "status", "health", "status")
-	syncStatus, _, _ := unstructured.NestedString(app.Object, "status", "sync", "status")
-
-	var status metav1.ConditionStatus
-	var reason string
-	var message string
-	var phase string
-
-	switch syncStatus {
-	case "Synced":
-		status = metav1.ConditionTrue
-		reason = operatorv1alpha1.ReasonArgoCDSynced
-		message = "ArgoCD Application is synced"
-		phase = "Deployed"
-	case "OutOfSync":
-		status = metav1.ConditionFalse
-		reason = operatorv1alpha1.ReasonArgoCDOutOfSync
-		message = "ArgoCD Application is out of sync"
-		phase = "OutOfSync"
-	case "Unknown":
-		status = metav1.ConditionUnknown
-		reason = operatorv1alpha1.ReasonArgoCDUnknown
-		message = "ArgoCD Application status is unknown"
-		phase = "Unknown"
-	case "Syncing":
-		status = metav1.ConditionFalse
-		reason = operatorv1alpha1.ReasonArgoCDSyncing
-		message = "ArgoCD Application is syncing"
-		phase = "Deploying"
-	case "":
-		// ArgoCD has not evaluated the Application yet (e.g. just created or operator restarted).
-		// Preserve the current phase rather than flipping to Error.
-		status = metav1.ConditionUnknown
-		reason = operatorv1alpha1.ReasonArgoCDUnknown
-		message = "ArgoCD Application sync status is not yet available"
-		phase = "Unknown"
-	default:
-		status = metav1.ConditionFalse
-		reason = operatorv1alpha1.ReasonArgoCDSyncFailed
-		message = fmt.Sprintf("ArgoCD Application sync status: %s", syncStatus)
-		phase = "Error"
-	}
-
-	if healthStatus == "Degraded" {
-		phase = "Error"
-		message = fmt.Sprintf("%s (Health: %s)", message, healthStatus)
-		status = metav1.ConditionFalse
-		reason = operatorv1alpha1.ReasonHealthCheckFailed
-	} else if healthStatus == "Progressing" {
-		phase = "Deploying"
-		message = fmt.Sprintf("%s (Health: %s)", message, healthStatus)
-		if syncStatus == "Synced" {
-			status = metav1.ConditionFalse
-			reason = operatorv1alpha1.ReasonArgoCDSyncing
-		}
-	} else if healthStatus == "Suspended" || healthStatus == "Missing" {
-		phase = "Unknown"
-		message = fmt.Sprintf("%s (Health: %s)", message, healthStatus)
-		status = metav1.ConditionUnknown
-	}
-
-	r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeArgoCDSynced, status, reason, message, phase)
-
-	// Update Ready condition based on both Reachable and ArgoCDSynced
-	readyStatus := metav1.ConditionTrue
-	readyReason := operatorv1alpha1.ReasonReconcileSuccess
-	readyMessage := "Cluster is ready"
-
-	reachable := false
-	for _, c := range cluster.Status.Conditions {
-		if c.Type == operatorv1alpha1.ConditionTypeReachable && c.Status == metav1.ConditionTrue {
-			reachable = true
-			break
-		}
-	}
-
-	if !reachable {
-		readyStatus = metav1.ConditionFalse
-		readyReason = operatorv1alpha1.ReasonConnectionFailed
-		readyMessage = "Cluster is unreachable"
-	} else if status != metav1.ConditionTrue {
-		readyStatus = status
-		readyReason = reason
-		readyMessage = message
-	}
-
-	r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeReady, readyStatus, readyReason, readyMessage)
+	return app, nil
 }
 
 // initApplication creates the template of the cluster application.
@@ -194,14 +93,14 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			"PruneLast=true",
 			"SkipDryRunOnMissingResource=true",
 		},
-		/*"retry": map[string]interface{}{
+		"retry": map[string]interface{}{
 			"limit": int64(2),
 			"backoff": map[string]interface{}{
 				"duration":    "30s",
 				"factor":      int64(2),
 				"maxDuration": "3m",
 			},
-		},*/
+		},
 	}
 
 	if !cluster.Spec.PauseSync {

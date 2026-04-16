@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver/v3"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
@@ -24,12 +22,8 @@ var (
 
 // validate runs all the validation logic for the cluster.
 func (r *Reconciler) validate(ctx context.Context, cluster *operatorv1alpha1.Cluster) error {
-	log := logf.FromContext(ctx)
-
 	// Validate version upgrade/downgrade
 	if err := r.validateUpgradePath(ctx, cluster); err != nil {
-		log.Error(err, "Validation failed")
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonInvalidVersion, err.Error(), "Error")
 		return err
 	}
 
