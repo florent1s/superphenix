@@ -24,7 +24,7 @@ spec:
   # Do not give ownership of the volumes to the VM
   volumeOwnershipPolicy: None
 
-  # Target can be non-existent VM (clone restore), or the initial VM that was used to create the snapshot (in-place restore).
+  # Target can be a non-existent VM (clone restore), or the initial VM that was used to create the snapshot (in-place restore).
   target:
     apiGroup: kubevirt.io
     kind: VirtualMachine

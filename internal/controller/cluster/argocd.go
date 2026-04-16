@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -115,15 +113,6 @@ func (r *Reconciler) reconcileArgoCDSecret(ctx context.Context, cluster *operato
 	})
 
 	if err != nil {
-		reason := operatorv1alpha1.ReasonConnectionConfigError
-		if apierrors.IsNotFound(err) || (errors.Is(err, apierrors.NewNotFound(corev1.Resource("secret"), "")) || apierrors.IsNotFound(errors.Unwrap(err))) {
-			reason = operatorv1alpha1.ReasonSecretNotFound
-		} else if errors.Is(err, errConfig) {
-			reason = operatorv1alpha1.ReasonConnectionConfigError
-		} else if errors.Is(err, errInvalidSecret) {
-			reason = operatorv1alpha1.ReasonInvalidSecret
-		}
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, reason, err.Error(), "Error")
 		return err
 	}
 

@@ -3,7 +3,6 @@ package cluster
 import (
 	"context"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -32,33 +31,11 @@ func (r *Reconciler) reconcileAppProject(ctx context.Context, cluster *operatorv
 
 	if err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD AppProject")
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonAppProjectReconcileFailed, err.Error(), "Error")
 		return err
-	}
-
-	// Check if the sync window is present to update the Paused status
-	if !cluster.Spec.PauseSync {
-		// Ensure we remove the Paused condition/phase if it was set
-		r.removePausedStatus(ctx, cluster)
 	}
 
 	log.Info("Successfully reconciled ArgoCD AppProject", "AppProject.Name", project.GetName())
 	return nil
-}
-
-func (r *Reconciler) removePausedStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster) {
-	// Only remove if it's currently Paused to avoid unnecessary status updates
-	isPaused := false
-	for _, c := range cluster.Status.Conditions {
-		if c.Type == operatorv1alpha1.ConditionTypePaused && c.Status == metav1.ConditionTrue {
-			isPaused = true
-			break
-		}
-	}
-
-	if isPaused || cluster.Status.Phase == "Paused" {
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypePaused, metav1.ConditionFalse, operatorv1alpha1.ReasonResumed, "Synchronization is resumed", "Deployed")
-	}
 }
 
 // initAppProject creates the template of the cluster AppProject.

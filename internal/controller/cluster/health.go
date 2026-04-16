@@ -18,8 +18,7 @@ import (
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
 
-// reconcileHealth checks the connectivity of the cluster (local or remote) and updates its status.
-// If the cluster is unreachable, it returns a Requeue result.
+// reconcileHealth checks the connectivity of the cluster (local or remote).
 func (r *Reconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alpha1.Cluster) (string, ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 
@@ -29,19 +28,24 @@ func (r *Reconciler) reconcileHealth(ctx context.Context, cluster *operatorv1alp
 	config, err = r.getRESTConfigForCluster(ctx, cluster)
 	if err != nil {
 		log.Error(err, "Failed to build REST config for cluster")
-		// The status condition is already set inside getRESTConfigForCluster
-		return "", ctrl.Result{RequeueAfter: time.Minute}, nil
+		return "", ctrl.Result{RequeueAfter: time.Minute}, err
 	}
 
 	version, err := r.checkReachability(config)
 	if err != nil {
 		log.Error(err, "Cluster unreachable")
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionFailed, err.Error(), "Error")
-		return "", ctrl.Result{RequeueAfter: time.Minute}, nil
+		return "", ctrl.Result{RequeueAfter: time.Minute}, err
 	}
 
 	log.Info("Cluster is reachable", "version", version)
-	r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionTrue, operatorv1alpha1.ReasonConnectionSuccess, "Successfully connected to cluster")
+
+	r.setCondition(&cluster.Status.Conditions, metav1.Condition{
+		Type:               operatorv1alpha1.ConditionTypeReachable,
+		Status:             metav1.ConditionTrue,
+		Reason:             operatorv1alpha1.ReasonConnectionSuccess,
+		Message:            "Successfully connected to cluster",
+		ObservedGeneration: cluster.Generation,
+	})
 
 	return version, ctrl.Result{}, nil
 }
@@ -52,7 +56,7 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 
 	if cluster.Spec.Connection == nil {
 		err := fmt.Errorf("%w: connection configuration is missing", errConfig)
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionConfigError, err.Error(), "Error")
+		r.setReachableCondition(cluster, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
 		return nil, err
 	}
 
@@ -60,7 +64,7 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 		log.Info("Using local connection mode")
 		config, err := ctrl.GetConfig()
 		if err != nil {
-			r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionFailed, err.Error(), "Error")
+			r.setReachableCondition(cluster, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionFailed, err.Error())
 			return nil, err
 		}
 		return config, nil
@@ -69,12 +73,12 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 	// For remote mode, we need URL and SecretRef
 	if cluster.Spec.Connection.URL == "" {
 		err := fmt.Errorf("%w: connection URL must be provided in Remote mode", errConfig)
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionConfigError, err.Error(), "Error")
+		r.setReachableCondition(cluster, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
 		return nil, err
 	}
 	if cluster.Spec.Connection.SecretRef == nil {
 		err := fmt.Errorf("%w: secret reference must be provided in Remote mode", errConfig)
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionConfigError, err.Error(), "Error")
+		r.setReachableCondition(cluster, metav1.ConditionFalse, operatorv1alpha1.ReasonConnectionConfigError, err.Error())
 		return nil, err
 	}
 
@@ -92,7 +96,7 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 		if apierrors.IsNotFound(err) {
 			reason = operatorv1alpha1.ReasonSecretNotFound
 		}
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, reason, err.Error(), "Error")
+		r.setReachableCondition(cluster, metav1.ConditionFalse, reason, err.Error())
 		return nil, err
 	}
 
@@ -105,10 +109,20 @@ func (r *Reconciler) getRESTConfigForCluster(ctx context.Context, cluster *opera
 		if errors.Is(err, errInvalidSecret) {
 			reason = operatorv1alpha1.ReasonInvalidSecret
 		}
-		r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReachable, metav1.ConditionFalse, reason, err.Error(), "Error")
+		r.setReachableCondition(cluster, metav1.ConditionFalse, reason, err.Error())
 		return nil, err
 	}
 	return config, nil
+}
+
+func (r *Reconciler) setReachableCondition(cluster *operatorv1alpha1.Cluster, status metav1.ConditionStatus, reason, message string) {
+	r.setCondition(&cluster.Status.Conditions, metav1.Condition{
+		Type:               operatorv1alpha1.ConditionTypeReachable,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: cluster.Generation,
+	})
 }
 
 func (r *Reconciler) buildRESTConfig(url string, secret *corev1.Secret) (*rest.Config, error) {

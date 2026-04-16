@@ -265,65 +265,70 @@ func (r *Reconciler) checkArgoCDCRDs(ctx context.Context) error {
 func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1alpha1.Cluster) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 
-	// Set phase to Deploying at the start of reconciliation
-	if cluster.Status.Phase == "" || cluster.Status.Phase == "Deployed" {
-		r.updateStatusWithPhase(ctx, cluster, "Ready", metav1.ConditionFalse, "Reconciling", "Reconciliation in progress", "Deploying")
-	}
+	var reconcileErr error
+	var k8sVersion string
+	var app *unstructured.Unstructured
 
 	// Reconcile ArgoCD connection secret
 	if err := r.reconcileArgoCDSecret(ctx, cluster); err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD connection secret")
-		// The status condition and phase Error are set inside reconcileArgoCDSecret
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
+		reconcileErr = err
 	}
 
-	// Verify the cluster can be reached and administered
-	k8sVersion, result, err := r.reconcileHealth(ctx, cluster)
-	if err != nil || !result.IsZero() {
-		if err != nil {
-			r.updateStatusWithPhase(ctx, cluster, operatorv1alpha1.ConditionTypeReady, metav1.ConditionFalse, operatorv1alpha1.ReasonHealthCheckFailed, err.Error(), "Error")
+	if reconcileErr == nil {
+		// Verify the cluster can be reached and administered
+		var result ctrl.Result
+		k8sVersion, result, reconcileErr = r.reconcileHealth(ctx, cluster)
+		if reconcileErr == nil && !result.IsZero() {
+			// Health check wants to requeue without error
+			return result, nil
 		}
-
-		// Even if the cluster is unreachable, we still try to reconcile the ArgoCD AppProject and Application
-		// so that they are created/updated with the correct destination.
-		// This is useful when the cluster is not yet reachable but we want to prepare the ArgoCD resources.
-		_ = r.reconcileAppProject(ctx, cluster)
-		_ = r.reconcileApplication(ctx, cluster)
-
-		return result, err
 	}
 
-	// Update the Kubernetes version in status if it changed
-	if result, err := r.updateKubernetesVersion(ctx, cluster, k8sVersion); err != nil || !result.IsZero() {
-		return result, err
-	}
-
-	// Validate cluster configuration
-	if err := r.validate(ctx, cluster); err != nil {
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
-	}
-
-	// Reconcile ArgoCD AppProject
+	// Even if the cluster is unreachable or secret fails, we still try to reconcile the ArgoCD AppProject and Application
+	// so that they are created/updated with the correct destination.
+	// This is useful when the cluster is not yet reachable but we want to prepare the ArgoCD resources.
 	if err := r.reconcileAppProject(ctx, cluster); err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD AppProject")
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
+		if reconcileErr == nil {
+			reconcileErr = err
+		}
 	}
 
-	// Reconcile ArgoCD Application
-	if err := r.reconcileApplication(ctx, cluster); err != nil {
+	// Examination of Connection mode is used to decide the destination in ArgoCD
+	// We must ensure we use the latest Spec from the cluster object passed to us.
+	var err error
+	app, err = r.reconcileApplication(ctx, cluster)
+	if err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD Application")
-		return ctrl.Result{RequeueAfter: time.Minute}, nil
+		if reconcileErr == nil {
+			reconcileErr = err
+		}
+	} else {
+		// Fetch the latest app object after reconcile (it might have status now)
+		_ = r.Get(ctx, types.NamespacedName{Name: app.GetName(), Namespace: app.GetNamespace()}, app)
 	}
 
-	// Trigger a periodic refresh on every sub-application within the app of apps chart.
-	// This keeps child Applications in sync without relying solely on ArgoCD's internal polling.
-	if !cluster.Spec.PauseSync {
+	if reconcileErr == nil {
+		// Validate cluster configuration
+		if err := r.validate(ctx, cluster); err != nil {
+			reconcileErr = err
+		}
+	}
+
+	if reconcileErr == nil && !cluster.Spec.PauseSync {
+		// Trigger a periodic refresh on every sub-application within the app of apps chart.
 		r.syncSubApplications(ctx, cluster)
 	}
 
-	// Update the current version and phase in status if everything else is healthy
-	if result, err := r.updateClusterVersion(ctx, cluster); err != nil || !result.IsZero() {
-		return result, err
+	// Centralized status sync
+	res, err := r.syncStatus(ctx, cluster, app, k8sVersion, reconcileErr)
+	if err != nil || !res.IsZero() {
+		return res, err
+	}
+
+	if reconcileErr != nil {
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	}
 
 	// Reconcile again in 5 minutes to ensure the cluster stays in sync
@@ -331,5 +336,11 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 }
 
 func (r *Reconciler) updateArgoCDCondition(ctx context.Context, cluster *operatorv1alpha1.Cluster, status metav1.ConditionStatus, reason, message string) {
-	r.updateStatus(ctx, cluster, operatorv1alpha1.ConditionTypeArgoCDInstalled, status, reason, message)
+	r.setCondition(&cluster.Status.Conditions, metav1.Condition{
+		Type:               operatorv1alpha1.ConditionTypeArgoCDInstalled,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: cluster.Generation,
+	})
 }

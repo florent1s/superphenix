@@ -18,8 +18,8 @@ apps:
     enabled: false
     modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
+      enabled: true
+      selfHeal: true
       prune: false
       syncOptions: {}
     namespace: "default"
@@ -35,8 +35,8 @@ apps:
     modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
       enabled: true
-      selfHeal: false
-      prune: false
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "argocd-system"
     repoURL: ""
@@ -387,9 +387,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "kubevirt-system"
     repoURL: "xxx"
@@ -404,9 +404,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "cdi-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/cdi"
@@ -424,9 +424,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "rook-system"
     nsLabels:
@@ -467,9 +467,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledStorage]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "spx-storage"
     nsLabels:
@@ -632,9 +632,9 @@ apps:
     enabled: true
     modes: [DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       # The endpoint ConfigMap is edited on the fly by Rook and must be ignored during syncs, unless it doesn't exist on the cluster
       syncOptions:
         - RespectIgnoreDifferences=true
@@ -676,9 +676,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "kube-system"
     repoURL: "xxx"
@@ -709,9 +709,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "velero-system"
     nsLabels:
@@ -843,9 +843,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
-      selfHeal: false
-      prune: false
+      enabled: true
+      selfHeal: true
+      prune: true
       syncOptions: {}
     namespace: "csi-snapshotter-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/external-snapshotter"
@@ -906,9 +906,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
+      enabled: true
       selfHeal: true
-      prune: false
+      prune: true
       syncOptions: {}
     namespace: "kaas-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/kaas-controller"
@@ -925,9 +925,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
+      enabled: true
       selfHeal: true
-      prune: false
+      prune: true
       syncOptions: {}
     namespace: "kaas-datastore-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/kaas-datastore"
@@ -946,9 +946,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
+      enabled: true
       selfHeal: true
-      prune: false
+      prune: true
       syncOptions: {}
     namespace: "kamaji-system"
     repoURL: "xxx"
@@ -990,9 +990,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
+      enabled: true
       selfHeal: true
-      prune: false
+      prune: true
       syncOptions: {}
     namespace: "capi-operator-system"
     repoURL: "https://kubernetes-sigs.github.io/cluster-api-operator"
@@ -1021,9 +1021,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
+      enabled: true
       selfHeal: true
-      prune: false
+      prune: true
       syncOptions: {}
     namespace: "etcd-operator-system"
     repoURL: "xxx"
@@ -1046,9 +1046,9 @@ apps:
     enabled: true
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
-      enabled: false
+      enabled: true
       selfHeal: true
-      prune: false
+      prune: true
       syncOptions: {}
     namespace: "traefik-system"
     nsLabels:
