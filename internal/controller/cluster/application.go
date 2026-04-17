@@ -144,6 +144,7 @@ func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster
 			"namespace": r.OperatorNamespace,
 			"project":   cluster.Name,
 		},
+		"forceManual": cluster.Spec.Manual,
 	}
 
 	if cluster.Spec.Type != nil {

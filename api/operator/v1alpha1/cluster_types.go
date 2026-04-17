@@ -145,6 +145,12 @@ type ClusterSpec struct {
 	// +optional
 	// +kubebuilder:default=false
 	PauseSync bool `json:"pauseSync,omitempty"`
+
+	// Manual allows to disable the autosync of all applications on this cluster.
+	// When set to true, "forceManual" is passed to the Superphenix system chart.
+	// +optional
+	// +kubebuilder:default=false
+	Manual bool `json:"manual,omitempty"`
 }
 
 // ConnectionMode defines how the operator connects to the cluster.

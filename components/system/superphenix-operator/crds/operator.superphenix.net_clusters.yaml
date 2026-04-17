@@ -121,6 +121,12 @@ spec:
                 description: DeploymentTopology defines whether the cluster is hyperconverged
                   or decoupled.
                 type: string
+              manual:
+                default: false
+                description: |-
+                  Manual allows to disable the autosync of all applications on this cluster.
+                  When set to true, "forceManual" is passed to the Superphenix system chart.
+                type: boolean
               pauseSync:
                 default: false
                 description: |-

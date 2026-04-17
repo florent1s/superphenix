@@ -260,7 +260,7 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 			// Check if we should sync based on the LastSync time
 			shouldSync := true
 			if cluster.Status.LastSync != nil {
-				if time.Since(cluster.Status.LastSync.Time) < r.SyncPeriod {
+				if time.Since(cluster.Status.LastSync.Time) < r.SyncPeriod || cluster.Spec.Manual || cluster.Spec.PauseSync {
 					shouldSync = false
 					log.Info("Skipping periodic sync, last sync was recent", "lastSync", cluster.Status.LastSync.Time, "syncPeriod", r.SyncPeriod)
 				}
