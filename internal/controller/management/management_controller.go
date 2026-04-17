@@ -136,8 +136,13 @@ func (r *Reconciler) configMapPredicate() predicate.Predicate {
 			if !r.isTargetConfigMap(e.ObjectNew.GetName(), e.ObjectNew.GetNamespace()) {
 				return false
 			}
-			// Only reconcile if the generation actually changed.
-			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
+			// Only reconcile if the data actually changed.
+			oldCm, ok1 := e.ObjectOld.(*corev1.ConfigMap)
+			newCm, ok2 := e.ObjectNew.(*corev1.ConfigMap)
+			if ok1 && ok2 {
+				return !reflect.DeepEqual(oldCm.Data, newCm.Data)
+			}
+			return true
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
 			return r.isTargetConfigMap(e.Object.GetName(), e.Object.GetNamespace())
@@ -331,22 +336,22 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 	return runHelmInstall(ctx, clientInstall, ch)
 }
 
-// buildArgoCDApplication constructs the ArgoCD Application manifest that configures ArgoCD to manage itself.
-func (r *Reconciler) buildArgoCDApplication(vals map[string]interface{}) *unstructured.Unstructured {
+// buildApplication constructs a self-syncing ArgoCD Application manifest backed by a Helm chart.
+func (r *Reconciler) buildApplication(name, repoURL, chartName, chartVersion string, vals map[string]interface{}) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "argoproj.io/v1alpha1",
 			"kind":       "Application",
 			"metadata": map[string]interface{}{
-				"name":      ManagementArgoCDName,
+				"name":      name,
 				"namespace": r.OperatorNamespace,
 			},
 			"spec": map[string]interface{}{
 				"project": "default",
 				"source": map[string]interface{}{
-					"repoURL":        r.ArgoCDChartURL,
-					"targetRevision": r.ArgoCDChartVersion,
-					"chart":          "argo-cd",
+					"repoURL":        repoURL,
+					"targetRevision": chartVersion,
+					"chart":          chartName,
 					"helm": map[string]interface{}{
 						"valuesObject": vals,
 					},
@@ -366,40 +371,15 @@ func (r *Reconciler) buildArgoCDApplication(vals map[string]interface{}) *unstru
 	}
 }
 
+// buildArgoCDApplication constructs the ArgoCD Application manifest that configures ArgoCD to manage itself.
+func (r *Reconciler) buildArgoCDApplication(vals map[string]interface{}) *unstructured.Unstructured {
+	return r.buildApplication(ManagementArgoCDName, r.ArgoCDChartURL, "argo-cd", r.ArgoCDChartVersion, vals)
+}
+
 // buildManagementApplication constructs the ArgoCD Application manifest for the superphenix-management chart,
 // which deploys the management console, authentication, and related services.
 func (r *Reconciler) buildManagementApplication(vals map[string]interface{}) *unstructured.Unstructured {
-	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": "argoproj.io/v1alpha1",
-			"kind":       "Application",
-			"metadata": map[string]interface{}{
-				"name":      ManagementSuperphenixName,
-				"namespace": r.OperatorNamespace,
-			},
-			"spec": map[string]interface{}{
-				"project": "default",
-				"source": map[string]interface{}{
-					"repoURL":        r.ManagementChartURL,
-					"targetRevision": r.ManagementChartVersion,
-					"chart":          "superphenix-management",
-					"helm": map[string]interface{}{
-						"valuesObject": vals,
-					},
-				},
-				"destination": map[string]interface{}{
-					"name":      "in-cluster",
-					"namespace": r.OperatorNamespace,
-				},
-				"syncPolicy": map[string]interface{}{
-					"automated": map[string]interface{}{
-						"prune":    true,
-						"selfHeal": true,
-					},
-				},
-			},
-		},
-	}
+	return r.buildApplication(ManagementSuperphenixName, r.ManagementChartURL, "superphenix-management", r.ManagementChartVersion, vals)
 }
 
 // createOrUpdateArgoCDApplication creates the ArgoCD Application if it does not exist, or updates it otherwise.
