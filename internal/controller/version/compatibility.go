@@ -9,13 +9,20 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
 	// ManagementSuperphenixName is the ArgoCD Application name for the superphenix-management chart.
 	ManagementSuperphenixName = "superphenix-management"
+
+	// ClusterSystemChartName is the default name of the cluster system chart.
+	ClusterSystemChartName = "superphenix-system"
+)
+
+var (
+	// ClusterLabel is the label used to identify the cluster in ArgoCD.
+	ClusterLabel = "operator.superphenix.net/clusterName"
 )
 
 var (
@@ -24,6 +31,9 @@ var (
 
 	// MinClusterVersion is the minimum version of the cluster supported by the operator.
 	MinClusterVersion = "0.0.0"
+
+	// MaxClusterVersion is the ceiling for supported cluster versions (exclusive).
+	MaxClusterVersion = "999.999.999"
 )
 
 // IsManagementUpgradeSupported checks if upgrading management from current to target version is supported.
@@ -35,11 +45,11 @@ func IsManagementUpgradeSupported(current, target string) error {
 	}
 
 	constraintString := ">= " + MinManagementVersionBeforeUpgrade
-	return checkConstraint(current, target, constraintString, "management")
+	return checkConstraint(current, current, target, constraintString, "management")
 }
 
 // IsClusterUpgradeSupported checks if upgrading a cluster from current to target is supported.
-// Upgrades are supported if the current version is at least MinClusterVersion.
+// Upgrades are supported if both the current and target versions are within the supported range [MinClusterVersion, MaxClusterVersion[.
 // Special versions like "0.0.0-latest" or empty versions bypass the check.
 func IsClusterUpgradeSupported(current, target string) error {
 	if current == "" || target == "" || current == target {
@@ -51,34 +61,50 @@ func IsClusterUpgradeSupported(current, target string) error {
 		return nil
 	}
 
-	constraintString := ">= " + MinClusterVersion
-	return checkConstraint(current, target, constraintString, "cluster")
+	constraintString := fmt.Sprintf(">= %s, < %s", MinClusterVersion, MaxClusterVersion)
+	if err := checkConstraint(current, current, target, constraintString, "cluster"); err != nil {
+		return err
+	}
+
+	return checkConstraint(target, current, target, constraintString, "cluster")
 }
 
 // IsClusterCompatibleWithManagement checks if a cluster version is supported by a management version.
-// A cluster is considered compatible if its version is at least MinClusterVersion.
+// A cluster is considered compatible if its version is within the supported range [MinClusterVersion, MaxClusterVersion[.
 // Empty management version bypasses the check.
 func IsClusterCompatibleWithManagement(clusterVersion, managementVersion string) error {
 	if managementVersion == "" {
 		return nil
 	}
 
-	constraintString := ">= " + MinClusterVersion
+	constraintString := fmt.Sprintf(">= %s, < %s", MinClusterVersion, MaxClusterVersion)
 
 	if clusterVersion == "" || clusterVersion == "0.0.0-latest" {
 		if clusterVersion == "0.0.0-latest" {
-			return checkConstraint("0.0.0", managementVersion, constraintString, "cluster compatibility")
+			return checkConstraint("0.0.0", clusterVersion, managementVersion, constraintString, "cluster compatibility")
 		}
 		return nil
 	}
 
-	return checkConstraint(clusterVersion, managementVersion, constraintString, "cluster compatibility")
+	return checkConstraint(clusterVersion, clusterVersion, managementVersion, constraintString, "cluster compatibility")
 }
 
 // GetCurrentManagementVersion attempts to retrieve the current version of the management chart
 // by looking at the existing ArgoCD Application in the given namespace.
 // Returns an empty string if the application is not found or the version cannot be determined.
 func GetCurrentManagementVersion(ctx context.Context, c client.Reader, operatorNamespace string) (string, error) {
+	return GetApplicationVersion(ctx, c, ManagementSuperphenixName, operatorNamespace)
+}
+
+// GetCurrentClusterVersion attempts to retrieve the current version of the cluster
+// by looking at its root ArgoCD Application.
+// Returns an empty string if the application is not found or the version cannot be determined.
+func GetCurrentClusterVersion(ctx context.Context, c client.Reader, clusterName, operatorNamespace string) (string, error) {
+	return GetApplicationVersion(ctx, c, clusterName, operatorNamespace)
+}
+
+// GetApplicationVersion attempts to retrieve the version of a given ArgoCD Application.
+func GetApplicationVersion(ctx context.Context, c client.Reader, name, namespace string) (string, error) {
 	app := &unstructured.Unstructured{}
 	app.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "argoproj.io",
@@ -86,7 +112,7 @@ func GetCurrentManagementVersion(ctx context.Context, c client.Reader, operatorN
 		Kind:    "Application",
 	})
 
-	err := c.Get(ctx, types.NamespacedName{Name: ManagementSuperphenixName, Namespace: operatorNamespace}, app)
+	err := c.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, app)
 	if err != nil {
 		if errors.IsNotFound(err) || meta.IsNoMatchError(err) {
 			return "", nil
@@ -103,10 +129,10 @@ func GetCurrentManagementVersion(ctx context.Context, c client.Reader, operatorN
 	return version, nil
 }
 
-func checkConstraint(current, target, constraintString, scope string) error {
-	v, err := semver.NewVersion(current)
+func checkConstraint(vStr, current, target, constraintString, scope string) error {
+	v, err := semver.NewVersion(vStr)
 	if err != nil {
-		return fmt.Errorf("invalid %s version %q: %w", scope, current, err)
+		return fmt.Errorf("invalid %s version %q: %w", scope, vStr, err)
 	}
 
 	constraint, err := semver.NewConstraint(constraintString)

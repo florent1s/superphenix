@@ -14,6 +14,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
+	"github.com/super-phenix/superphenix/internal/controller/version"
 )
 
 type connectionData struct {
@@ -56,7 +57,7 @@ func (r *Reconciler) reconcileArgoCDSecret(ctx context.Context, cluster *operato
 			secret.Labels = make(map[string]string)
 		}
 		secret.Labels["argocd.argoproj.io/secret-type"] = "cluster"
-		secret.Labels[ClusterLabel] = cluster.Name
+		secret.Labels[version.ClusterLabel] = cluster.Name
 
 		// Set ownership reference
 		if err := controllerutil.SetControllerReference(cluster, secret, r.Scheme); err != nil {

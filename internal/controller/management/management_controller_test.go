@@ -412,7 +412,7 @@ var _ = Describe("Management Controller", func() {
 					"apiVersion": "argoproj.io/v1alpha1",
 					"kind":       "Application",
 					"metadata": map[string]interface{}{
-						"name":      ManagementSuperphenixName,
+						"name":      SuperphenixManagementApp,
 						"namespace": "default",
 					},
 					"spec": map[string]interface{}{
@@ -450,7 +450,7 @@ var _ = Describe("Management Controller", func() {
 					"apiVersion": "argoproj.io/v1alpha1",
 					"kind":       "Application",
 					"metadata": map[string]interface{}{
-						"name":      ManagementSuperphenixName,
+						"name":      SuperphenixManagementApp,
 						"namespace": "default",
 					},
 					"spec": map[string]interface{}{

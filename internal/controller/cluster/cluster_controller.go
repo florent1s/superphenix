@@ -28,8 +28,6 @@ import (
 const (
 	// FinalizerName is the name of the finalizer used to clean up the cluster when it is deleted.
 	FinalizerName = "operator.superphenix.net/finalizer"
-	// ClusterLabel is the label used to identify the cluster in ArgoCD.
-	ClusterLabel = "operator.superphenix.net/clusterName"
 )
 
 var (

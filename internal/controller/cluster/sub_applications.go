@@ -11,6 +11,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
+	"github.com/super-phenix/superphenix/internal/controller/version"
 )
 
 // syncSubApplications triggers an ArgoCD sync on the root Application and on every child
@@ -92,7 +93,7 @@ func (r *Reconciler) listSubApplications(ctx context.Context, cluster *operatorv
 
 	if err := r.List(ctx, appList,
 		client.InNamespace(r.OperatorNamespace),
-		client.MatchingLabels{ClusterLabel: cluster.Name},
+		client.MatchingLabels{version.ClusterLabel: cluster.Name},
 	); err != nil {
 		return nil, fmt.Errorf("failed to list sub-applications for cluster %s: %w", cluster.Name, err)
 	}

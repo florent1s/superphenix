@@ -11,6 +11,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
+	"github.com/super-phenix/superphenix/internal/controller/version"
 )
 
 // reconcileApplication ensures an ArgoCD Application exists for each cluster.
@@ -51,6 +52,10 @@ func (r *Reconciler) initApplication(cluster *operatorv1alpha1.Cluster) *unstruc
 		Group:   "argoproj.io",
 		Version: "v1alpha1",
 		Kind:    "Application",
+	})
+
+	app.SetLabels(map[string]string{
+		version.ClusterLabel: cluster.Name,
 	})
 
 	// The application will clean up its children's resources on deletion using this finalizer

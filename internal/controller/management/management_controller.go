@@ -37,10 +37,10 @@ const (
 	// ControllerName is the name of the management controller.
 	ControllerName = "management-controller"
 
-	// ManagementArgoCDName is the Helm release name and ArgoCD Application name for the management ArgoCD instance.
-	ManagementArgoCDName = "superphenix-argocd"
-	// ManagementSuperphenixName is the ArgoCD Application name for the superphenix-management chart.
-	ManagementSuperphenixName = "superphenix-management"
+	// ArgoCDApp is the Helm release name and ArgoCD Application name for the management ArgoCD instance.
+	ArgoCDApp = "superphenix-argocd"
+	// SuperphenixManagementApp is the ArgoCD Application name for the superphenix-management chart.
+	SuperphenixManagementApp = "superphenix-management"
 
 	// ConfigMapKeyArgoCD is the key in the management ConfigMap holding ArgoCD Helm values.
 	ConfigMapKeyArgoCD = "argocd"
@@ -158,7 +158,7 @@ func (r *Reconciler) configMapPredicate() predicate.Predicate {
 }
 
 // reconcileManagementArgoCD deploys the management ArgoCD instance that bootstraps the rest of the stack.
-// It resolves the chicken-and-egg problem: first a plain Helm install gets ArgoCD running,
+// It resolves the chicken-and-egg problem: first a plain Helm installation gets ArgoCD running,
 // then an ArgoCD Application hands its lifecycle back to ArgoCD itself.
 func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	log := logf.FromContext(ctx)
@@ -182,12 +182,12 @@ func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 func (r *Reconciler) reconcileManagementStack(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
-	vals, err := r.mergeManagementValues(ctx)
+	values, err := r.mergeManagementValues(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to merge management stack values: %w", err)
 	}
 
-	app := r.buildManagementApplication(vals)
+	app := r.buildManagementApplication(values)
 	if err := r.createOrUpdateArgoCDApplication(ctx, app); err != nil {
 		return err
 	}
@@ -314,7 +314,7 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 		return nil
 	}
 
-	if isHelmReleaseInstalled(actionConfig, ManagementArgoCDName) {
+	if isHelmReleaseInstalled(actionConfig, ArgoCDApp) {
 		log.Info("ArgoCD Helm release already exists, skipping initial install")
 		return nil
 	}
@@ -322,7 +322,7 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 	log.Info("Performing initial ArgoCD Helm install", "chart", "argo-cd", "version", r.ArgoCDChartVersion)
 
 	clientInstall := action.NewInstall(actionConfig)
-	clientInstall.ReleaseName = ManagementArgoCDName
+	clientInstall.ReleaseName = ArgoCDApp
 	clientInstall.Namespace = r.OperatorNamespace
 	clientInstall.RepoURL = r.ArgoCDChartURL
 	clientInstall.Version = r.ArgoCDChartVersion
@@ -374,13 +374,13 @@ func (r *Reconciler) buildApplication(name, repoURL, chartName, chartVersion str
 
 // buildArgoCDApplication constructs the ArgoCD Application manifest that configures ArgoCD to manage itself.
 func (r *Reconciler) buildArgoCDApplication(vals map[string]interface{}) *unstructured.Unstructured {
-	return r.buildApplication(ManagementArgoCDName, r.ArgoCDChartURL, "argo-cd", r.ArgoCDChartVersion, vals)
+	return r.buildApplication(ArgoCDApp, r.ArgoCDChartURL, "argo-cd", r.ArgoCDChartVersion, vals)
 }
 
 // buildManagementApplication constructs the ArgoCD Application manifest for the superphenix-management chart,
 // which deploys the management console, authentication, and related services.
 func (r *Reconciler) buildManagementApplication(vals map[string]interface{}) *unstructured.Unstructured {
-	return r.buildApplication(ManagementSuperphenixName, r.ManagementChartURL, "superphenix-management", r.ManagementChartVersion, vals)
+	return r.buildApplication(SuperphenixManagementApp, r.ManagementChartURL, "superphenix-management", r.ManagementChartVersion, vals)
 }
 
 // createOrUpdateArgoCDApplication creates the ArgoCD Application if it does not exist, or updates it otherwise.

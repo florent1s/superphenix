@@ -85,6 +85,19 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 		cluster.Status.KubernetesVersion = k8sVersion
 	}
 
+	// Update CurrentVersion based on the currently deployed superphenix-system chart
+	if reconcileErr == nil {
+		currentVersion, err := version.GetCurrentClusterVersion(ctx, r, cluster.Name, r.OperatorNamespace)
+		if err != nil {
+			log.Error(err, "Failed to get current cluster version")
+		} else if currentVersion != "" {
+			if cluster.Status.CurrentVersion != currentVersion {
+				log.Info("Updating current version from deployed chart", "oldVersion", cluster.Status.CurrentVersion, "newVersion", currentVersion)
+				cluster.Status.CurrentVersion = currentVersion
+			}
+		}
+	}
+
 	// 2. Determine Conditions
 	// Check version compatibility with management
 	r.updateCompatibilityCondition(ctx, cluster)
@@ -158,11 +171,7 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	} else if cluster.Spec.PauseSync {
 		phase = "Paused"
 	} else if r.isSynced(cluster) {
-		// If Synced, we can move to Deployed and update CurrentVersion
-		if cluster.Status.CurrentVersion != cluster.Spec.Version {
-			log.Info("Updating current version", "oldVersion", cluster.Status.CurrentVersion, "newVersion", cluster.Spec.Version)
-			cluster.Status.CurrentVersion = cluster.Spec.Version
-		}
+		// If Synced, we can move to Deployed
 		phase = "Deployed"
 	} else {
 		// If not synced and not error/paused, use whatever applyApplicationStatus set
