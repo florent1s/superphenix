@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/super-phenix/superphenix/pkg/utils"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -197,7 +198,7 @@ func (r *Reconciler) reconcileManagementStack(ctx context.Context) error {
 
 // setupHelmEnvironment creates a temporary directory for Helm's cache, config, and data,
 // exports the required environment variables, and returns a configured EnvSettings.
-// The returned cleanup function must be deferred by the caller to restore the environment.
+// The caller must defer the returned cleanup function to restore the environment.
 func setupHelmEnvironment() (*cli.EnvSettings, func(), error) {
 	tmpDir, err := os.MkdirTemp("", "superphenix-helm-*")
 	if err != nil {
@@ -235,7 +236,7 @@ func setupHelmEnvironment() (*cli.EnvSettings, func(), error) {
 }
 
 // initHelmActionConfig initialises a Helm action.Configuration for the operator namespace.
-// Returns (nil, nil) when the RESTClientGetter is unavailable (e.g. in envtest).
+// Returns (nil, nil) when the RESTClientGetter is unavailable (e.g., in envtest).
 func (r *Reconciler) initHelmActionConfig(ctx context.Context, helmSettings *cli.EnvSettings) (*action.Configuration, error) {
 	log := logf.FromContext(ctx)
 
@@ -294,7 +295,7 @@ func runHelmInstall(ctx context.Context, clientInstall *action.Install, ch *char
 	return nil
 }
 
-// ensureInitialHelmInstall performs a one-time default Helm install of ArgoCD.
+// ensureInitialHelmInstall performs a one-time default Helm installation of ArgoCD.
 // This is idempotent: it is a no-op when the release already exists.
 func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 	log := logf.FromContext(ctx)
@@ -482,47 +483,8 @@ func (r *Reconciler) loadConfigMapValuesFrom(ctx context.Context, name, key stri
 		return fmt.Errorf("failed to unmarshal YAML from ConfigMap key %q: %w", key, err)
 	}
 
-	mapDeepMerge(dst, cmVals)
+	utils.MapDeepMerge(dst, cmVals)
 	return nil
-}
-
-// mergeValues builds a Helm values map by layering, in order:
-// base file defaults, HA overrides (when enabled), then user overrides from the given ConfigMap key.
-func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, configMapKey string) (map[string]interface{}, error) {
-	log := logf.FromContext(ctx)
-	merged := make(map[string]interface{})
-
-	if defaultConfig != "" {
-		vals, found, err := loadYAMLFileValues(defaultConfig)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load default values from %s: %w", defaultConfig, err)
-		}
-		if !found {
-			log.Info("Default config file not found", "path", defaultConfig)
-		} else {
-			mapDeepMerge(merged, vals)
-		}
-	}
-
-	if r.HAEnabled && haConfig != "" {
-		vals, found, err := loadYAMLFileValues(haConfig)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load HA values from %s: %w", haConfig, err)
-		}
-		if !found {
-			log.Info("HA config file not found", "path", haConfig)
-		} else {
-			mapDeepMerge(merged, vals)
-		}
-	}
-
-	if r.ValuesConfigMapName != "" && r.OperatorNamespace != "" {
-		if err := r.loadConfigMapValuesFrom(ctx, r.ValuesConfigMapName, configMapKey, merged); err != nil {
-			return nil, err
-		}
-	}
-
-	return merged, nil
 }
 
 // mergeArgoCDValues builds the final Helm values for the ArgoCD chart.
@@ -535,21 +497,41 @@ func (r *Reconciler) mergeManagementValues(ctx context.Context) (map[string]inte
 	return r.mergeValues(ctx, r.ManagementDefaultConfig, r.ManagementHAConfig, ConfigMapKeySuperphenix)
 }
 
-// mapDeepMerge merges src into dst recursively, with src taking precedence.
-// A nil value in src deletes the corresponding key from dst, which allows
-// callers to explicitly drop Helm chart values via YAML null.
-func mapDeepMerge(dst, src map[string]interface{}) {
-	for key, value := range src {
-		if value == nil {
-			delete(dst, key)
-			continue
+// mergeValues builds a Helm values map by layering, in order:
+// base file defaults, HA overrides (when enabled), then the user overrides from the given ConfigMap key.
+func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, configMapKey string) (map[string]interface{}, error) {
+	log := logf.FromContext(ctx)
+	merged := make(map[string]interface{})
+
+	if defaultConfig != "" {
+		vals, found, err := loadYAMLFileValues(defaultConfig)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load default values from %s: %w", defaultConfig, err)
 		}
-		if srcMap, ok := value.(map[string]interface{}); ok {
-			if dstMap, ok := dst[key].(map[string]interface{}); ok {
-				mapDeepMerge(dstMap, srcMap)
-				continue
-			}
+		if !found {
+			log.Info("Default config file not found", "path", defaultConfig)
+		} else {
+			utils.MapDeepMerge(merged, vals)
 		}
-		dst[key] = value
 	}
+
+	if r.HAEnabled && haConfig != "" {
+		vals, found, err := loadYAMLFileValues(haConfig)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load HA values from %s: %w", haConfig, err)
+		}
+		if !found {
+			log.Info("HA config file not found", "path", haConfig)
+		} else {
+			utils.MapDeepMerge(merged, vals)
+		}
+	}
+
+	if r.ValuesConfigMapName != "" && r.OperatorNamespace != "" {
+		if err := r.loadConfigMapValuesFrom(ctx, r.ValuesConfigMapName, configMapKey, merged); err != nil {
+			return nil, err
+		}
+	}
+
+	return merged, nil
 }

@@ -14,12 +14,24 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/super-phenix/superphenix/internal/controller/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
 
 var _ = Describe("Cluster Controller", func() {
+	var oldMinClusterVersion string
+
+	BeforeEach(func() {
+		oldMinClusterVersion = version.MinClusterVersion
+		version.MinClusterVersion = "1.0.0"
+	})
+
+	AfterEach(func() {
+		version.MinClusterVersion = oldMinClusterVersion
+	})
+
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 

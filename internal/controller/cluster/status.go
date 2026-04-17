@@ -14,6 +14,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
+	"github.com/super-phenix/superphenix/internal/controller/version"
 )
 
 /*
@@ -74,7 +75,7 @@ func (r *Reconciler) isSynced(cluster *operatorv1alpha1.Cluster) bool {
 // syncStatus centralizes the cluster status and phase management.
 // It determines the final status based on the connectivity, ArgoCD application status, and spec.
 // It also updates versions, conditions, phase, and handles the status patch to the Kubernetes API.
-func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, app *unstructured.Unstructured, k8sVersion string, reconcileErr error) (ctrl.Result, error) {
+func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster, app *unstructured.Unstructured, k8sVersion string, reconcileErr error, lastSync *metav1.Time) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 	oldStatus := cluster.Status.DeepCopy()
 	patch := client.MergeFrom(cluster.DeepCopy())
@@ -85,6 +86,9 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	}
 
 	// 2. Determine Conditions
+	// Check version compatibility with management
+	r.updateCompatibilityCondition(ctx, cluster)
+
 	if reconcileErr != nil {
 		reason := operatorv1alpha1.ReasonHealthCheckFailed
 		condType := operatorv1alpha1.ConditionTypeReady
@@ -179,11 +183,13 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	}
 
 	// 4. Final Ready Condition Check
-	r.updateReadyCondition(cluster)
+	r.updateReadyCondition(cluster, reconcileErr)
 
 	// 5. Update ObservedGeneration and LastSync
 	cluster.Status.ObservedGeneration = cluster.Generation
-	if oldStatus != nil {
+	if lastSync != nil {
+		cluster.Status.LastSync = lastSync
+	} else if oldStatus != nil {
 		cluster.Status.LastSync = oldStatus.LastSync
 	}
 
@@ -293,8 +299,8 @@ func (r *Reconciler) applyApplicationStatus(cluster *operatorv1alpha1.Cluster, a
 }
 
 // updateReadyCondition calculates the aggregate Ready condition for the Cluster.
-// It considers reachability, ArgoCD synchronization status, and any reconciliation errors.
-func (r *Reconciler) updateReadyCondition(cluster *operatorv1alpha1.Cluster) {
+// It considers reachability, ArgoCD synchronization status, compatibility, and any reconciliation errors.
+func (r *Reconciler) updateReadyCondition(cluster *operatorv1alpha1.Cluster, reconcileErr error) {
 	reachable := false
 	var reachableCond *metav1.Condition
 	for i := range cluster.Status.Conditions {
@@ -315,6 +321,14 @@ func (r *Reconciler) updateReadyCondition(cluster *operatorv1alpha1.Cluster) {
 		}
 	}
 
+	var compatibleCond *metav1.Condition
+	for i := range cluster.Status.Conditions {
+		if cluster.Status.Conditions[i].Type == operatorv1alpha1.ConditionTypeCompatibleVersion {
+			compatibleCond = &cluster.Status.Conditions[i]
+			break
+		}
+	}
+
 	// Use existing Ready condition if set by syncStatus (e.g. for errors)
 	var readyCond *metav1.Condition
 	for i := range cluster.Status.Conditions {
@@ -328,9 +342,8 @@ func (r *Reconciler) updateReadyCondition(cluster *operatorv1alpha1.Cluster) {
 	readyReason := operatorv1alpha1.ReasonReconcileSuccess
 	readyMessage := "Cluster is ready"
 
-	// If we already have a False Ready condition (e.g. from reconcileErr), preserve it
-	// unless we have more specific info.
-	if readyCond != nil && readyCond.Status == metav1.ConditionFalse {
+	// If we have an error from the current reconciliation pass, use it.
+	if reconcileErr != nil && readyCond != nil && readyCond.Status == metav1.ConditionFalse {
 		readyStatus = readyCond.Status
 		readyReason = readyCond.Reason
 		readyMessage = readyCond.Message
@@ -343,6 +356,10 @@ func (r *Reconciler) updateReadyCondition(cluster *operatorv1alpha1.Cluster) {
 		if reachableCond != nil && reachableCond.Message != "" {
 			readyMessage = fmt.Sprintf("Cluster is unreachable: %s", reachableCond.Message)
 		}
+	} else if compatibleCond != nil && compatibleCond.Status == metav1.ConditionFalse {
+		readyStatus = metav1.ConditionFalse
+		readyReason = compatibleCond.Reason
+		readyMessage = compatibleCond.Message
 	} else if argoSyncedCond != nil && argoSyncedCond.Status != metav1.ConditionTrue {
 		// Only override if not already in Error/False state from reconcileErr
 		if readyStatus != metav1.ConditionFalse {
@@ -357,5 +374,47 @@ func (r *Reconciler) updateReadyCondition(cluster *operatorv1alpha1.Cluster) {
 		Status:  readyStatus,
 		Reason:  readyReason,
 		Message: readyMessage,
+	})
+}
+
+// updateCompatibilityCondition ensures the cluster version is supported by the management version.
+func (r *Reconciler) updateCompatibilityCondition(ctx context.Context, cluster *operatorv1alpha1.Cluster) {
+	mgmtVersion, err := version.GetCurrentManagementVersion(ctx, r, r.OperatorNamespace)
+	if err != nil {
+		r.setCondition(&cluster.Status.Conditions, metav1.Condition{
+			Type:    operatorv1alpha1.ConditionTypeCompatibleVersion,
+			Status:  metav1.ConditionUnknown,
+			Reason:  "ManagementVersionUnknown",
+			Message: fmt.Sprintf("Failed to get management version: %v", err),
+		})
+		return
+	}
+
+	if mgmtVersion == "" {
+		// Management version not found.
+		r.setCondition(&cluster.Status.Conditions, metav1.Condition{
+			Type:    operatorv1alpha1.ConditionTypeCompatibleVersion,
+			Status:  metav1.ConditionTrue,
+			Reason:  operatorv1alpha1.ReasonCompatibleVersion,
+			Message: "Management version could not be determined, assuming compatible",
+		})
+		return
+	}
+
+	err = version.IsClusterCompatibleWithManagement(cluster.Spec.Version, mgmtVersion)
+	status := metav1.ConditionTrue
+	reason := operatorv1alpha1.ReasonCompatibleVersion
+	message := "Cluster version is compatible with management version"
+	if err != nil {
+		status = metav1.ConditionFalse
+		reason = operatorv1alpha1.ReasonIncompatibleVersion
+		message = err.Error()
+	}
+
+	r.setCondition(&cluster.Status.Conditions, metav1.Condition{
+		Type:    operatorv1alpha1.ConditionTypeCompatibleVersion,
+		Status:  status,
+		Reason:  reason,
+		Message: message,
 	})
 }

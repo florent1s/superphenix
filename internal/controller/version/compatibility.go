@@ -20,10 +20,10 @@ const (
 
 var (
 	// MinManagementVersionBeforeUpgrade is the minimum version the management must be in before upgrade.
-	MinManagementVersionBeforeUpgrade = "1.0.0"
+	MinManagementVersionBeforeUpgrade = "0.0.0"
 
 	// MinClusterVersion is the minimum version of the cluster supported by the operator.
-	MinClusterVersion = "1.0.0"
+	MinClusterVersion = "0.0.0"
 )
 
 // IsManagementUpgradeSupported checks if upgrading management from current to target version is supported.

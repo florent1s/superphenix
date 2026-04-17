@@ -7,9 +7,11 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - namespaces
+  - configmaps
+  - secrets
   verbs:
   - create
+  - delete
   - get
   - list
   - patch
@@ -18,10 +20,9 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - secrets
+  - namespaces
   verbs:
   - create
-  - delete
   - get
   - list
   - patch

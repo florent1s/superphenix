@@ -15,9 +15,25 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
+	"github.com/super-phenix/superphenix/internal/controller/version"
 )
 
 var _ = Describe("Management Controller", func() {
+	var oldMinMgmt string
+	var oldMinCluster string
+
+	BeforeEach(func() {
+		oldMinMgmt = version.MinManagementVersionBeforeUpgrade
+		oldMinCluster = version.MinClusterVersion
+		version.MinManagementVersionBeforeUpgrade = "1.0.0"
+		version.MinClusterVersion = "1.0.0"
+	})
+
+	AfterEach(func() {
+		version.MinManagementVersionBeforeUpgrade = oldMinMgmt
+		version.MinClusterVersion = oldMinCluster
+	})
+
 	Context("When reconciling management components", func() {
 		ctx := context.Background()
 

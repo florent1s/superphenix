@@ -10,6 +10,10 @@ import (
 )
 
 func TestIsManagementUpgradeSupported(t *testing.T) {
+	oldMin := MinManagementVersionBeforeUpgrade
+	MinManagementVersionBeforeUpgrade = "1.0.0"
+	defer func() { MinManagementVersionBeforeUpgrade = oldMin }()
+
 	tests := []struct {
 		name    string
 		current string
@@ -38,6 +42,10 @@ func TestIsManagementUpgradeSupported(t *testing.T) {
 }
 
 func TestIsClusterUpgradeSupported(t *testing.T) {
+	oldMin := MinClusterVersion
+	MinClusterVersion = "1.0.0"
+	defer func() { MinClusterVersion = oldMin }()
+
 	tests := []struct {
 		name    string
 		current string
@@ -65,6 +73,10 @@ func TestIsClusterUpgradeSupported(t *testing.T) {
 }
 
 func TestIsClusterCompatibleWithManagement(t *testing.T) {
+	oldMin := MinClusterVersion
+	MinClusterVersion = "1.0.0"
+	defer func() { MinClusterVersion = oldMin }()
+
 	tests := []struct {
 		name              string
 		clusterVersion    string

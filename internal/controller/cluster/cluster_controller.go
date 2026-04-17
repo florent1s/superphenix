@@ -144,7 +144,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		if controllerutil.ContainsFinalizer(cluster, FinalizerName) {
 			if err := r.cleanupCluster(ctx, cluster); err != nil {
 				// Update status with the cleanup error
-				if _, syncErr := r.syncStatus(ctx, cluster, nil, "", err); syncErr != nil {
+				if _, syncErr := r.syncStatus(ctx, cluster, nil, "", err, nil); syncErr != nil {
 					logf.FromContext(ctx).Error(syncErr, "Failed to update status after cleanup failure")
 				}
 				return ctrl.Result{RequeueAfter: time.Minute}, err
@@ -240,7 +240,7 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 	r.ArgoCDWatcher.EnsureWatch(ctx, &operatorv1alpha1.Cluster{})
 
 	// Centralized status sync
-	res, err := r.syncStatus(ctx, cluster, app, k8sVersion, reconcileErr)
+	res, err := r.syncStatus(ctx, cluster, app, k8sVersion, reconcileErr, nil)
 	if err != nil || !res.IsZero() {
 		return res, err
 	}
@@ -272,9 +272,8 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 				r.syncSubApplications(ctx, cluster)
 				// Update LastSync in status
 				now := metav1.Now()
-				cluster.Status.LastSync = &now
 				// We need to patch the status again to persist LastSync
-				if _, err := r.syncStatus(ctx, cluster, app, k8sVersion, reconcileErr); err != nil {
+				if _, err := r.syncStatus(ctx, cluster, app, k8sVersion, reconcileErr, &now); err != nil {
 					log.Error(err, "Failed to update LastSync in status")
 				}
 			}

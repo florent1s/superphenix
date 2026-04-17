@@ -237,6 +237,11 @@ spec:
               kubernetesVersion:
                 description: KubernetesVersion is the version of the Kubernetes cluster.
                 type: string
+              lastSync:
+                description: LastSync is the last time a sync was performed on the
+                  cluster.
+                format: date-time
+                type: string
               observedGeneration:
                 description: ObservedGeneration reflects the generation of the most
                   recently observed Cluster.

@@ -3,6 +3,10 @@ package management
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/super-phenix/superphenix/api/operator/v1alpha1"
 	"github.com/super-phenix/superphenix/internal/controller/version"
@@ -35,6 +39,8 @@ func (r *Reconciler) validateClustersCompatibility(ctx context.Context, manageme
 		return fmt.Errorf("failed to list clusters for compatibility check: %w", err)
 	}
 
+	anyIncompatible := false
+	var incompatibleErrors []string
 	for _, cluster := range clusterList.Items {
 		clusterVersionStr := cluster.Status.CurrentVersion
 		if clusterVersionStr == "" {
@@ -42,10 +48,57 @@ func (r *Reconciler) validateClustersCompatibility(ctx context.Context, manageme
 			clusterVersionStr = cluster.Spec.Version
 		}
 
-		if err := version.IsClusterCompatibleWithManagement(clusterVersionStr, managementVersion); err != nil {
-			return fmt.Errorf("cluster %s: %w", cluster.Name, err)
+		err := version.IsClusterCompatibleWithManagement(clusterVersionStr, managementVersion)
+		status := metav1.ConditionTrue
+		reason := v1alpha1.ReasonCompatibleVersion
+		message := fmt.Sprintf("Cluster version is compatible with management version %s", managementVersion)
+		if err != nil {
+			status = metav1.ConditionFalse
+			reason = v1alpha1.ReasonIncompatibleVersion
+			message = err.Error()
+			anyIncompatible = true
+			incompatibleErrors = append(incompatibleErrors, err.Error())
+		}
+
+		// Update compatibility condition on the cluster.
+		// We use a patch to avoid overwriting other status fields.
+		patchBase := cluster.DeepCopy()
+		r.setClusterCondition(&cluster, metav1.Condition{
+			Type:    v1alpha1.ConditionTypeCompatibleVersion,
+			Status:  status,
+			Reason:  reason,
+			Message: message,
+		})
+
+		if err := r.Status().Patch(ctx, &cluster, client.MergeFrom(patchBase)); err != nil {
+			return fmt.Errorf("failed to update compatibility condition for cluster %s: %w", cluster.Name, err)
 		}
 	}
 
+	if anyIncompatible {
+		return fmt.Errorf("some clusters are incompatible with management version %s: %s", managementVersion, strings.Join(incompatibleErrors, "; "))
+	}
+
 	return nil
+}
+
+// setClusterCondition adds or updates a condition in the cluster status.
+func (r *Reconciler) setClusterCondition(cluster *v1alpha1.Cluster, newCondition metav1.Condition) {
+	newCondition.ObservedGeneration = cluster.Generation
+	newCondition.LastTransitionTime = metav1.Now()
+
+	for i, c := range cluster.Status.Conditions {
+		if c.Type == newCondition.Type {
+			if c.Status == newCondition.Status && c.Reason == newCondition.Reason && c.Message == newCondition.Message {
+				return
+			}
+			// Preserve LastTransitionTime if status didn't change (optional but good practice)
+			if c.Status == newCondition.Status {
+				newCondition.LastTransitionTime = c.LastTransitionTime
+			}
+			cluster.Status.Conditions[i] = newCondition
+			return
+		}
+	}
+	cluster.Status.Conditions = append(cluster.Status.Conditions, newCondition)
 }

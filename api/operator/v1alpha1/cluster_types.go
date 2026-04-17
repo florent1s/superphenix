@@ -23,6 +23,13 @@ const (
 	// ReasonInvalidVersion is used when the requested version change is invalid.
 	ReasonInvalidVersion = "InvalidVersion"
 
+	// ConditionTypeCompatibleVersion represents the compatibility status of the cluster version with the management version.
+	ConditionTypeCompatibleVersion = "CompatibleVersion"
+	// ReasonCompatibleVersion is used when the cluster version is compatible with the management version.
+	ReasonCompatibleVersion = "CompatibleVersion"
+	// ReasonIncompatibleVersion is used when the cluster version is not supported by the management version.
+	ReasonIncompatibleVersion = "IncompatibleVersion"
+
 	// ConditionTypeArgoCDSynced represents the synchronization status of the cluster's ArgoCD Application.
 	ConditionTypeArgoCDSynced = "ArgoCDSynced"
 	// ReasonArgoCDSynced is used when the ArgoCD Application is synced.

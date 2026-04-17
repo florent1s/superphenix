@@ -15,6 +15,17 @@ import (
 )
 
 var _ = Describe("Cluster Validation", func() {
+	var oldMinClusterVersion string
+
+	BeforeEach(func() {
+		oldMinClusterVersion = version.MinClusterVersion
+		version.MinClusterVersion = "1.0.0"
+	})
+
+	AfterEach(func() {
+		version.MinClusterVersion = oldMinClusterVersion
+	})
+
 	const (
 		operatorNamespace = "default"
 		clusterName       = "validation-cluster"
