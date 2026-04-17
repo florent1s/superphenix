@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
+	"github.com/super-phenix/superphenix/pkg/argocd"
 )
 
 const (
@@ -54,11 +55,14 @@ type Reconciler struct {
 	DefaultChartName      string
 	DefaultVersion        string
 	SyncPeriod            time.Duration
+
+	// ArgoCDWatcher handles dynamic watching of ArgoCD Applications.
+	ArgoCDWatcher *argocd.Watcher
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	c, err := ctrl.NewControllerManagedBy(mgr).
 		For(&operatorv1alpha1.Cluster{}, builder.WithPredicates(predicate.Funcs{
 			UpdateFunc: func(e event.UpdateEvent) bool {
 				// Only reconcile if the generation has changed
@@ -72,7 +76,12 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 			handler.EnqueueRequestsFromMapFunc(r.findClustersForSecret),
 		).
 		Named("cluster").
-		Complete(r)
+		Build(r)
+	if err != nil {
+		return err
+	}
+	r.ArgoCDWatcher = argocd.NewWatcher(r.Client, r.Scheme, r.RESTMapper(), c, mgr.GetCache())
+	return nil
 }
 
 func (r *Reconciler) findClustersForSecret(ctx context.Context, secret client.Object) []reconcile.Request {
@@ -226,6 +235,9 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 			reconcileErr = fmt.Errorf("failed to reconcile clusters ConfigMap: %w", err)
 		}
 	}
+
+	// Try to start the ArgoCD Application watch if not already started.
+	r.ArgoCDWatcher.EnsureWatch(ctx, &operatorv1alpha1.Cluster{})
 
 	// Centralized status sync
 	res, err := r.syncStatus(ctx, cluster, app, k8sVersion, reconcileErr)
