@@ -1043,16 +1043,13 @@ var _ = Describe("Cluster Controller", func() {
 
 			syncPolicy, found, _ := unstructured.NestedMap(app.Object, "spec", "syncPolicy")
 			Expect(found).To(BeTrue())
-			_, automatedFound, _ := unstructured.NestedMap(syncPolicy, "automated")
-			Expect(automatedFound).To(BeFalse())
-
-			syncOptions, found, _ := unstructured.NestedSlice(syncPolicy, "syncOptions")
-			Expect(found).To(BeTrue())
-			Expect(syncOptions).To(ContainElement("SkipDryRunOnMissingResource=true"))
+			automated, automatedFound, _ := unstructured.NestedMap(syncPolicy, "automated")
+			Expect(automatedFound).To(BeTrue())
+			Expect(automated["enabled"]).To(BeEquivalentTo(false))
 
 			retry, found, _ := unstructured.NestedMap(syncPolicy, "retry")
 			Expect(found).To(BeTrue())
-			Expect(retry["limit"]).To(Equal(int64(2)))
+			Expect(retry["limit"]).To(Equal(int64(5)))
 			backoff, found, _ := unstructured.NestedMap(retry, "backoff")
 			Expect(found).To(BeTrue())
 			Expect(backoff["duration"]).To(Equal("30s"))

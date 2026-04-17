@@ -1,6 +1,7 @@
 {{ $cluster := .Values.cluster }}
 {{ $argocd := .Values.argocd }}
 {{ $disableAll := .Values.disableAll }}
+{{ $forceManual := .Values.forceManual }}
 {{ $labels := include "superphenix-system.labels" . }}
 
 {{- range $app, $values := .Values.apps }}
@@ -66,17 +67,14 @@ spec:
   {{- . | toYaml | nindent 4 }}
   {{- end }}
   syncPolicy:
-    # Remove this check with ArgoCD 3.1
-    {{- if $values.automation.enabled }}
     automated:
-      enabled: {{ $values.automation.enabled | default false }}
+      enabled: {{ and $values.automation.enabled (not $forceManual) | default false }}
       {{- if $values.automation.selfHeal }}
       selfHeal: true
       {{- end }}
       {{- if $values.automation.prune }}
       prune: true
       {{- end }}
-    {{- end }}
     syncOptions:
       {{- if $values.automation.syncOptions }}
       {{- toYaml $values.automation.syncOptions | nindent 6 }}

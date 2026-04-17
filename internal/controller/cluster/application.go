@@ -92,6 +92,11 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 	}
 
 	syncPolicy := map[string]interface{}{
+		"automated": map[string]interface{}{
+			"enabled":  !cluster.Spec.PauseSync,
+			"prune":    true,
+			"selfHeal": true,
+		},
 		"syncOptions": []interface{}{
 			"CreateNamespace=true",
 			"PrunePropagationPolicy=foreground",
@@ -99,20 +104,13 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 			"SkipDryRunOnMissingResource=true",
 		},
 		"retry": map[string]interface{}{
-			"limit": int64(2),
+			"limit": int64(5),
 			"backoff": map[string]interface{}{
 				"duration":    "30s",
 				"factor":      int64(2),
 				"maxDuration": "3m",
 			},
 		},
-	}
-
-	if !cluster.Spec.PauseSync {
-		syncPolicy["automated"] = map[string]interface{}{
-			"prune":    true,
-			"selfHeal": true,
-		}
 	}
 
 	return map[string]interface{}{

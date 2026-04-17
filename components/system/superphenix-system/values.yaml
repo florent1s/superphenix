@@ -11,6 +11,9 @@ argocd:
 # -- Disable all applications and override "per application" setting
 disableAll: false
 
+# -- Force manual sync for all applications and override "per application" setting
+forceManual: false
+
 # -- "Per application" settings
 apps:
   # YAML -- Pure YAML injected to the cluster from a Git repository
