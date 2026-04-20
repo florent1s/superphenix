@@ -26,6 +26,15 @@ spec:
           image: quay.io/coreos/etcd:{{ $dataStore.version | required "[dataStore].version can't be empty." }}
           imagePullPolicy: IfNotPresent
           resources: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: {{ $dataStoreID }}
+                topologyKey: kubernetes.io/hostname
+              weight: 1
   security:
     tls:
       peerTrustedCASecret: etcd-ca-{{ $dataStoreID }}
