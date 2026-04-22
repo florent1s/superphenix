@@ -121,6 +121,35 @@ Resources to backup, grouped by type of resource
 - networkpolicy.networking.k8s.io
 {{- end }}
 
+{{- define "sfs-baas.kaasResourceGlobal" }}
+- datastore.kamaji.clastix.io
+- clusterrole.rbac.authorization.k8s.io
+- clusterrolebinding.rbac.authorization.k8s.io
+{{- end }}
+
+{{- define "sfs-baas.kaasResourceNamespaced" }}
+- configmap
+- deployment.apps
+- cluster.cluster.x-k8s.io
+- kubevirtcluster.infrastructure.cluster.x-k8s.io
+- kamajicontrolplane.controlplane.cluster.x-k8s.io
+- gateway.gateway.networking.k8s.io
+- tlsroute.gateway.networking.k8s.io
+- certificate.cert-manager.io
+- etcdcluster.etcd.aenix.io
+- issuer.cert-manager.io
+- serviceaccount
+- role.rbac.authorization.k8s.io
+- rolebinding.rbac.authorization.k8s.io
+- kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io
+- kubevirtmachinetemplate.infrastructure.cluster.x-k8s.io
+- kubeadmconfig.bootstrap.cluster.x-k8s.io
+- kubevirtmachine.infrastructure.cluster.x-k8s.io
+- machinedeployment.cluster.x-k8s.io
+- machineset.cluster.x-k8s.io
+- machine.cluster.x-k8s.io
+{{- end }}
+
 {{/*
 Resources to backup for each backup type
 */}}
@@ -130,6 +159,7 @@ Resources to backup for each backup type
 {{- include "sfs-baas.vmResourceGlobal" . }}
 {{- include "sfs-baas.networkResourceGlobal" . }}
 {{- include "sfs-baas.storageResourceGlobal" . }}
+{{- include "sfs-baas.kaasResourceGlobal" . }}
 {{- else if eq .backupType "vm" }}
 {{- include "sfs-baas.vmResourceGlobal" . }}
 {{- end }}
@@ -141,6 +171,7 @@ Resources to backup for each backup type
 {{- include "sfs-baas.vmResourceNamespaced" . }}
 {{- include "sfs-baas.networkResourceNamespaced" . }}
 {{- include "sfs-baas.storageResourceNamespaced" . }}
+{{- include "sfs-baas.kaasResourceNamespaced" . }}
 {{- else if eq .backupType "vm" }}
 {{- include "sfs-baas.vmResourceNamespaced" . }}
 {{- end }}
