@@ -32,6 +32,17 @@ parameters:
   mapOptions: "krbd:rxbounce" # Necessary for Windows (https://kubevirt.io/monitoring/runbooks/VMStorageClassWarning.html)
   mounter: rbd
   pool: {{ $pool }}
+  {{- if and .encryption .encryption.enabled }}
+  {{- $scName := .fullName | default (printf "%s.%s" $cluster .name) }}
+  encrypted: "true"
+  encryptionKMSID: {{ $scName | quote }}
+  {{- if .encryption.kmsType }}
+  encryptionKMSType: {{ .encryption.kmsType | quote }}
+  {{- end }}
+  {{- with .encryption.extraParameters }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- end }}
 mountOptions:
   - discard
 {{- with .mountOptions }}
