@@ -34,13 +34,13 @@ clusters: []
 #            # -- Enable encryption for the StorageClass
 #            encryption:
 #              enabled: false
-#              # -- encryption passphrase for the secret
+#              # -- Encryption passphrase (if KMS type is 'metadata')
 #              passphrase: ""
 #              # -- KMS type (metadata, vault, etc.)
 #              kmsType: "metadata"
-#              # -- any other encryption parameters (e.g. encryptionKMSType if it differs from kmsType, etc.)
+#              # -- Any other encryption parameters (e.g. encryptionKMSType if it differs from kmsType, etc.)
 #              extraParameters: {}
-#              # -- any other KMS connection details for the ConfigMap
+#              # -- Any other KMS connection details for the ConfigMap
 #              extraKMSParameters: {}
 #    replicationClasses:
 #      daily:

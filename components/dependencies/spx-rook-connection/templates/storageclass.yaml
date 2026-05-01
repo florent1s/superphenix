@@ -3,15 +3,12 @@
 {{- range .pools }}
 {{- $pool := .name }}
 {{- range .storageClasses }}
+{{- $scName := .fullName | default (printf "%s.%s" $cluster .name) }}
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  {{- if not .fullName }}
-  name: {{ $cluster }}.{{ .name }}
-  {{- else }}
-  name: {{ .fullName }}
-  {{- end }}
+  name: {{ $scName | quote }}
   {{- if .default }}
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
@@ -33,12 +30,8 @@ parameters:
   mounter: rbd
   pool: {{ $pool }}
   {{- if and .encryption .encryption.enabled }}
-  {{- $scName := .fullName | default (printf "%s.%s" $cluster .name) }}
   encrypted: "true"
   encryptionKMSID: {{ $scName | quote }}
-  {{- if .encryption.kmsType }}
-  encryptionKMSType: {{ .encryption.kmsType | quote }}
-  {{- end }}
   {{- with .encryption.extraParameters }}
   {{- toYaml . | nindent 2 }}
   {{- end }}
