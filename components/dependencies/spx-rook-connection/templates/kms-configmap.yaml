@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: csi-kms-connection-details
+  namespace: {{ .Values.rookOperatorNamespace }}
+data:
+{{- range .Values.clusters }}
+{{- $cluster := .name }}
+{{- range .pools }}
+{{- range .storageClasses }}
+{{- if and .encryption .encryption.enabled }}
+  {{- $scName := .fullName | default (printf "%s.%s" $cluster .name) }}
+  {{- $kmsType := .encryption.kmsType | default "metadata" }}
+  {{ $scName }}: |-
+    {
+      "encryptionKMSType": {{ $kmsType | quote }}
+      {{- if eq $kmsType "metadata" }},
+      "secretName": {{ (printf "%s-encryption" $scName) | quote }},
+      "secretNamespace": {{ $cluster | quote }}
+      {{- end }}
+      {{- range $key, $value := .encryption.extraKMSParameters }},
+      {{ $key | quote }}: {{ $value | quote }}
+      {{- end }}
+    }
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

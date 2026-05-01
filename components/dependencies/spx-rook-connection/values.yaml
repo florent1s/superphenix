@@ -31,6 +31,17 @@ clusters: []
 #            # fullName: ""
 #            default: true
 #            reclaimPolicy: Delete
+#            # -- Enable encryption for the StorageClass
+#            encryption:
+#              enabled: false
+#              # -- Encryption passphrase (if KMS type is 'metadata')
+#              passphrase: ""
+#              # -- KMS type (metadata, vault, etc.)
+#              kmsType: "metadata"
+#              # -- Any other encryption parameters (e.g. encryptionKMSType if it differs from kmsType, etc.)
+#              extraParameters: {}
+#              # -- Any other KMS connection details for the ConfigMap
+#              extraKMSParameters: {}
 #    replicationClasses:
 #      daily:
 #        schedulingInterval: "24h"
