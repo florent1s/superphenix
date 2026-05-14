@@ -1,6 +1,6 @@
 # Tuned
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![AppVersion: 2.24.0](https://img.shields.io/badge/AppVersion-2.24.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)  ![AppVersion: 0.1.0](https://img.shields.io/badge/AppVersion-0.1.0-informational?style=flat-square)  ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 Deploys the tuned daemon as a DaemonSet on every node. Profiles are provided via a ConfigMap and the active profile is selected per-node through a configurable node label.
 
@@ -17,12 +17,12 @@ If the node has no profile label, the daemon falls back to `tuned.defaultProfile
 
 ## Selecting a profile per node
 
-Profiles are selected through a Kubernetes node label. The label key is controlled by `tuned.profileLabelKey` (default: `tuned.superphenix.net/profile`).
+Profiles are selected through a Kubernetes node label. The label key is controlled by `tuned.profileLabelKey` (default: `performance.superphenix.net/profile`).
 
 To assign a profile to a node:
 
 ```bash
-kubectl label node <node-name> tuned.superphenix.net/profile=latency-performance
+kubectl label node <node-name> performance.superphenix.net/profile=latency-performance
 ```
 
 > [!note]
@@ -32,7 +32,7 @@ kubectl label node <node-name> tuned.superphenix.net/profile=latency-performance
 To remove an explicit profile assignment and revert to the default:
 
 ```bash
-kubectl label node <node-name> tuned.superphenix.net/profile-
+kubectl label node <node-name> performance.superphenix.net/profile-
 ```
 
 ## Configuring profiles
@@ -59,18 +59,6 @@ profiles:
 > [!note]
 > Profile names **must** begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores.
 
-### Built-in profiles
-
-The chart ships three ready-to-use profiles:
-
-| Profile | Summary |
-|---------|---------|
-| `balanced` | General-purpose default; uses the `schedutil` CPU governor |
-| `latency-performance` | Minimises latency; pins CPU to max frequency and disables NUMA balancing |
-| `throughput-performance` | Maximises throughput; tunes CPU governor and network/VM kernel parameters |
-
-You can override any of these by redefining the key under `profiles`.
-
 ---
 
 ## Values
@@ -85,13 +73,22 @@ You can override any of these by redefining the key under `profiles`.
 	</thead>
 	<tbody>
 		<tr>
+			<td>image.pullPolicy</td>
+			<td>string</td>
+			<td><pre lang="json">
+"IfNotPresent"
+</pre>
+</td>
+			<td>Image pull policy.</td>
+		</tr>
+		<tr>
 			<td>image.repository</td>
 			<td>string</td>
 			<td><pre lang="json">
 ""
 </pre>
 </td>
-			<td>Container image repository for the tuned daemon</td>
+			<td>Container image repository for the tuned daemon.</td>
 		</tr>
 		<tr>
 			<td>image.tag</td>
@@ -100,21 +97,11 @@ You can override any of these by redefining the key under `profiles`.
 "latest"
 </pre>
 </td>
-			<td>Container image tag</td>
-		</tr>
-		<tr>
-			<td>image.pullPolicy</td>
-			<td>string</td>
-			<td><pre lang="json">
-"IfNotPresent"
-</pre>
-</td>
-			<td>Image pull policy</td>
+			<td>Container image tag.</td>
 		</tr>
 	</tbody>
 </table>
-
-<h3>Tuned configuration</h3>
+<h3>Scheduling</h3>
 <table>
 	<thead>
 		<th>Key</th>
@@ -124,26 +111,38 @@ You can override any of these by redefining the key under `profiles`.
 	</thead>
 	<tbody>
 		<tr>
-			<td>tuned.defaultProfile</td>
+			<td>priorityClassName</td>
 			<td>string</td>
 			<td><pre lang="json">
-"balanced"
+"system-node-critical"
 </pre>
 </td>
-			<td>Profile applied when the node has no profile label</td>
+			<td>Priority class for the DaemonSet pods. Ensures the tuned pods are not evicted under node pressure.</td>
 		</tr>
 		<tr>
-			<td>tuned.profileLabelKey</td>
-			<td>string</td>
+			<td>tolerations</td>
+			<td>list</td>
 			<td><pre lang="json">
-"tuned.superphenix.net/profile"
+[
+  {
+    "effect": "NoSchedule",
+    "operator": "Exists"
+  },
+  {
+    "effect": "NoExecute",
+    "operator": "Exists"
+  },
+  {
+    "key": "CriticalAddonsOnly",
+    "operator": "Exists"
+  }
+]
 </pre>
 </td>
-			<td>Node label key whose value determines the active tuned profile. Example: <code>kubectl label node &lt;node&gt; tuned.superphenix.net/profile=latency-performance</code></td>
+			<td>Tolerations applied to the DaemonSet pods. Defaults tolerate all taints so the daemon runs on every node, including tainted control-plane and infra nodes.</td>
 		</tr>
 	</tbody>
 </table>
-
 <h3>Profiles</h3>
 <table>
 	<thead>
@@ -155,55 +154,15 @@ You can override any of these by redefining the key under `profiles`.
 	<tbody>
 		<tr>
 			<td>profiles</td>
-			<td>object</td>
-			<td><pre lang="">
-balanced, latency-performance, throughput-performance
-</pre>
-</td>
-			<td>Tuned profiles provided as a ConfigMap. Each key becomes a profile name; the value is the content of <code>tuned.conf</code> for that profile.</td>
-		</tr>
-	</tbody>
-</table>
-
-<h3>Service Account</h3>
-<table>
-	<thead>
-		<th>Key</th>
-		<th>Type</th>
-		<th>Default</th>
-		<th>Description</th>
-	</thead>
-	<tbody>
-		<tr>
-			<td>serviceAccount.create</td>
-			<td>bool</td>
-			<td><pre lang="json">
-true
-</pre>
-</td>
-			<td>Create a ServiceAccount for the DaemonSet pods</td>
-		</tr>
-		<tr>
-			<td>serviceAccount.name</td>
 			<td>string</td>
 			<td><pre lang="json">
-""
+null
 </pre>
 </td>
-			<td>Override the ServiceAccount name. Defaults to the chart fullname when empty.</td>
-		</tr>
-		<tr>
-			<td>serviceAccount.annotations</td>
-			<td>object</td>
-			<td><pre lang="json">
-{}
-</pre>
-</td>
-			<td>Annotations to add to the ServiceAccount</td>
+			<td>Additional tuned profiles provided as a ConfigMap. Each key becomes a profile name; the value is the content of `tuned.conf` for that profile. Those profiles are complementing the default tuned profiles. See https://tuned-project.org/docs/manual.html#tuned-profiles_getting-started-with-tuned</td>
 		</tr>
 	</tbody>
 </table>
-
 <h3>Resources</h3>
 <table>
 	<thead>
@@ -213,24 +172,6 @@ true
 		<th>Description</th>
 	</thead>
 	<tbody>
-		<tr>
-			<td>resources.requests.cpu</td>
-			<td>string</td>
-			<td><pre lang="json">
-"10m"
-</pre>
-</td>
-			<td>CPU request for the tuned container</td>
-		</tr>
-		<tr>
-			<td>resources.requests.memory</td>
-			<td>string</td>
-			<td><pre lang="json">
-"8Mi"
-</pre>
-</td>
-			<td>Memory request for the tuned container</td>
-		</tr>
 		<tr>
 			<td>resources.limits.cpu</td>
 			<td>string</td>
@@ -249,10 +190,27 @@ true
 </td>
 			<td>Memory limit for the tuned container</td>
 		</tr>
+		<tr>
+			<td>resources.requests.cpu</td>
+			<td>string</td>
+			<td><pre lang="json">
+"10m"
+</pre>
+</td>
+			<td>CPU request for the tuned container</td>
+		</tr>
+		<tr>
+			<td>resources.requests.memory</td>
+			<td>string</td>
+			<td><pre lang="json">
+"8Mi"
+</pre>
+</td>
+			<td>Memory request for the tuned container</td>
+		</tr>
 	</tbody>
 </table>
-
-<h3>Scheduling</h3>
+<h3>Service Account</h3>
 <table>
 	<thead>
 		<th>Key</th>
@@ -262,22 +220,61 @@ true
 	</thead>
 	<tbody>
 		<tr>
-			<td>tolerations</td>
-			<td>list</td>
-			<td><pre lang="">
-NoSchedule, NoExecute, CriticalAddonsOnly
+			<td>serviceAccount.annotations</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
 </pre>
 </td>
-			<td>Tolerations applied to the DaemonSet pods. Defaults tolerate all taints so the daemon runs on every node including tainted control-plane and infra nodes.</td>
+			<td>Annotations to add to the ServiceAccount</td>
 		</tr>
 		<tr>
-			<td>priorityClassName</td>
-			<td>string</td>
+			<td>serviceAccount.create</td>
+			<td>bool</td>
 			<td><pre lang="json">
-"system-node-critical"
+true
 </pre>
 </td>
-			<td>Priority class for the DaemonSet pods. Ensures the tuned pods are not evicted under node pressure.</td>
+			<td>Create a ServiceAccount for the DaemonSet pods</td>
+		</tr>
+		<tr>
+			<td>serviceAccount.name</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Override the ServiceAccount name. Defaults to the chart fullname when empty.</td>
 		</tr>
 	</tbody>
 </table>
+<h3>Tuned configuration</h3>
+<table>
+	<thead>
+		<th>Key</th>
+		<th>Type</th>
+		<th>Default</th>
+		<th>Description</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td>tuned.defaultProfile</td>
+			<td>string</td>
+			<td><pre lang="json">
+"throughput-performance"
+</pre>
+</td>
+			<td>Profile applied when the node has no profile label.</td>
+		</tr>
+		<tr>
+			<td>tuned.profileLabelKey</td>
+			<td>string</td>
+			<td><pre lang="json">
+"performance.superphenix.net/profile"
+</pre>
+</td>
+			<td>Node label key whose value determines the active tuned profile. Example: `kubectl label node <node> performance.superphenix.net/profile=latency-performance`</td>
+		</tr>
+	</tbody>
+</table>
+

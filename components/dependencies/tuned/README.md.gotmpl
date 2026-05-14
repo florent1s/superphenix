@@ -17,12 +17,12 @@ If the node has no profile label, the daemon falls back to `tuned.defaultProfile
 
 ## Selecting a profile per node
 
-Profiles are selected through a Kubernetes node label. The label key is controlled by `tuned.profileLabelKey` (default: `tuned.superphenix.net/profile`).
+Profiles are selected through a Kubernetes node label. The label key is controlled by `tuned.profileLabelKey` (default: `performance.superphenix.net/profile`).
 
 To assign a profile to a node:
 
 ```bash
-kubectl label node <node-name> tuned.superphenix.net/profile=latency-performance
+kubectl label node <node-name> performance.superphenix.net/profile=latency-performance
 ```
 
 > [!note]
@@ -32,7 +32,7 @@ kubectl label node <node-name> tuned.superphenix.net/profile=latency-performance
 To remove an explicit profile assignment and revert to the default:
 
 ```bash
-kubectl label node <node-name> tuned.superphenix.net/profile-
+kubectl label node <node-name> performance.superphenix.net/profile-
 ```
 
 ## Configuring profiles
@@ -58,18 +58,6 @@ profiles:
 
 > [!note]
 > Profile names **must** begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores.
-
-### Built-in profiles
-
-The chart ships three ready-to-use profiles:
-
-| Profile | Summary |
-|---------|---------|
-| `balanced` | General-purpose default; uses the `schedutil` CPU governor |
-| `latency-performance` | Minimises latency; pins CPU to max frequency and disables NUMA balancing |
-| `throughput-performance` | Maximises throughput; tunes CPU governor and network/VM kernel parameters |
-
-You can override any of these by redefining the key under `profiles`.
 
 ---
 {{ template "chart.valuesSectionHtml" . }}
