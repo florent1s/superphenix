@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "tuned.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "tuned.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "tuned.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tuned.selectorLabels" . | nindent 8 }}
+      annotations:
+        # Restart pods when the profiles ConfigMap changes
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "tuned.serviceAccountName" . }}
+      hostPID: true
+      priorityClassName: {{ .Values.priorityClassName }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      containers:
+        - name: tuned
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: DEFAULT_PROFILE
+              value: {{ .Values.tuned.defaultProfile | quote }}
+            - name: PROFILE_LABEL_KEY
+              value: {{ .Values.tuned.profileLabelKey | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: profiles-cm
+              mountPath: /etc/tuned/profiles-cm
+              readOnly: true
+            - name: host-sys
+              mountPath: /sys
+            - name: host-proc
+              mountPath: /proc
+            - name: tuned-run
+              mountPath: /run/tuned
+      volumes:
+        - name: profiles-cm
+          configMap:
+            name: {{ include "tuned.fullname" . }}-profiles
+        - name: host-sys
+          hostPath:
+            path: /sys
+        - name: host-proc
+          hostPath:
+            path: /proc
+        - name: tuned-run
+          emptyDir: {}

@@ -1,0 +1,75 @@
+# Tuned
+
+{{ template "chart.versionBadge" . }} {{ template "chart.appVersionBadge" . }} {{ template "chart.typeBadge" . }}
+
+{{ template "chart.description" . }}
+
+## How it works
+
+The chart deploys a privileged DaemonSet that runs on every node in the cluster (including control-plane nodes). At startup, each pod:
+
+1. Reads the profiles provided via the `profiles` ConfigMap and installs them into `/etc/tuned/`.
+2. Queries the Kubernetes API to read the profile label on its own node.
+3. Calls `tuned-adm profile <name>` to activate the selected profile.
+4. Starts the `tuned` daemon in the foreground so the profile stays active.
+
+If the node has no profile label, the daemon falls back to `tuned.defaultProfile`.
+
+## Selecting a profile per node
+
+Profiles are selected through a Kubernetes node label. The label key is controlled by `tuned.profileLabelKey` (default: `tuned.superphenix.net/profile`).
+
+To assign a profile to a node:
+
+```bash
+kubectl label node <node-name> tuned.superphenix.net/profile=latency-performance
+```
+
+> [!note]
+> The label value **must** match one of the profile names defined in `.Values.profiles` or a profile already present on the node image.
+> If the label is absent or the value does not match any installed profile, the pod falls back to the default profile.
+
+To remove an explicit profile assignment and revert to the default:
+
+```bash
+kubectl label node <node-name> tuned.superphenix.net/profile-
+```
+
+## Configuring profiles
+
+Profiles are declared under the `profiles` key. Each key becomes a profile name; the value is the raw content of `tuned.conf` for that profile.
+
+```yaml
+profiles:
+  my-custom-profile: |
+    [main]
+    summary=My custom tuning profile
+
+    [cpu]
+    governor=performance
+
+    [sysctl]
+    vm.swappiness=10
+```
+
+> [!caution]
+> Profile names **must** be unique within the `profiles` map.
+> If two entries share the same name, only one will be installed and the result is undefined.
+
+> [!note]
+> Profile names **must** begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores.
+
+### Built-in profiles
+
+The chart ships three ready-to-use profiles:
+
+| Profile | Summary |
+|---------|---------|
+| `balanced` | General-purpose default; uses the `schedutil` CPU governor |
+| `latency-performance` | Minimises latency; pins CPU to max frequency and disables NUMA balancing |
+| `throughput-performance` | Maximises throughput; tunes CPU governor and network/VM kernel parameters |
+
+You can override any of these by redefining the key under `profiles`.
+
+---
+{{ template "chart.valuesSectionHtml" . }}

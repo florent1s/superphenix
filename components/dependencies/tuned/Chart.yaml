@@ -1,0 +1,6 @@
+apiVersion: v2
+name: tuned
+description: Deploys the tuned daemon as a DaemonSet on every node. Profiles are provided via a ConfigMap and the active profile is selected per-node through a configurable node label.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -1,0 +1,79 @@
+# @section -- Image.
+image:
+  # -- Container image repository for the tuned daemon.
+  # @section -- Image
+  repository: ""
+  # -- Container image tag.
+  # @section -- Image
+  tag: latest
+  # -- Image pull policy.
+  # @section -- Image
+  pullPolicy: IfNotPresent
+
+# @section -- Tuned configuration
+tuned:
+  # -- Profile applied when the node has no profile label.
+  # @section -- Tuned configuration
+  defaultProfile: throughput-performance
+  # -- Node label key whose value determines the active tuned profile.
+  # Example: `kubectl label node <node> performance.superphenix.net/profile=latency-performance`
+  # @section -- Tuned configuration
+  profileLabelKey: performance.superphenix.net/profile
+
+# -- Additional tuned profiles provided as a ConfigMap.
+# Each key becomes a profile name; the value is the content of `tuned.conf` for that profile.
+# Those profiles are complementing the default tuned profiles.
+# See https://tuned-project.org/docs/manual.html#tuned-profiles_getting-started-with-tuned
+# @section -- Profiles
+profiles:
+  # example: |
+  #   [main]
+  #   summary=Balanced profile (default)
+  #
+  #   [cpu]
+  #   governor=schedutil
+
+# @section -- Service Account
+serviceAccount:
+  # -- Create a ServiceAccount for the DaemonSet pods
+  # @section -- Service Account
+  create: true
+  # -- Override the ServiceAccount name. Defaults to the chart fullname when empty.
+  # @section -- Service Account
+  name: ""
+  # -- Annotations to add to the ServiceAccount
+  # @section -- Service Account
+  annotations: {}
+
+# @section -- Resources
+resources:
+  requests:
+    # -- CPU request for the tuned container
+    # @section -- Resources
+    cpu: 10m
+    # -- Memory request for the tuned container
+    # @section -- Resources
+    memory: 8Mi
+  limits:
+    # -- CPU limit for the tuned container
+    # @section -- Resources
+    cpu: 10m
+    # -- Memory limit for the tuned container
+    # @section -- Resources
+    memory: 8Mi
+
+# -- Tolerations applied to the DaemonSet pods.
+# Defaults tolerate all taints so the daemon runs on every node, including tainted control-plane and infra nodes.
+# @section -- Scheduling
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+  - key: CriticalAddonsOnly
+    operator: Exists
+
+# -- Priority class for the DaemonSet pods.
+# Ensures the tuned pods are not evicted under node pressure.
+# @section -- Scheduling
+priorityClassName: system-node-critical
