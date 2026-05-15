@@ -85,7 +85,7 @@ profiles:
 			<td>image.repository</td>
 			<td>string</td>
 			<td><pre lang="json">
-""
+"ghcr.io/super-phenix/tuned"
 </pre>
 </td>
 			<td>Container image repository for the tuned daemon.</td>
@@ -176,7 +176,7 @@ null
 			<td>resources.limits.cpu</td>
 			<td>string</td>
 			<td><pre lang="json">
-"10m"
+"100m"
 </pre>
 </td>
 			<td>CPU limit for the tuned container</td>
@@ -185,7 +185,7 @@ null
 			<td>resources.limits.memory</td>
 			<td>string</td>
 			<td><pre lang="json">
-"8Mi"
+"64Mi"
 </pre>
 </td>
 			<td>Memory limit for the tuned container</td>
@@ -261,10 +261,10 @@ true
 			<td>tuned.defaultProfile</td>
 			<td>string</td>
 			<td><pre lang="json">
-"throughput-performance"
+"throughput-performance latency-performance network-latency"
 </pre>
 </td>
-			<td>Profile applied when the node has no profile label.</td>
+			<td>Profile applied when the node has no profile label. Profiles can be separated by spaces to aggregate them into a single profile.</td>
 		</tr>
 		<tr>
 			<td>tuned.profileLabelKey</td>
