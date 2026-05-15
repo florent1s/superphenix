@@ -2,7 +2,7 @@
 image:
   # -- Container image repository for the tuned daemon.
   # @section -- Image
-  repository: ""
+  repository: "ghcr.io/super-phenix/charts/tuned"
   # -- Container image tag.
   # @section -- Image
   tag: latest
