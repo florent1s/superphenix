@@ -34,3 +34,8 @@ go.work
 
 # Examples are private for now
 examples/
+
+
+# AI agents
+.claude/
+.junie/
