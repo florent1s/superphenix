@@ -64,7 +64,6 @@ fi
 
 # Configure tuned to run in no-daemon mode (apply profile and exit)
 cat > /etc/tuned/tuned-main.conf <<EOF
-[main]
 # Do not run tuned as a daemon, exit once it has configured the profile
 daemon = 0
 # Avoid overriding the user-defined sysctl config
@@ -76,7 +75,7 @@ echo "[+] Activating profile: ${PROFILE}"
 echo "$PROFILE" > /etc/tuned/active_profile
 
 # Apply the profile (tuned exits immediately in no-daemon mode)
-tuned --no-dbus --no-socket --log=-
+tuned --no-dbus --no-socket
 
 # Keep the container alive
 exec sleep infinity

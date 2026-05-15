@@ -13,8 +13,9 @@ image:
 # @section -- Tuned configuration
 tuned:
   # -- Profile applied when the node has no profile label.
+  # Profiles can be separated by spaces to aggregate them into a single profile.
   # @section -- Tuned configuration
-  defaultProfile: throughput-performance
+  defaultProfile: "throughput-performance latency-performance network-latency"
   # -- Node label key whose value determines the active tuned profile.
   # Example: `kubectl label node <node> performance.superphenix.net/profile=latency-performance`
   # @section -- Tuned configuration
@@ -60,7 +61,7 @@ resources:
     cpu: 100m
     # -- Memory limit for the tuned container
     # @section -- Resources
-    memory: 16Mi
+    memory: 64Mi
 
 # -- Tolerations applied to the DaemonSet pods.
 # Defaults tolerate all taints so the daemon runs on every node, including tainted control-plane and infra nodes.
