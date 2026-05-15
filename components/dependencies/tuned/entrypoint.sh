@@ -62,10 +62,21 @@ else
   echo "[~] NODE_NAME not set, using default profile: ${DEFAULT_PROFILE}"
 fi
 
-# Apply the selected profile
-echo "[+] Applying profile: ${PROFILE}"
-tuned-adm profile "$PROFILE"
+# Configure tuned to run in no-daemon mode (apply profile and exit)
+cat > /etc/tuned/tuned-main.conf <<EOF
+[main]
+# Do not run tuned as a daemon, exit once it has configured the profile
+daemon = 0
+# Avoid overriding the user-defined sysctl config
+reapply_sysctl = 0
+EOF
 
-# Run tuned in the foreground
-echo "[!] Starting tuned daemon..."
-exec tuned --no-daemon --log=-
+# Write the selected profile so tuned picks it up on startup
+echo "[+] Activating profile: ${PROFILE}"
+echo "$PROFILE" > /etc/tuned/active_profile
+
+# Apply the profile (tuned exits immediately in no-daemon mode)
+tuned --log=-
+
+# Keep the container alive
+exec sleep infinity
