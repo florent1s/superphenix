@@ -69,8 +69,6 @@ cat > /etc/tuned/tuned-main.conf <<EOF
 daemon = 0
 # Avoid overriding the user-defined sysctl config
 reapply_sysctl = 0
-# No DBus on SPX/Talos
-enable_dbus = 0
 EOF
 
 # Write the selected profile so tuned picks it up on startup
@@ -78,7 +76,7 @@ echo "[+] Activating profile: ${PROFILE}"
 echo "$PROFILE" > /etc/tuned/active_profile
 
 # Apply the profile (tuned exits immediately in no-daemon mode)
-tuned --log=-
+tuned --no-dbus --no-socket --log=-
 
 # Keep the container alive
 exec sleep infinity
