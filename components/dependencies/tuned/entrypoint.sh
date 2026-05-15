@@ -69,6 +69,8 @@ cat > /etc/tuned/tuned-main.conf <<EOF
 daemon = 0
 # Avoid overriding the user-defined sysctl config
 reapply_sysctl = 0
+# No DBus on SPX/Talos
+enable_dbus = 0
 EOF
 
 # Write the selected profile so tuned picks it up on startup

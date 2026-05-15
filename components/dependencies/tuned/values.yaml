@@ -57,10 +57,10 @@ resources:
   limits:
     # -- CPU limit for the tuned container
     # @section -- Resources
-    cpu: 10m
+    cpu: 100m
     # -- Memory limit for the tuned container
     # @section -- Resources
-    memory: 8Mi
+    memory: 16Mi
 
 # -- Tolerations applied to the DaemonSet pods.
 # Defaults tolerate all taints so the daemon runs on every node, including tainted control-plane and infra nodes.
