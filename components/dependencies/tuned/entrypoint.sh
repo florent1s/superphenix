@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 PROFILES_CM_DIR="/etc/tuned/profiles-cm"
 TUNED_DIR="/etc/tuned"
@@ -17,6 +16,9 @@ if [ -d "$PROFILES_CM_DIR" ]; then
     echo "[+] Installed profile: ${profile_name}"
   done
 fi
+
+# From now on, no error is allowed without relaunching the pod
+set -e
 
 # Resolve which profile to apply
 PROFILE="$DEFAULT_PROFILE"
