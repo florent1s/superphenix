@@ -13,6 +13,10 @@ metadata:
   {{- else }}
   name: {{ .fullName }}
   {{- end }}
+  {{- if .default }}
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+  {{- end }}
 driver: {{ $.Values.rookOperatorNamespace }}.rbd.csi.ceph.com
 parameters:
   clusterID: {{ $cluster }}
