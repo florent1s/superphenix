@@ -125,6 +125,8 @@ Resources to backup, grouped by type of resource
 - datastore.kamaji.clastix.io
 - clusterrole.rbac.authorization.k8s.io
 - clusterrolebinding.rbac.authorization.k8s.io
+- mutatingadmissionpolicy.admissionregistration.k8s.io
+- mutatingadmissionpolicybinding.admissionregistration.k8s.io
 {{- end }}
 
 {{- define "sfs-baas.kaasResourceNamespaced" }}
