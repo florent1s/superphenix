@@ -1,5 +1,5 @@
 apiVersion: v2
 name: sfs-baas
-version: 0.2.0
+version: 0.2.1
 appVersion: "1.0.0"
 description: This Helm Chart is used by the self-service ArgoCDs of Superphénix to create backup policies.
