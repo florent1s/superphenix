@@ -2,7 +2,7 @@
 
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square)  ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square)
 
-This Helm Chart is used by the self-service ArgoCDs of Superphénix to generate IaaS resources
+This Helm Chart is used by the self-service ArgoCDs of Superphenix to generate IaaS resources
 
 ## Creating new resources
 
@@ -50,6 +50,89 @@ To deploy your resource in a specific AZ, simply use the code in the `.location`
 
 ## Values
 
+<h3>Organization parameters</h3>
+<table>
+	<thead>
+		<th>Key</th>
+		<th>Type</th>
+		<th>Default</th>
+		<th>Description</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td>bgpSpeaker</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>BGP speaker configuration for this AZ. The value is passed as an escape JSON and must be decoded in the template This parameter cannot be overriden by the user.</td>
+		</tr>
+		<tr>
+			<td>gitops</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Wether this chart is deployed through GitOps or not. This parameter cannot be overriden by the user.</td>
+		</tr>
+		<tr>
+			<td>location</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>AZ in which we're deploying this chart. This parameter cannot be overriden by the user.</td>
+		</tr>
+		<tr>
+			<td>organizationID</td>
+			<td>string</td>
+			<td><pre lang="json">
+"00000000-0000-0000-0000-000000000000"
+</pre>
+</td>
+			<td>Superphenix organization to which this project belongs, must be a generated UUIDv4. This ID must come from the SPX API, this parameter cannot be overriden by the user.</td>
+		</tr>
+		<tr>
+			<td>organizationName</td>
+			<td>string</td>
+			<td><pre lang="json">
+"null"
+</pre>
+</td>
+			<td>Superphenix organization's friendly name. This parameter cannot be overriden by the user.</td>
+		</tr>
+		<tr>
+			<td>projectID</td>
+			<td>string</td>
+			<td><pre lang="json">
+"00000000-0000-0000-0000-000000000000"
+</pre>
+</td>
+			<td>Superphenix project to which this project belongs, must be a project within the organization, must be a generated UUIDv4. This ID must come from the SPX API, this parameter cannot be overriden by the user.</td>
+		</tr>
+		<tr>
+			<td>projectName</td>
+			<td>string</td>
+			<td><pre lang="json">
+"null"
+</pre>
+</td>
+			<td>Superphenix project's friendly name. This ID must come from the SPX API, this parameter cannot be overriden by the user.</td>
+		</tr>
+		<tr>
+			<td>storageClassMapping</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Mapping between user-friendly names of storage classes and their real names. The mapping is specified for the current AZ, meaning that each AZ can have a different mapping. This parameter cannot be overriden by the user.</td>
+		</tr>
+	</tbody>
+</table>
 <h3>Disk Snapshot Schedules</h3>
 <table>
 	<thead>
@@ -107,26 +190,6 @@ To deploy your resource in a specific AZ, simply use the code in the `.location`
 </pre>
 </td>
 			<td>Disks that can be attached to VMs</td>
-		</tr>
-	</tbody>
-</table>
-<h3>Destination NAT</h3>
-<table>
-	<thead>
-		<th>Key</th>
-		<th>Type</th>
-		<th>Default</th>
-		<th>Description</th>
-	</thead>
-	<tbody>
-		<tr>
-			<td>dnats</td>
-			<td>string</td>
-			<td><pre lang="json">
-null
-</pre>
-</td>
-			<td>DNATs between EIPs and internal IPs</td>
 		</tr>
 	</tbody>
 </table>
@@ -190,71 +253,6 @@ null
 		</tr>
 	</tbody>
 </table>
-<h3>Organization parameters</h3>
-<table>
-	<thead>
-		<th>Key</th>
-		<th>Type</th>
-		<th>Default</th>
-		<th>Description</th>
-	</thead>
-	<tbody>
-		<tr>
-			<td>location</td>
-			<td>string</td>
-			<td><pre lang="json">
-""
-</pre>
-</td>
-			<td>AZ in which we're deploying this chart. This parameter cannot be overriden by the user.</td>
-		</tr>
-		<tr>
-			<td>organizationID</td>
-			<td>string</td>
-			<td><pre lang="json">
-"00000000-0000-0000-0000-000000000000"
-</pre>
-</td>
-			<td>Superphénix organization to which this project belongs, must be a generated UUIDv4. This ID must come from the SPX API, this parameter cannot be overriden by the user.</td>
-		</tr>
-		<tr>
-			<td>organizationName</td>
-			<td>string</td>
-			<td><pre lang="json">
-"null"
-</pre>
-</td>
-			<td>Superphénix organization's friendly name. This parameter cannot be overriden by the user.</td>
-		</tr>
-		<tr>
-			<td>projectID</td>
-			<td>string</td>
-			<td><pre lang="json">
-"00000000-0000-0000-0000-000000000000"
-</pre>
-</td>
-			<td>Superphénix project to which this project belongs, must be a project within the organization, must be a generated UUIDv4. This ID must come from the SPX API, this parameter cannot be overriden by the user.</td>
-		</tr>
-		<tr>
-			<td>projectName</td>
-			<td>string</td>
-			<td><pre lang="json">
-"null"
-</pre>
-</td>
-			<td>Superphénix project's friendly name. This ID must come from the SPX API, this parameter cannot be overriden by the user.</td>
-		</tr>
-		<tr>
-			<td>storageClassMapping</td>
-			<td>object</td>
-			<td><pre lang="json">
-{}
-</pre>
-</td>
-			<td>Mapping between user-friendly names of storage classes and their real names; The mapping is specified for the current AZ, meaning that each AZ can have a different mapping. This parameter cannot be overriden by the user.</td>
-		</tr>
-	</tbody>
-</table>
 <h3>Network Policies</h3>
 <table>
 	<thead>
@@ -289,31 +287,30 @@ null
 			<td>object</td>
 			<td><pre lang="json">
 {
-  "availabilityZones": {}
+  "availabilityZones": {},
+  "schedule": ""
 }
 </pre>
 </td>
-			<td>Replication settings for disaster recovery of the project</td>
+			<td>Replication settings for disaster recovery of the project.</td>
 		</tr>
-	</tbody>
-</table>
-<h3>Source NAT</h3>
-<table>
-	<thead>
-		<th>Key</th>
-		<th>Type</th>
-		<th>Default</th>
-		<th>Description</th>
-	</thead>
-	<tbody>
 		<tr>
-			<td>snats</td>
-			<td>string</td>
+			<td>replication.availabilityZones</td>
+			<td>object</td>
 			<td><pre lang="json">
-null
+{}
 </pre>
 </td>
-			<td>SNATs between EIPs and internal IPs</td>
+			<td>Replication strategy per AZ (overrides .schedule) This setting can be used to enable replication on specific AZs. It can also be used to disable replication for a specific AZ if a global schedule has been configured.</td>
+		</tr>
+		<tr>
+			<td>replication.schedule</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Replication schedule applied to every AZ. If specified, the project is set to be replicated in every AZ.</td>
 		</tr>
 	</tbody>
 </table>

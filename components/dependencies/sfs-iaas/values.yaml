@@ -309,6 +309,8 @@ vms:
 #            enabled: false
 #    # -- Volumes mounted to the VM
 #    volumes:
+#      # -- Insert the Windows VirtIO driver disk (can be used during the Windows installation)
+#      insertWindowsDrivers: false
 #      # -- Disks to mount on the VM
 #      disks:
 #        - name: "boot-disk"

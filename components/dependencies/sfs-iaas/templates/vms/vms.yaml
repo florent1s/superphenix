@@ -3,7 +3,7 @@
 
 {{- $volumes := $vm.volumes }}
 {{- $compute := $vm.compute }}
-{{- $insertVirtioDisk := and (not $volumes.noVirtioDisk) (and $vm.type (contains "windows" $vm.type)) }}
+{{- $insertVirtioDisk := and $volumes $volumes.insertWindowsDrivers }}
 {{- $effectiveID := include "sfs-iaas.spxEID" (dict "projectID" $.Values.projectID "localID" $localID) }}
 ---
 apiVersion: kubevirt.io/v1
