@@ -44,7 +44,7 @@
 <table>
   <tr>
     <td><img src="https://superphenix.net/dashboard-light.png" alt="Superphenix UI — light"></td>
-    <td><img src="https://superphenix.net/dashboard-dark.png" alt="Superphenix UI — dark"></td>
+    <td><img src="https://superphenix.net/instances-dark.png" alt="Superphenix UI — dark"></td>
   </tr>
 </table>
 
