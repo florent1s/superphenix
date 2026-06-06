@@ -2,14 +2,12 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/SPX_white.svg">
     <source media="(prefers-color-scheme: light)" srcset="assets/SPX_black.svg">
-    <img alt="Superphenix" src="assets/SPX_white.svg" width="350" height="200">
+    <img alt="Superphenix" src="assets/SPX_white.svg" width="400" height="200">
   </picture>
 </p>
 
 <p align="center">
-  <strong>
-    An Opensource IaaS/PaaS/SaaS platform to build your own cloud provider wherever you want.
-  </strong>
+  <strong>A full cloud stack running on your own hardware.</strong>
 </p>
 
 <p align="center">
@@ -21,48 +19,72 @@
     src="https://github.com/super-phenix/superphenix/actions/workflows/build.yml/badge.svg"
     alt="Build"
   /></a>
+  <a href="LICENSE"><img
+    src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"
+    alt="License"
+  /></a>
 </p>
+
+---
 
 <p align="center">
   <a href="https://superphenix.net"><strong>Home</strong></a>
-  -
+  ·
   <a href="https://docs.superphenix.net"><strong>Documentation</strong></a>
-  -
-  <a href="https://docs.superphenix.net/get-started"><strong>Get started</strong></a>
-  -
-  <a href="https://docs.superphenix.net/roadmap"><strong>Roadmap</strong></a>
-  -
+  ·
+  <a href="https://docs.superphenix.net/installation/getting-started/"><strong>Get started</strong></a>
+  ·
+  <a href="https://docs.superphenix.net/features/"><strong>Features</strong></a>
+  ·
   <a href="https://rayshift.net"><strong>Enterprise support</strong></a>
 </p>
 
-Superphenix lets you build sovereign cloud infrastructure entirely on Kubernetes: IaaS, PaaS, and software-defined everything, with a single API surface and GitOps from day one.
+**Superphenix** is an open-source platform to build your own cloud (IaaS, PaaS and SaaS) on the hardware you already own. Kubernetes runs the control plane; virtual machines, storage, networking and managed services run as first-class workloads on top.
+
+![Superphenix UI](https://superphenix.net/dashboard-light.png)
 
 ## Why Superphenix?
 
-Legacy virtualization stacks create vendor lock-in, rising licensing costs, and fragile economics. Superphenix is designed for operators who want:
+Traditional virtualization is buckling under licensing problems, vendor lock-in and increasing costs.
+Superphenix is the modern, open alternative.
 
-- **A single control plane** — Kubernetes-native APIs for compute, storage, and network
-- **VMs on Kubernetes** — KubeVirt-based virtualization, managed declaratively
-- **Software-defined storage** — Distributed, resilient storage in the Kubernetes lifecycle
-- **Software-defined networking** — Network fabric as code, tenant isolation, load balancing, routing
-- **GitOps & automation** — Infrastructure as code from provisioning to day-2 operations
-- **Observability** — Metrics, logs, and traces integrated at every layer
+- **Sovereign by default**: Superphenix is deployed on your hardware, with full control over your data.
+- **Full-stack, one platform**: Compute, storage, network, PaaS and SaaS, designed to work together.
+- **GitOps-native**: Every cluster, tenant and VM can be declared as code, auditable end to end.
+- **Built for resilience**: Multi-AZ and multi-region, with cross-site replication and disaster recovery.
+- **A foundation on which to build**: Superphenix can be used to build a public or private cloud, and it has already been proved.
 
-## Core pillars
+## What's in the box
 
-| Pillar | Description |
-|--------|-------------|
-| **Kubernetes as control plane** | Unified orchestration for compute, storage, and network |
-| **Virtualization on K8s** | Run full VM workloads alongside containers with KubeVirt |
-| **Software-defined storage** | Distributed, resilient storage integrated into the Kubernetes lifecycle |
-| **Software-defined networking** | Network fabric managed as code; tenant isolation and routing built in |
-| **GitOps & automation** | Reproducible, auditable, versioned infrastructure |
-| **Observability** | Know your stack inside out |
+| Layer            | Capabilities                                                              |
+|------------------|---------------------------------------------------------------------------|
+| **Hypervisor**   | VMs with live migration, snapshots and node autoscaling                   |
+| **Storage**      | Block, file and S3-compatible storage with replication and DR             |
+| **Networking**   | VPCs, NAT gateways, BGP, load balancers, QoS and firewalling              |
+| **PaaS**         | Kubernetes as a Service for tenant clusters                               |
+| **SaaS**         | Ready-to-run services — databases, Harbor, GitLab, Nextcloud and more     |
+| **Console**      | Multi-tenant web UI spanning every AZ and region                          |
+| **Lifecycle**    | GitOps-driven install, upgrade and resource provisioning                  |
+
+## Built for any scale
+
+- **Cloud Service Providers** building public clouds across multiple datacenters and regions.
+- **MSPs and enterprises** running a sovereign private cloud in their datacenter.
+- **Labs and homelabs** evaluating the platform or hosting a real mini private cloud on a single rack.
+
+If your goal is independence and total control over your infrastructure, Superphenix is built for you.
+
+## Get started
+
+- [Read the docs](https://docs.superphenix.net), starting with the [Introduction](https://docs.superphenix.net/introduction/)
+- [Explore the architecture](https://docs.superphenix.net/architecture/)
+- [Install your first cluster](https://docs.superphenix.net/installation/getting-started/)
+- Production deployments and enterprise support: [Rayshift](https://rayshift.net)
 
 ## Community
 
-- **Issues & discussions:** [GitHub Issues](https://github.com/super-phenix/superphenix/issues) / [GitHub Discussions](https://github.com/super-phenix/superphenix/discussions)
-- **Contributions:** See [CONTRIBUTING.md](CONTRIBUTING.md). We use DCO for sign-off.
+- **Issues & discussions:** [GitHub Issues](https://github.com/super-phenix/superphenix/issues) · [GitHub Discussions](https://github.com/super-phenix/superphenix/discussions)
+- **Contributions:** see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 
