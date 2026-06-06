@@ -21,7 +21,7 @@ We take security seriously. If you believe you have found a security vulnerabili
 Instead, please report them by one of the following means:
 
 1. **Preferred**: Open a [private security advisory](https://github.com/super-phenix/superphenix/security/advisories/new) on GitHub. This allows maintainers to discuss and fix the issue in private before disclosure.
-2. **Alternative**: Email the maintainers listed in [MAINTAINERS.md](MAINTAINERS.md).
+2. **Alternative**: Email the maintainers at `contact@superphenix.net`.
 
 Please include:
 * A description of the vulnerability and the affected components

@@ -8,7 +8,7 @@
 
 <p align="center">
   <strong>
-    An Opensource IaaS/PaaS/SaaS platform based on Kubernetes. Build your own cloud provider wherever you want.
+    An Opensource IaaS/PaaS/SaaS platform to build your own cloud provider wherever you want.
   </strong>
 </p>
 
@@ -18,7 +18,7 @@
     alt="Releases"
   /></a>
   <a href="https://github.com/super-phenix/superphenix/actions"><img
-    src="https://github.com/zensical/zensical/actions/workflows/build.yml/badge.svg"
+    src="https://github.com/super-phenix/superphenix/actions/workflows/build.yml/badge.svg"
     alt="Build"
   /></a>
 </p>
