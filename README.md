@@ -41,7 +41,12 @@
 
 **Superphenix** is an open-source platform to build your own cloud (IaaS, PaaS and SaaS) on the hardware you already own. Kubernetes runs the control plane; virtual machines, storage, networking and managed services run as first-class workloads on top.
 
-![Superphenix UI](https://superphenix.net/dashboard-light.png)
+<table>
+  <tr>
+    <td><img src="https://superphenix.net/dashboard-light.png" alt="Superphenix UI — light"></td>
+    <td><img src="https://superphenix.net/dashboard-dark.png" alt="Superphenix UI — dark"></td>
+  </tr>
+</table>
 
 ## Why Superphenix?
 
