@@ -1,7 +1,5 @@
 # Superphenix Project Governance
 
-Superphenix is an open-source project that delivers full cloud infrastructure on Kubernetes—VMs, networking, storage, and automation as declarative, GitOps-driven systems. This governance explains how the project is run.
-
 - [Values](#values)
 - [Maintainers](#maintainers)
 - [Becoming a Maintainer](#becoming-a-maintainer)
@@ -30,7 +28,8 @@ The Superphenix project and its leadership embrace the following values:
 
 Superphenix Maintainers have write access to the [project GitHub repository](https://github.com/super-phenix/superphenix). They can merge their own patches or patches from others. The current maintainers can be found in [MAINTAINERS.md](./MAINTAINERS.md). Maintainers collectively manage the project's resources and contributors.
 
-This privilege is granted with some expectation of responsibility: maintainers are people who care about the Superphenix project and want to help it grow and improve. A maintainer is not just someone who can make changes, but someone who has demonstrated their ability to collaborate with the team, get the most knowledgeable people to review code and docs, contribute high-quality code, and follow through to fix issues (in code or tests).
+This privilege is granted with some expectation of responsibility: maintainers are people who care about the Superphenix project and want to help it grow and improve.
+A maintainer is not just someone who can make changes, but someone who has demonstrated their ability to collaborate with the team, get the most knowledgeable people to review code and docs, contribute high-quality code, and follow through to fix issues (in code or tests).
 
 ### Becoming a Maintainer
 
@@ -44,15 +43,18 @@ To become a Maintainer you need to demonstrate the following:
 * Understanding of how the team works (policies, processes for testing and code review, etc.)
 * Understanding of the project's code base and coding and documentation style
 
-A new Maintainer must be proposed by an existing maintainer by opening an issue (or through a project communication channel). A simple majority vote of existing Maintainers approves the application. Maintainer nominations will be evaluated without prejudice to employer or demographics.
+A new Maintainer must be proposed by an existing maintainer by opening an issue (or through a project communication channel).
 
-Maintainers who are selected will be granted the necessary GitHub rights and invited to maintainer communication channels.
+A simple majority vote of existing Maintainers approves the application. Maintainer nominations will be evaluated without prejudice to employer or demographics.
+
+Maintainers who are selected will be granted the necessary GitHub rights and invited to maintainer communication channels.  
 
 ### Removing a Maintainer
 
 Maintainers may resign at any time if they feel that they will not be able to continue fulfilling their project duties.
 
-Maintainers may also be removed after being inactive, failure to fulfill their Maintainer responsibilities, violating the Code of Conduct, or other reasons. Inactivity is defined as a period of very low or no activity in the project for a year or more, with no definite schedule to return to full Maintainer activity.
+Maintainers may also be removed after being inactive, failure to fulfill their Maintainer responsibilities, violating the Code of Conduct, or other reasons.
+Inactivity is defined as a period of very low or no activity in the project for a year or more, with no definite schedule to return to full Maintainer activity.
 
 A Maintainer may be removed at any time by a 2/3 vote of the remaining maintainers.
 
@@ -76,7 +78,8 @@ The Security Response Team is responsible for handling all reports of security h
 
 ## Voting
 
-While most business in Superphenix is conducted by "[lazy consensus](https://community.apache.org/committers/lazyConsensus.html)", periodically the Maintainers may need to vote on specific actions or changes. A vote can be taken on the developer mailing list or in the private Maintainer channel for security or conduct matters. Votes may also be taken at the developer meeting. Any Maintainer may demand a vote be taken.
+While most business in Superphenix is conducted by "[lazy consensus](https://community.apache.org/committers/lazyConsensus.html)", periodically the Maintainers may need to vote on specific actions or changes. A vote can be taken on the developer mailing list or in the private Maintainer channel for security or conduct matters.
+Votes may also be taken at the developer meeting. Any Maintainer may demand a vote be taken.
 
 Most votes require a simple majority of all Maintainers to succeed, except where otherwise noted. Two-thirds majority votes mean at least two-thirds of all existing maintainers.
 
