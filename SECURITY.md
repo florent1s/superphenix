@@ -4,11 +4,11 @@
 
 We release security updates for the following versions:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| main    | :white_check_mark: |
+| Version                 | Supported          |
+|-------------------------| ------------------ |
+| main                    | :white_check_mark: |
 | (Latest stable release) | :white_check_mark: |
-| Older   | :x:                |
+| Older                   | :x:                |
 
 Specific supported versions will be updated as we release and EOL branches.
 
