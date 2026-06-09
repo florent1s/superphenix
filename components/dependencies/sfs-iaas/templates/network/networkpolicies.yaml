@@ -47,7 +47,7 @@ spec:
   {{- if $allowAllIngress }}
   ingress: [{}]
   {{- else if $blockAllIngress }}
-  ingress: null
+  ingress: []
   {{- else if (not $blockAllIngress) }}
   {{- with $netpol.ingress }}
   ingress:
@@ -63,12 +63,16 @@ spec:
     {{- else }}
     - podSelector:
         matchLabels:
+          {{- if $from.podSelector }}
           {{- with $from.podSelector.matchLabels }}
           {{- . | toYaml | nindent 10 }}
           {{- end }}
+          {{- end }}
           superphenix.net/projectID: spx-{{ $.Values.projectID }}
+        {{- if $from.podSelector }}
         {{- with $from.podSelector.matchExpressions }}
-        matchExpressions: {{ . | toYaml | nindent 8 }}
+        matchExpressions: {{ . | toYaml | nindent 10 }}
+        {{- end }}
         {{- end }}
     {{- end }}
     {{- end }}
@@ -82,7 +86,7 @@ spec:
   {{- if $allowAllEgress }}
   egress: [{}]
   {{- else if $blockAllEgress }}
-  egress: null
+  egress: []
   {{- else }}
   {{- with $netpol.egress }}
   egress:
@@ -98,12 +102,16 @@ spec:
     {{- else }}
     - podSelector: 
         matchLabels:
+          {{- if $to.podSelector }}
           {{- with $to.podSelector.matchLabels }}
           {{- . | toYaml | nindent 10 }}
           {{- end }}
+          {{- end }}
           superphenix.net/projectID: spx-{{ $.Values.projectID }}
+        {{- if $to.podSelector }}
         {{- with $to.podSelector.matchExpressions }}
-        matchExpressions: {{ . | toYaml | nindent 8 }}
+        matchExpressions: {{ . | toYaml | nindent 10 }}
+        {{- end }}
         {{- end }}
     {{- end }}
     {{- end }}
@@ -114,15 +122,9 @@ spec:
   {{- end }}
   {{- end }}
 
-  {{- if or $blockAllIngress $blockAllEgress }}
   policyTypes:
-  {{- if $blockAllIngress }}
   - Ingress
-  {{- end }}
-  {{- if $blockAllEgress }}
   - Egress
-  {{- end }}
-  {{- end }}
 
 {{- end }}
 {{- end }}

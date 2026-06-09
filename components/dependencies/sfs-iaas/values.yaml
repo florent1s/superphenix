@@ -474,7 +474,7 @@ networkPolicies:
 #      #  a: b
 #      #  c: d
 #      # -- Match all the VMs using expressions
-#      matchExpressions: {}
+#      matchExpressions: []
 #      # - key: test
 #      #   operator: In
 #      #   values: [a, b, c]
@@ -495,18 +495,24 @@ networkPolicies:
 #      egress: false
 #    # -- Rules to allow specific ingress traffic
 #    ingress:
-#    # - from:
-#    #   - ipBlock:
-#    #     cidr: 0.0.0.0/0
-#    #   ports:
-#    #     - protocol: TCP
-#    #       port: 22
-#    #       endPort: 25
+#      - from:
+#          - ipBlock:
+#              cidr: 0.0.0.0/0
+#          - podSelector:
+#              matchLabels:
+#                role: backend
+#        ports:
+#          - protocol: TCP
+#            port: 22
+#            endPort: 25
 #    # -- Rules to allow specific egress traffic
 #    egress:
-#    # - to:
-#    #  - ipBlock:
-#    #     cidr: 0.0.0.0/0
-#    #  ports:
-#    #    - protocol: UDP
-#    #      port: 67
+#      - to:
+#          - ipBlock:
+#              cidr: 0.0.0.0/0
+#          - podSelector:
+#              matchLabels:
+#                role: dns
+#        ports:
+#          - protocol: UDP
+#            port: 67
