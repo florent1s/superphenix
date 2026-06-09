@@ -346,6 +346,24 @@ vms:
 #    accessCredentials:
 #      # -- Inject the SSH keys inside the VirtualMachines
 #      injectSshKeys: true
+#    # -- TPM configuration
+#    # @section -- Virtual Machines
+#    tpm:
+#      # -- Enable TPM device
+#      enabled: true
+#      # -- Enable TPM persistence
+#      persistent: true
+#    # -- UEFI configuration.
+#    # Enabling EFI automatically enables Secure Boot, unless the secureBoot field is set to false.
+#    # @section -- Virtual Machines
+#    uefi:
+#      # -- Enable UEFI
+#      enabled: true
+#      # -- Enable SecureBoot.
+#      # Enabling EFI automatically enables Secure Boot, unless this field is set to false.
+#      secureBoot: true
+#      # -- Enable UEFI persistence
+#      persistent: true
 
 # -- Snapshots of Virtual Machines
 # @section -- VM Snapshots

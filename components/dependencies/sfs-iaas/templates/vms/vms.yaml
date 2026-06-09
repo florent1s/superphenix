@@ -66,6 +66,22 @@ spec:
     spec:
       hostname: {{ $vm.hostname | default (tpl $vm.name .) }}
       domain:
+        {{- if and $vm.uefi $vm.uefi.enabled (ne $vm.uefi.secureBoot false) }}
+        features:
+          smm:
+            enabled: true
+        {{- end }}
+        {{- if and $vm.uefi $vm.uefi.enabled }}
+        firmware:
+          bootloader:
+            efi:
+              {{- if hasKey $vm.uefi "secureBoot" }}
+              secureBoot: {{ $vm.uefi.secureBoot }}
+              {{- end }}
+              {{- if hasKey $vm.uefi "persistent" }}
+              persistent: {{ $vm.uefi.persistent }}
+              {{- end }}
+        {{- end }}
         {{- with $compute.cpu }}
         cpu:
           sockets: {{ .sockets | default 1 }}
@@ -79,6 +95,12 @@ spec:
         {{- end }}
 
         devices:
+          {{- if and $vm.tpm $vm.tpm.enabled }}
+          tpm:
+            {{- if hasKey $vm.tpm "persistent" }}
+            persistent: {{ $vm.tpm.persistent }}
+            {{- end }}
+          {{- end }}
           {{- if and $vm.network $vm.network.interfaces }}
           interfaces:
           {{- range $i, $if := $vm.network.interfaces }}
