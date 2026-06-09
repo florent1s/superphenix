@@ -20,7 +20,7 @@
     alt="Build"
   /></a>
   <a href="LICENSE"><img
-    src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"
+    src="https://img.shields.io/badge/license-Apache%202.0-green.svg"
     alt="License"
   /></a>
 </p>
@@ -43,8 +43,8 @@
 
 <table>
   <tr>
-    <td><img src="https://superphenix.net/dashboard-light.png" alt="Superphenix UI — light"></td>
-    <td><img src="https://superphenix.net/instances-dark.png" alt="Superphenix UI — dark"></td>
+    <td><a href="https://superphenix.net"><img src="https://superphenix.net/dashboard-light.png" alt="Superphenix UI — light"></a></td>
+    <td><a href="https://superphenix.net"><img src="https://superphenix.net/instances-dark.png" alt="Superphenix UI — dark"></a></td>
   </tr>
 </table>
 

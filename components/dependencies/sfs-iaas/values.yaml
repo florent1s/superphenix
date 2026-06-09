@@ -458,56 +458,55 @@ loadbalancers:
 # @section -- Network Policies
 networkPolicies:
 # -- List of rules we want applied to our project.
-#  rules:
-#    default:
-#      # -- Friendly-name of the network policy
-#      name: "default"
-#      # -- Enable the network policy
-#      enabled: true
-#      # -- AZs on which to deploy the network policies
-#      # Use "all" to target every AZ
-#      locations: []
-#      # -- VMs selected by that network policy
-#      # Selectors are ANDed between .matchLabels and .matchExpressions
-#      selector:
-#        # -- Match all the VMs that have that set of labels
-#        matchLabels: {}
-#        #  a: b
-#        #  c: d
-#        # -- Match all the VMs using expressions
-#        matchExpressions: {}
-#        # - key: test
-#        #   operator: In
-#        #   values: [a, b, c]
-#      # -- Create a network policy that allows all ingress or egress
-#      # If enabled, .ingress and .egress are ignored
-#      allowAll:
-#        # -- Allow all ingress traffic from the selected pods
-#        ingress: false
-#        # -- Allow all egress traffic from the selected pods
-#        egress: false
-#      # -- Create a network policy that blocks all ingress or egress
-#      # If enabled, .ingress and .egress are ignored
-#      # The .allowAll values have priority over blockAll
-#      blockAll:
-#        # -- Block all ingress traffic from the selected pods
-#        ingress: false
-#        # -- Block all egress traffic from the selected pods
-#        egress: false
-#      # -- Rules to allow specific ingress traffic
-#      ingress:
-#      # - from:
-#      #  - ipBlock:
-#      #     cidr: 0.0.0.0/0
-#      #  ports:
-#      #    - protocol: TCP
-#      #      port: 22
-#      #      endPort: 25
-#      # -- Rules to allow specific egress traffic
-#      egress:
-#      # - to:
-#      #  - ipBlock:
-#      #     cidr: 0.0.0.0/0
-#      #  ports:
-#      #    - protocol: UDP
-#      #      port: 67
+#  default:
+#    # -- Friendly-name of the network policy
+#    name: "default"
+#    # -- Enable the network policy
+#    enabled: true
+#    # -- AZs on which to deploy the network policies
+#    # Use "all" to target every AZ
+#    locations: []
+#    # -- VMs selected by that network policy
+#    # Selectors are ANDed between .matchLabels and .matchExpressions
+#    selector:
+#      # -- Match all the VMs that have that set of labels
+#      matchLabels: {}
+#      #  a: b
+#      #  c: d
+#      # -- Match all the VMs using expressions
+#      matchExpressions: {}
+#      # - key: test
+#      #   operator: In
+#      #   values: [a, b, c]
+#    # -- Create a network policy that allows all ingress or egress
+#    # If enabled, .ingress and .egress are ignored
+#    allowAll:
+#      # -- Allow all ingress traffic from the selected pods
+#      ingress: false
+#      # -- Allow all egress traffic from the selected pods
+#      egress: false
+#    # -- Create a network policy that blocks all ingress or egress
+#    # If enabled, .ingress and .egress are ignored
+#    # The .allowAll values have priority over blockAll
+#    blockAll:
+#      # -- Block all ingress traffic from the selected pods
+#      ingress: false
+#      # -- Block all egress traffic from the selected pods
+#      egress: false
+#    # -- Rules to allow specific ingress traffic
+#    ingress:
+#    # - from:
+#    #   - ipBlock:
+#    #     cidr: 0.0.0.0/0
+#    #   ports:
+#    #     - protocol: TCP
+#    #       port: 22
+#    #       endPort: 25
+#    # -- Rules to allow specific egress traffic
+#    egress:
+#    # - to:
+#    #  - ipBlock:
+#    #     cidr: 0.0.0.0/0
+#    #  ports:
+#    #    - protocol: UDP
+#    #      port: 67

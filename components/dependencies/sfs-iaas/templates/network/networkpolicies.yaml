@@ -52,12 +52,14 @@ spec:
   {{- with $netpol.ingress }}
   ingress:
   {{- range $rule := . }}
-  {{- range $from := $rule.from }}
   - from:
+    {{- range $from := $rule.from }}
     {{- if $from.ipBlock }}
     - ipBlock:
         cidr: {{ $from.ipBlock.cidr | quote }}
-        except: {{ $from.ipBlock.except | toYaml | nindent 10 }}
+        {{- with $from.ipBlock.except }}
+        except: {{ . | toYaml | nindent 10 }}
+        {{- end }}
     {{- else }}
     - podSelector:
         matchLabels:
@@ -69,10 +71,10 @@ spec:
         matchExpressions: {{ . | toYaml | nindent 8 }}
         {{- end }}
     {{- end }}
-    {{- with $from.ports }}
+    {{- end }}
+    {{- with .ports }}
     ports: {{- . | toYaml | nindent 6 }}
     {{- end }}
-  {{- end }}
   {{- end }}
   {{- end }}
   {{- end }}
@@ -85,12 +87,14 @@ spec:
   {{- with $netpol.egress }}
   egress:
   {{- range $rule := . }}
-  {{- range $to := $rule.to }}
   - to:
+    {{- range $to := $rule.to }}
     {{- if $to.ipBlock }}
     - ipBlock:
         cidr: {{ $to.ipBlock.cidr | quote }}
-        except: {{ $to.ipBlock.except | toYaml | nindent 10 }}
+        {{- with $to.ipBlock.except }}
+        except: {{ . | toYaml | nindent 10 }}
+        {{- end }}
     {{- else }}
     - podSelector: 
         matchLabels:
@@ -102,10 +106,10 @@ spec:
         matchExpressions: {{ . | toYaml | nindent 8 }}
         {{- end }}
     {{- end }}
-    {{- with $to.ports }}
+    {{- end }}
+    {{- with .ports }}
     ports: {{- . | toYaml | nindent 6 }}
     {{- end }}
-  {{- end }}
   {{- end }}
   {{- end }}
   {{- end }}
