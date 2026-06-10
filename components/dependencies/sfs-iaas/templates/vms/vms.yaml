@@ -95,8 +95,9 @@ spec:
         {{- end }}
 
         devices:
-          {{- if and $vm.tpm $vm.tpm.enabled }}
+          {{- if $vm.tpm }}
           tpm:
+            enabled: {{ $vm.tpm.enabled | default false }}
             {{- if hasKey $vm.tpm "persistent" }}
             persistent: {{ $vm.tpm.persistent }}
             {{- end }}
