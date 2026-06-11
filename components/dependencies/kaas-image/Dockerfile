@@ -25,15 +25,17 @@ WORKDIR /build
 
 FROM guestfish AS builder
 
-ARG KUBERNETES_VERSION=1.35.5 # https://github.com/kubernetes/kubernetes/releases
-ARG CNI_PLUGINS_VERSION=1.9.1 # https://github.com/containernetworking/plugins/releases
-ARG CONTAINERD_VERSION=1.7.32 # https://github.com/containerd/containerd/releases
-ARG RUNC_VERSION=1.4.2        # https://github.com/opencontainers/runc/releases
-ARG RELEASE_VERSION=0.21.1    # https://github.com/kubernetes/release/releases
-ARG CRICTL_VERSION=1.35.0     # https://github.com/kubernetes-sigs/cri-tools/releases
+# Component versions. These are inputs to the build and are normally
+# overridden via `--build-arg` from a file in ./versions/ driven by the
+# Makefile. The defaults below keep the Dockerfile buildable standalone.
+ARG KUBERNETES_VERSION=1.35.5
+ARG CNI_PLUGINS_VERSION=1.9.1
+ARG CONTAINERD_VERSION=1.7.32
+ARG RUNC_VERSION=1.4.2
+ARG RELEASE_VERSION=0.21.1
+ARG CRICTL_VERSION=1.35.0
 
-# The final image is based on Debian/Trixie
-# https://cloud.debian.org/images/cloud/trixie
+# Base cloud image (Debian).
 ARG OS_REL_NAME=trixie
 ARG OS_REL="13"
 ARG OS_VER="20260601-2496"
