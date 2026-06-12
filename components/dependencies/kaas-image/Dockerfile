@@ -28,17 +28,17 @@ FROM guestfish AS builder
 # Component versions. These are inputs to the build and are normally
 # overridden via `--build-arg` from a file in ./versions/ driven by the
 # Makefile. The defaults below keep the Dockerfile buildable standalone.
-ARG KUBERNETES_VERSION=1.35.5
-ARG CNI_PLUGINS_VERSION=1.9.1
-ARG CONTAINERD_VERSION=1.7.32
-ARG RUNC_VERSION=1.4.2
-ARG RELEASE_VERSION=0.21.1
-ARG CRICTL_VERSION=1.35.0
+ARG KUBERNETES_VERSION
+ARG CNI_PLUGINS_VERSION
+ARG CONTAINERD_VERSION
+ARG RUNC_VERSION
+ARG RELEASE_VERSION
+ARG CRICTL_VERSION
 
 # Base cloud image (Debian).
-ARG OS_REL_NAME=trixie
-ARG OS_REL="13"
-ARG OS_VER="20260601-2496"
+ARG OS_REL_NAME
+ARG OS_REL
+ARG OS_VER
 
 RUN wget -O image.qcow2 https://cloud.debian.org/images/cloud/${OS_REL_NAME}/${OS_VER}/debian-${OS_REL}-genericcloud-amd64-${OS_VER}.qcow2 --show-progress --output-file /dev/stdout --progress=dot:giga 2>/dev/null
 
@@ -74,7 +74,7 @@ RUN qemu-img resize image.qcow2 5G \
  && guestfish --remote sh "curl -sSL https://raw.githubusercontent.com/kubernetes/release/v${RELEASE_VERSION}/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf | tee /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf" \
  && guestfish --remote sh "mkdir -p /etc/kubernetes/manifests" \
  && guestfish --remote sh "systemctl enable kubelet" \
-# iIstall CNI Plugins
+# Install CNI Plugins
  && guestfish --remote sh "mkdir -p /opt/cni/bin" \
  && guestfish --remote sh "curl -L https://github.com/containernetworking/plugins/releases/download/v${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz -o cni-plugins.tgz"  \
  && guestfish --remote sh "tar -C /opt/cni/bin -xzf cni-plugins.tgz" \

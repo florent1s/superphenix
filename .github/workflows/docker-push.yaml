@@ -84,3 +84,32 @@ jobs:
               echo "No Dockerfile found in $docker_dir, skipping."
             fi
           done
+
+          # Find all Makefiles in components/dependencies and run their build/push targets
+          find components/dependencies -name "Makefile" | while read -r makefile; do
+            dir=$(dirname "$makefile")
+            COMPONENT_NAME=$(basename "$dir")
+            IMAGE_NAME="${REGISTRY}/${COMPONENT_NAME}"
+
+            echo "Processing Makefile for component: $COMPONENT_NAME in $dir"
+
+            # Determine SPX_VERSION for the Makefile
+            if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+              SPX_VERSION="${{ github.ref_name }}"
+              DO_PUSH=true
+            elif [[ "${{ github.ref_name }}" == "main" ]]; then
+              SPX_VERSION="latest"
+              DO_PUSH=true
+            else
+              SPX_VERSION="temp"
+              DO_PUSH=false
+            fi
+
+            echo "Running 'make build' for $COMPONENT_NAME (SPX_VERSION=$SPX_VERSION)"
+            make -C "$dir" build IMAGE="$IMAGE_NAME" SPX_VERSION="$SPX_VERSION"
+
+            if [ "$DO_PUSH" = true ]; then
+              echo "Running 'make push' for $COMPONENT_NAME"
+              make -C "$dir" push IMAGE="$IMAGE_NAME" SPX_VERSION="$SPX_VERSION"
+            fi
+          done
