@@ -1,0 +1,60 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "snapshot" }}
+
+---
+# ----------------------------------------------------------
+# Check that all VM/Volume Snapshots source names are SPXIDs
+# ----------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: source
+      expression: |
+        object.kind == "VirtualMachineSnapshot" ? object.spec.source.name :
+        object.kind == "VolumeSnapshot" ? object.spec.source.persistentVolumeClaimName :
+        ""
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" }}
+    - name: bootdiskRegex
+      expression: r{{ include "policies.regex" "bootdisk" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["snapshot.kubevirt.io", "snapshot.storage.k8s.io"]
+        apiVersions: ["v1beta1", "v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["virtualmachinesnapshots", "volumesnapshots"]
+        scope: '*'
+  validations:
+    # Check that the source name is an SPXID or a boot-disk
+    - expression: |
+        variables.source.matches(variables.spxidRegex) ||
+        (
+          object.kind == "VolumeSnapshot" &&
+          variables.source.matches(variables.bootdiskRegex)
+        )
+      messageExpression: |
+        "##### " + object.kind + " source has an incorrect name regex (" +
+        variables.source + "), must be an SPXID or a boot-disk. #####"
+      message: "##### Incorrect Snapshot source name regex, must be an SPXID or a boot-disk #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

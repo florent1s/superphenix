@@ -1,0 +1,69 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "ref-is-spxid" }}
+
+---
+# --------------------------------------------------------
+# Check that all references to other resources are SPXIDs
+# --------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: ref
+      expression: |
+        object.kind == "Subnet" ?
+        [object.spec.vpc] :
+        object.kind == "VpcNatGateway" ?
+        [object.spec.vpc, object.spec.subnet] :
+        object.kind == "IptablesEIP" ?
+        [object.spec.natGwDp] :
+        object.kind in ["IptablesFIPRule", "IptablesSnatRule", "IptablesDnatRule"] ?
+        [object.spec.eip] : []
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubeovn.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          [
+            "vpc-nat-gateways",
+            "subnets",
+            "iptables-eips",
+            "iptables-fip-rules",
+            "iptables-snat-rules",
+            "iptables-dnat-rules",
+          ]
+        scope: "*"
+  validations:
+    # Check that the reference is an SPXID
+    - expression: |
+        variables.ref.all(entry, entry.matches(variables.spxidRegex))
+      messageExpression: |
+        "##### " + object.kind +
+        " reference (" +
+        variables.ref.filter(entry, !entry.matches(variables.spxidRegex))
+        .join(", ") + ") is not an SPXID #####"
+      message: "##### Resource reference is not an SPXID #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,55 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "vpc" }}
+
+---
+# -------------------------------------------
+# Check that all VPCs have the correct fields
+# -------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: namespaces
+      expression: object.spec.namespaces
+    - name: projectID
+      expression: object.metadata.labels[{{ include "policies.projectIDLabel" "" }}]
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubeovn.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["vpcs"]
+        scope: '*'
+  validations:
+    # Check that the namespace is the ProjectID
+    - expression: variables.namespaces[0].matches(variables.projectID)
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect namespace (" +
+        variables.namespaces.map(k,k).join(", ") + "), must be the ProjectID. #####"
+      message: "##### Incorrect VPC namespace, must be the ProjectID #####"
+    # Check that there are no PolicyRoutes
+    - expression: "!has(object.spec.policyRoutes)"
+      messageExpression: |
+        "##### " + object.kind + " has PolicyRoutes, which are not allowed. #####"
+      message: "##### VPC cannot have PolicyRoutes #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

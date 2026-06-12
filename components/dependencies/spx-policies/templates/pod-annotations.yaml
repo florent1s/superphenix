@@ -1,0 +1,95 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "pod-annotations" }}
+
+---
+# -----------------------------------------------------------------------
+# Check that all virt-launcher pods have the correct network annotations
+# -----------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: annotations
+      expression: object.metadata.annotations
+    - name: router
+      expression: r"ovn.kubernetes.io/logical_router"
+    - name: switch
+      expression: r"ovn.kubernetes.io/logical_switch"
+    - name: projectID
+      expression: object.metadata.labels[{{ include "policies.projectIDLabel" "" }}]
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" | replace "^" "" | replace  "$" "" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+        scope: '*'
+  validations:
+    # Check annotations regex ("SPXID.projectID.annotation", for "subnetID.namespace.annotation")
+    - expression: |
+        [variables.router, variables.switch]
+        .all(anno, variables.annotations
+          .all(entry,
+            entry.endsWith(anno) ?
+            entry.matches(
+              string(variables.spxidRegex + "." + variables.projectID + "." + anno)
+            ) : true
+          )
+        )
+      messageExpression: |
+        "##### " + object.kind + " has incorrect network annotations : " +
+        variables.annotations.filter(entry, 
+          [variables.router, variables.switch]
+          .exists(anno,
+            entry.endsWith(anno) && !entry.matches(
+              string(variables.spxidRegex + "." + variables.projectID + "." + anno)
+            )
+          )
+        ).join(", ") +
+        ", should be \"subnetID.namespace.annotation\". #####"
+      message: '##### Incorrect Pod network annotations, should be "subnetID.namespace.annotation" #####'
+    # Check that the network annotation values are SPXIDs
+    - expression: |
+        [variables.router, variables.switch]
+        .all(anno, variables.annotations
+          .all(entry,
+            !entry.endsWith(anno) ||
+            variables.annotations[entry].matches(variables.spxidRegex)
+          )
+        )
+      messageExpression: |
+        "##### " + object.kind +
+        " has incorrect network annotation value (" +
+        variables.annotations.filter(entry,
+          [variables.router, variables.switch]
+          .exists(anno,
+            entry.endsWith(anno) &&
+            !variables.annotations[entry].matches(variables.spxidRegex)
+          )
+        ).map(entry, string(entry + ": " + variables.annotations[entry]))
+        .join(", ") +
+        "), must be an SPXID. #####"
+      message: "##### Incorrect Pod network annotation value, must be an SPXID #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

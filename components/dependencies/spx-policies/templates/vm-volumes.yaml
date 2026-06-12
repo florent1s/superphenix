@@ -1,0 +1,125 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "vm-volumes" }}
+
+---
+# ----------------------------------------------------------
+# Check that all VirtualMachines and VirtualMachineInstances
+# use PVC (at least 1) and/or CloudInitNoCloud volumes, and
+# that the PVC name and claimName are SPXIDs
+# ----------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: spec
+      expression: |
+        object.kind == "VirtualMachine" ?
+        object.spec.template.spec :
+        object.spec
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubevirt.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["virtualmachines", "virtualmachineinstances"]
+        scope: '*'
+  validations:
+    # Check that there are volumes
+    - expression: has(variables.spec.volumes)
+      messageExpression: |
+        "##### " + object.kind +
+        " has no volumes, must have at least one (PVC). #####"
+      message: "##### No VM volumes, must have at least one (PVC) #####"
+    # Check that there is at least 1 PVC volume
+    - expression: |
+        variables.spec.volumes
+        .exists(v,
+          has(v.persistentVolumeClaim)
+        )
+      messageExpression: |
+        "##### " + object.kind + " has missing volumes (" +
+        variables.spec.volumes
+        .filter(v,
+          !has(v.persistentVolumeClaim)
+        )
+        .map(entry, entry.filter(key,key != "name"))
+        .map(entry, entry.join(", "))
+        .join(", ") +
+        "), must have at least one PVC. #####"
+      message: "##### Missing VM volumes, must have at least one PVC #####"
+    # Check that all volumes are either PVC or CloudInitNoCloud
+    - expression: |
+        variables.spec.volumes
+        .all(v,
+          has(v.persistentVolumeClaim) ||
+          has(v.cloudInitNoCloud)
+        )
+      messageExpression: |
+        "##### " + object.kind + " has incorrect volumes (" +
+        variables.spec.volumes
+        .filter(v,
+          !has(v.persistentVolumeClaim) &&
+          !has(v.cloudInitNoCloud)
+        )
+        .map(entry, entry.filter(key,key != "name"))
+        .map(entry, entry.join(", "))
+        .join(", ") +
+        "), must be PVC or CloudInitNoCloud. #####"
+      message: "##### Incorrect VM volumes, must be PVC or CloudInitNoCloud #####"
+    # Check that the PVC name is an SPXID
+    - expression: |
+        variables.spec.volumes.all(v,
+          (has(v.persistentVolumeClaim) &&
+          v.name.matches(variables.spxidRegex)) ||
+          !has(v.persistentVolumeClaim)
+        )
+      messageExpression: |
+        "##### " + object.kind +
+        " has an incorrect PVC name regex (" +
+        variables.spec.volumes.filter(v,
+          has(v.persistentVolumeClaim) &&
+          !v.name.matches(variables.spxidRegex)
+        ).map(entry, entry.name)
+        .join(", ") +
+        "), must be an SPXID. #####"
+      message: "##### Incorrect VM PVC name regex, must be an SPXID #####"
+    # Check that the PVC claimName is an SPXID
+    - expression: |
+        variables.spec.volumes.all(v,
+          (has(v.persistentVolumeClaim) &&
+          v.persistentVolumeClaim.claimName.matches(variables.spxidRegex)) ||
+          !has(v.persistentVolumeClaim)
+        )
+      messageExpression: |
+        "##### " + object.kind +
+        " has an incorrect PVC claimName regex (" +
+        variables.spec.volumes.filter(v,
+          has(v.persistentVolumeClaim) &&
+          !v.persistentVolumeClaim.claimName.matches(variables.spxidRegex)
+        ).map(entry, entry.persistentVolumeClaim.claimName)
+        .join(", ") +
+        "), must be an SPXID. #####"
+      message: "##### Incorrect VM PVC claimName regex, must be an SPXID #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,103 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "vm-vmi-same-labels" }}
+
+---
+# ---------------------------------------------------
+# Check that all VirtualMachines and their templated
+# VirtualMachineInstance share the same labels
+# ---------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: vmLabels
+      expression: "object.metadata.labels"
+    - name: vmiLabels
+      expression: "object.spec.template.metadata.labels"
+    - name: ignoredLabels
+      expression: {{- include "policies.ignoredLabels" $ | quote | indent 1 }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubevirt.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["virtualmachines"]
+        scope: '*'
+  validations:
+    # Check that the VM labels are present in templated VMI
+    - expression: |
+        variables.vmLabels.all(label,
+          (variables.ignoredLabels.exists(ignore,
+            label.startsWith(ignore)
+          )) ||
+          label in variables.vmiLabels
+        )
+      messageExpression: |
+        "##### " + object.kind + " labels (" +
+        variables.vmLabels.filter(label,
+          (variables.ignoredLabels.all(
+            ignore, !label.startsWith(ignore))
+          ) &&
+          !(label in variables.vmiLabels)
+        ).join(", ") +
+        ") are missing in templated VMI #####"
+      message: "##### VM labels missing in templated VMI #####"
+    # Check that the templated VMI labels are present in VM
+    - expression: |
+        variables.vmiLabels.all(label,
+          (variables.ignoredLabels.exists(ignore,
+            label.startsWith(ignore)
+          )) ||
+          label in variables.vmLabels
+        )
+      messageExpression: |
+        "##### Templated VMI labels (" +
+        variables.vmiLabels.filter(label,
+          (variables.ignoredLabels.all(
+            ignore, !label.startsWith(ignore))
+          ) &&
+          !(label in variables.vmLabels)
+        ).join(", ") +
+        ") are missing in " + object.kind + " #####"
+      message: "##### Templated VMI labels missing in VM #####"
+    # Check that the VM and templated VMI labels share the same values
+    - expression: |
+        variables.vmLabels.all(label,
+          (variables.ignoredLabels.exists(ignore,
+            label.startsWith(ignore)
+          )) ||
+          variables.vmLabels[label] == variables.vmiLabels[label]
+        )
+      messageExpression: |
+        "##### " + object.kind + " and templated VMI labels don't share the same values: " +
+        variables.vmLabels.filter(label,
+          (variables.ignoredLabels.all(
+            ignore, !label.startsWith(ignore))
+          ) &&
+          variables.vmLabels[label] != variables.vmiLabels[label]
+        ).map(key, string(
+          "[" + key + ": \"" + variables.vmLabels[key] + "\"" +
+          "; \"" + variables.vmiLabels[key] + "\"]"
+        )).join(", ") + " #####"
+      message: "##### VM and templated VMI labels don't share the same values #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

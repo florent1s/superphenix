@@ -1,0 +1,98 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "dv-sources" }}
+
+---
+# -------------------------------------------------------------------------------
+# Check that all DataVolumes have valid sources and references to other resources
+# -------------------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: source
+      expression: object.spec.source
+    - name: allowedSources
+      expression: '["http", "registry", "snapshot", "pvc", "blank"]'
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" }}
+    - name: snapshotRegex
+      expression: r{{ include "policies.regex" "snapshot" }}
+    - name: vmsnapvolumeRegex
+      expression: r{{ include "policies.regex" "vmsnapshotVolume" }}
+    - name: projectID
+      expression: object.metadata.labels[{{ include "policies.projectIDLabel" "" }}]
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["cdi.kubevirt.io"]
+        apiVersions: ["v1beta1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["datavolumes"]
+        scope: '*'
+  validations:
+    # Check that the source is valid
+    - expression: |
+        variables.source.all(s, s in variables.allowedSources)
+      messageExpression: |
+        "##### " + object.kind +
+        " has an invalid source (" +
+        variables.source.filter(s, !(s in variables.allowedSources))
+        .map(k, k).join(", ") +
+        "). #####"
+      message: "##### Invalid DataVolume source #####"
+    # If PVC or Snapshot, check that the name is an SPXID or a VM Snapshot volume name
+    - expression: |
+        variables.source.all(s,
+          !(s in ["pvc", "snapshot"]) ||
+          variables.source[s].name.matches(variables.spxidRegex) ||
+          variables.source[s].name.matches(variables.snapshotRegex) ||
+          variables.source[s].name.matches(variables.vmsnapvolumeRegex)
+        )
+      messageExpression: |
+        "##### " + object.kind +
+        " source has an incorrect name regex (" +
+        variables.source.filter(s,
+          s in ["pvc", "snapshot"] &&
+          !variables.source[s].name.matches(variables.spxidRegex) &&
+          !variables.source[s].name.matches(variables.snapshotRegex) &&
+          !variables.source[s].name.matches(variables.vmsnapvolumeRegex)
+        ).map(k, variables.source[k].name)
+        .join(", ") +
+        "), must be an SPXID, snapshot, or VM snapshot volume name. #####"
+      message: "##### Incorrect Datavolume source name regex, must be an SPXID, snapshot, or VM snapshot volume name #####"
+    # If PVC or Snapshot, check that the namespace is the ProjectID
+    - expression: |
+        variables.source.all(s,
+          !(s in ["pvc", "snapshot"]) ||
+          variables.source[s].namespace.matches(variables.projectID)
+        )
+      messageExpression: |
+        "##### " + object.kind +
+        " source has an incorrect namespace (" +
+        variables.source.filter(s,
+          s in ["pvc", "snapshot"] &&
+          !variables.source[s].namespace.matches(variables.projectID)
+        ).map(k, variables.source[k].namespace)
+        .join(", ") +
+        "), must be the ProjectID. #####"
+      message: "##### Incorrect Datavolume source namespace, must be the ProjectID #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

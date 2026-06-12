@@ -1,0 +1,98 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "subnet" }}
+
+---
+# ----------------------------------------------
+# Check that all Subnets have the correct fields
+# ----------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: name
+      expression: object.metadata.name
+    - name: namespaces
+      expression: object.spec.namespaces
+    - name: projectID
+      expression: object.metadata.labels[{{ include "policies.projectIDLabel" "" }}]
+    - name: effectiveID
+      expression: object.metadata.labels[{{ include "policies.resEffectiveIDLabel" "" }}]
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" | replace "^" "" | replace  "$" "" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubeovn.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["subnets"]
+        scope: '*'
+  validations:
+    # Check that the namespace is the ProjectID
+    - expression: variables.namespaces[0].matches(variables.projectID)
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect namespace (" +
+        variables.namespaces.map(k,k).join(", ") + "), must be the ProjectID. #####"
+      message: "##### Incorrect Subnet namespace, must be the ProjectID #####"
+    # Check that there are no ACLs
+    - expression: "!has(object.spec.acls)"
+      messageExpression: |
+        "##### " + object.kind + " has ACLs, which are not allowed. #####"
+      message: "##### Subnet cannot have ACLs #####"
+    # Check Provider value regex ("SPXID.projectID.ovn", for "subnetID.namespace.ovn")
+    - expression: |
+        object.spec.provider.matches(string(
+          variables.spxidRegex + "." + variables.projectID + "." + "ovn")
+        )
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect provider (" +
+        object.spec.provider + "), should be \"subnetID.namespace.ovn\". #####"
+      message: "##### Incorrect Subnet provider, should be \"subnetID.namespace.ovn\" #####"
+    # Check that "routeTable" is the same as "name" and "effectiveID"
+    - expression: |
+        object.spec.routeTable.matches(variables.name) &&
+        variables.name.matches(variables.effectiveID)
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect routeTable (" +
+        object.spec.routeTable +
+        "), should be the same as \"name\" and \"effectiveID\" (" +
+        variables.name + "). #####"
+      message: "##### Incorrect Subnet routeTable, should be the same as \"name\" and \"effectiveID\" #####"
+    # Check that "enableDHCP" is "true"
+    - expression: object.spec.enableDHCP == true
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for \"enableDHCP\" (" +
+        string(object.spec.enableDHCP) + "), must be \"true\". #####"
+      message: "##### Incorrect Subnet value for \"enableDHCP\", must be \"true\" #####"
+    # Check that "enableIPv6RA" is "true"
+    - expression: object.spec.enableIPv6RA == true
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for \"enableIPv6RA\" (" +
+        string(object.spec.enableIPv6RA) + "), must be \"true\". #####"
+      message: "##### Incorrect Subnet value for \"enableIPv6RA\", must be \"true\" #####"
+    # Check that "natOutgoing" is "false"
+    - expression: object.spec.natOutgoing == false
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for \"natOutgoing\" (" +
+        string(object.spec.natOutgoing) + "), must be \"false\". #####"
+      message: "##### Incorrect Subnet value for \"natOutgoing\", must be \"false\" #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

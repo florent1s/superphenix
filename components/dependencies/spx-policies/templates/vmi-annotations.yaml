@@ -1,0 +1,133 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "vmi-annotations" }}
+
+{{- $reqAnnotations := (include "policies.annotations" "required" | trim) }}
+{{- $keySubNsAnnotations := (include "policies.annotations" "keySubnetIDNamespace" | trim) }}
+{{- $valTrueAnnotations := (include "policies.annotations" "valueTrue" | fromJsonArray) }}
+
+---
+# ---------------------------------------------------------------------
+# Check that all VirtualMachines templates and VirtualMachineInstances
+# have the correct annotations
+# ---------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+  - name: metadata
+    expression: |
+      object.kind == "VirtualMachine" ?
+      object.spec.template.metadata :
+      object.metadata
+  - name: spxidRegex
+    expression: r{{ include "policies.regex" "spxid" | replace "^" "" | replace  "$" "" }}
+  - name: projectID
+    expression: variables.metadata.labels[{{ include "policies.projectIDLabel" "" }}]
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubevirt.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["virtualmachines", "virtualmachineinstances"]
+        scope: '*'
+  validations:
+  # Check presence of required annotations
+  - expression: |
+      has(variables.metadata.annotations) &&
+      {{ $reqAnnotations }}
+      .all(anno, variables.metadata.annotations
+        .exists(entry,
+          entry.endsWith(anno)
+        )
+      )
+    messageExpression: |
+      "##### " + object.kind + " has missing annotations : " +
+      {{ $reqAnnotations }}
+      .filter(anno, variables.metadata.annotations
+        .all(entry,
+          !entry.endsWith(anno)
+        )
+      ).join(", ") +  " #####"
+    message: "##### Missing VMI annotation(s) #####"
+  # Check annotations regex ("SPXID.projectID.annotation", for "subnetID.namespace.annotation")
+  - expression: |
+      {{ $keySubNsAnnotations }}
+      .all(anno, variables.metadata.annotations
+        .all(entry,
+          entry.endsWith(anno) ?
+          entry.matches(
+            string(variables.spxidRegex + "." + variables.projectID + "." + anno)
+          ) : true
+        )
+      )
+    messageExpression: |
+      "##### " + object.kind + " has incorrect annotations : " +
+      variables.metadata.annotations
+      .filter(entry, 
+        {{ $keySubNsAnnotations }}
+        .exists(anno,
+          entry.endsWith(anno) ?
+          !entry.matches(
+            string(variables.spxidRegex + "." + variables.projectID + "." + anno)
+          ) : false
+        )
+      ).join(", ") +
+      ", should be \"subnetID.namespace.annotation\" #####"
+    message: '##### Incorrect VMI annotation(s), should be "subnetID.namespace.annotation" #####'
+  # Check annotation value ("true" for both LiveMigrations)
+  - expression: |
+      variables.metadata.annotations
+      .all(entry,
+        (
+          {{- range $trueAnno := $valTrueAnnotations }}
+          {{- if ne $trueAnno (last $valTrueAnnotations) }}
+          entry.endsWith({{ $trueAnno | quote }}) ||
+          {{- else }}
+          entry.endsWith({{ $trueAnno | quote }})
+          {{- end }}
+          {{- end }}
+        ) ?
+        variables.metadata.annotations[entry] == "true" :
+        true
+      )
+    messageExpression: |
+      "##### " + object.kind + " has an incorrect value for annotations: " +
+      variables.metadata.annotations
+      .filter(entry,
+        (
+          {{- range $trueAnno := $valTrueAnnotations }}
+          {{- if ne $trueAnno (last $valTrueAnnotations) }}
+          entry.endsWith({{ $trueAnno | quote }}) ||
+          {{- else }}
+          entry.endsWith({{ $trueAnno | quote }})
+          {{- end }}
+          {{- end }}
+        ) ?
+        variables.metadata.annotations[entry] != "true" :
+        false
+      )
+      .map(entry, string(
+        entry + " (" + variables.metadata.annotations[entry] + ")")
+      ).join(", ") + " #####"
+    message: "##### VMI annotation(s) value error #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

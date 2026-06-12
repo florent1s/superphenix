@@ -1,0 +1,95 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "dv-metadata" }}
+
+---
+# ------------------------------------------------------------------
+# Check that all DataVolumes have the correct labels and annotations
+# ------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: labels
+      expression: object.metadata.labels
+    - name: annotations
+      expression: object.metadata.annotations
+    - name: defaultNetworkKey
+      expression: r"v1.multus-cni.io/default-network"
+    - name: defaultNetworkValue
+      expression: r{{ $val.defaultNetwork | quote }}
+    - name: allowClaimAdoptionKey
+      expression: r"cdi.kubevirt.io/allowClaimAdoption"
+    - name: ignoreNetpolKey
+      expression: r"superphenix.net/ignoreNetworkPolicies"
+    - name: ignoreNetpolValue
+      expression: r"true"
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["cdi.kubevirt.io"]
+        apiVersions: ["v1beta1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["datavolumes"]
+        scope: '*'
+  validations:
+    # Check that the "ignoreNetworkPolicies" label is present
+    - expression: variables.ignoreNetpolKey in variables.labels
+      messageExpression: |
+        "##### " + object.kind + " is missing required label : \"" +
+        variables.ignoreNetpolKey + "\". #####"
+      message: "##### DataVolume is missing the \"ignoreNetworkPolicies\" label #####"
+    # Check that the "ignoreNetworkPolicies" label has the correct value ("true")
+    - expression: variables.labels[variables.ignoreNetpolKey] == variables.ignoreNetpolValue
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for label \"" +
+        variables.ignoreNetpolKey + "\" (\"" +
+        variables.labels[variables.ignoreNetpolKey] + "\"), should be \"" +
+        variables.ignoreNetpolValue + "\". #####"
+      message: "##### DataVolume has an incorrect \"ignoreNetworkPolicies\" label value, should be \"true\" #####"
+    # Check that the "default-network" and "allowClaimAdoption" annotations are present
+    - expression: |
+        [variables.defaultNetworkKey, variables.allowClaimAdoptionKey]
+          .all(key, key in variables.annotations)
+      messageExpression: |
+        "##### " + object.kind + " is missing required annotations : " +
+        [variables.defaultNetworkKey, variables.allowClaimAdoptionKey]
+          .filter(key, !(key in variables.annotations))
+          .map(entry, string("\"" + entry + "\"")).join(", ") + ". #####"
+      message: "##### Missing DataVolume annotation #####"
+    # Check that the "default-network" annotation has the correct value
+    - expression: |
+        variables.annotations[variables.defaultNetworkKey] == variables.defaultNetworkValue
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for annotation \"" +
+        variables.defaultNetworkKey + "\" (" +
+        variables.annotations[variables.defaultNetworkKey] + "), should be \"" +
+        variables.defaultNetworkValue + "\". #####"
+      message: "##### Incorrect DataVolume \"default-network\" annotation value #####"
+    # Check that the "allowClaimAdoption" annotation has the correct value ("true")
+    - expression: |
+        variables.annotations[variables.allowClaimAdoptionKey] == "true"
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for annotation \"" +
+        variables.allowClaimAdoptionKey + "\" (\"" +
+        variables.annotations[variables.allowClaimAdoptionKey] + "\"), should be \"true\". #####"
+      message: "##### Incorrect DataVolume \"allowClaimAdoption\" annotation value, should be \"true\" #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

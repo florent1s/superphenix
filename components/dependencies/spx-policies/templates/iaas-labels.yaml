@@ -1,0 +1,129 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "iaas-labels" }}
+
+---
+# ---------------------------------------------------------------------------
+# Check that all IaaS resources have the necessary labels with correct naming
+# ---------------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: gitopsLabel
+      expression: r{{ include "policies.gitopsLabel" "" }}
+    - name: gitopsPossibleValues
+      expression: '["true", "false"]'
+    - name: spxidLabels
+      expression: {{ include "policies.iaasLabels" "spxid" | toJson }}
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" }}
+    - name: localIDLabel
+      expression: r{{ include "policies.iaasLabels" "localid" }}
+    - name: nameLabels
+      expression: {{ include "policies.iaasLabels" "name" | toJson }}
+    - name: nameSyntax
+      expression: r{{ include "policies.regex" "name" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["", "kubevirt.io", "kubeovn.io", "networking.k8s.io", "cdi.kubevirt.io", "k8s.cni.cncf.io", "snapshot.kubevirt.io", "snapshot.kubevirt.io", "snapshot.storage.k8s.io",]
+        apiVersions: ["v1", "v1beta1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          [
+            "virtualmachines",
+            "virtualmachineinstances",
+            "vpcs",
+            "vpc-nat-gateways",
+            "subnets",
+            "iptables-eips",
+            "iptables-fip-rules",
+            "iptables-snat-rules",
+            "iptables-dnat-rules",
+            "networkpolicies",
+            "network-attachment-definitions",
+            "datavolumes",
+            "volumesnapshots",
+            "virtualmachinesnapshots",
+            "virtualmachinerestores",
+          ]
+        scope: '*'
+  validations:
+    # Check 'gitops' label
+    - expression: '!(variables.gitopsLabel in object.metadata.labels) || object.metadata.labels[variables.gitopsLabel] in variables.gitopsPossibleValues'
+      messageExpression: '"##### " + object.kind + " has a missing or incorrect \"" + variables.gitopsLabel + "\" label. #####"'
+      message: "##### 'gitops' label missing or incorrect #####"
+    # Check SPXID labels
+    - expression: "variables.spxidLabels.all(entry, entry in object.metadata.labels)"
+      messageExpression: |
+        "##### " + object.kind +
+        " is missing required labels : " +
+        variables.spxidLabels
+        .filter(entry, !(entry in object.metadata.labels))
+        .join(", ") + " #####"
+      message: "##### SPXID label(s) missing #####"
+    - expression: 'variables.spxidLabels.all(entry, object.metadata.labels[entry].matches(variables.spxidRegex))'
+      messageExpression: |
+        "##### " + object.kind +
+        " has an incorrect SPXID regex for labels: " +
+        object.metadata.labels.filter(entry,
+          entry in variables.spxidLabels &&
+          !object.metadata.labels[entry]
+          .matches(variables.spxidRegex))
+        .join(", ") + " #####"
+      message: "##### SPXID label(s) regex error #####"
+    # Check 'localID' label
+    - expression: |
+        variables.localIDLabel in object.metadata.labels &&
+        object.metadata.labels[variables.localIDLabel]
+        .matches(variables.nameSyntax)
+      messageExpression: '"##### " + object.kind + " has a missing or incorrect \"" + variables.localIDLabel + "\" label. #####"'
+      message: "##### 'localID' label missing or incorrect #####"
+    # Check Name labels
+    - expression: |
+        !(
+          variables.gitopsLabel in object.metadata.labels &&
+          object.metadata.labels[variables.gitopsLabel] == 'true'
+        ) ||
+        variables.nameLabels.all(entry, entry in object.metadata.labels)
+      messageExpression: |
+        "##### " + object.kind +
+        " is missing required labels : " +
+        variables.nameLabels
+        .filter(entry, !(entry in object.metadata.labels))
+        .join(", ") + " #####"
+      message: "##### Name label(s) missing #####"
+    - expression: |
+        !(
+          variables.gitopsLabel in object.metadata.labels &&
+          object.metadata.labels[variables.gitopsLabel] == 'true'
+        ) ||
+        variables.nameLabels.all(entry, object.metadata.labels[entry].matches(variables.nameSyntax))
+      messageExpression: |
+        "##### " + object.kind +
+        " has an incorrect syntax for labels: " +
+        object.metadata.labels.filter(entry,
+          entry in variables.nameLabels &&
+          !object.metadata.labels[entry].matches(variables.nameSyntax)
+        ).join(", ") + " #####"
+      message: "##### Name label(s) syntax error #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

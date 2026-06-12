@@ -1,0 +1,73 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "netattachdef-config" }}
+
+---
+# ---------------------------------------------------------------------
+# Check that all Network Attachment Definitions have the correct config
+# ---------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: config
+      expression: object.spec.config
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" | replace "^" "" | replace  "$" "" }}
+    - name: projectID
+      expression: object.metadata.labels[{{ include "policies.projectIDLabel" "" }}]
+    - name: configRegex
+      expression: |
+        string(
+          r'{\s*"*cniVersion"*:\s*"*0\.3\.1"*,\s*"*name"*:\s*"*generic-veth"*,\s*"*plugins"*:\s*\[\s*{\s*"*type"*:\s*"*kube-ovn"*,\s*"*server_socket"*:\s*"*/run/openvswitch/kube-ovn-daemon\.sock"*,\s*"*provider"*:\s*"*' +
+          variables.spxidRegex + '.' +
+          variables.spxidRegex + r'.ovn"*\s*}\s*]\s*}'
+        )
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["k8s.cni.cncf.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["network-attachment-definitions"]
+        scope: '*'
+  validations:
+    # Check that there is a config
+    - expression: has(object.spec.config)
+      messageExpression: |
+        "##### " + object.kind + " has no config. #####"
+      message: "##### Missing Network-Attachment-Definition config #####"
+    # Check that the config follows the correct regex
+    - expression: variables.config.matches(variables.configRegex)
+      messageExpression: |
+        "##### " + object.kind + " has an invalid config (" +
+        variables.config + "). #####"
+      message: "##### Invalid Network-Attachment-Definition config #####"
+    # Check that the config contains the correct provider ("SPXID.projectID.ovn", for "subnetID.namespace.ovn")
+    - expression: |
+        variables.config.matches(string(
+          r'.*provider"*:\s*"*' + variables.spxidRegex + "." + variables.projectID + r'.ovn.*'
+        ))
+      messageExpression: |
+        "##### " + object.kind + " has an invalid Provider in config (" +
+        variables.config + "), should be \"subnetID.namespace.ovn\". #####"
+      message: "##### Invalid Network-Attachment-Definition Provider in config, should be \"subnetID.namespace.ovn\" #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,61 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "network-cidr" }}
+
+---
+# ------------------------------------------------------
+# Check that CIDRs used by network resources are allowed
+# ------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: cidrBlock
+      expression: object.spec.cidrBlock.split(",")
+    - name: allowedCidrs
+      expression: {{- include "policies.allowedCidrs" $ | quote | indent 1 }}
+    - name: reservedCidrs
+      expression: {{- include "policies.reservedCidrs" $ | quote | indent 1 }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubeovn.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["subnets"]
+        scope: '*'
+  validations:
+    # Check that the cidrBlock CIDR(s) is/are in the allowed ranges
+    - expression: |
+        variables.cidrBlock.all(block,
+          variables.allowedCidrs.exists(range,
+            cidr(range).containsCIDR(block.trim())
+          )
+        )
+      messageExpression: |
+        "##### " + object.kind + " has a CIDR (cidrBlock) outside of allowed ranges: " +
+        variables.cidrBlock.filter(block,
+          variables.allowedCidrs.all(range,
+            !cidr(range).containsCIDR(block.trim())
+          )
+        ).join(", ") + " #####"
+      message: "##### Forbidden cidrBlock CIDR range #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

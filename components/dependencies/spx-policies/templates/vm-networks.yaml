@@ -1,0 +1,96 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "vm-networks" }}
+
+---
+# ---------------------------------------------------------------------------------
+# Check that all VirtualMachines and VirtualMachineInstances use the Multus network
+# ---------------------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: spec
+      expression: |
+        object.kind == "VirtualMachine" ?
+        object.spec.template.spec :
+        object.spec
+    - name: metadata
+      expression: |
+        object.kind == "VirtualMachine" ?
+        object.spec.template.metadata :
+        object.metadata
+    - name: projectID
+      expression: variables.metadata.labels[{{ include "policies.projectIDLabel" "" }}]
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" | replace "^" "" | replace  "$" "" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubevirt.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["virtualmachines", "virtualmachineinstances"]
+        scope: '*'
+  validations:
+    # Check that there are networks
+    - expression: has(variables.spec.networks)
+      messageExpression: |
+        "##### " +
+        object.kind +
+        " has no networks, must be Multus. #####"
+      message: "##### Missing VM networks, must be Multus #####"
+    # Check that all networks are Multus
+    - expression: variables.spec.networks.all(n, has(n.multus))
+      messageExpression: |
+        "##### " +
+        object.kind +
+        " has incorrect network type (" +
+        variables.spec.networks
+        .filter(n, !has(n.multus))
+        .map(entry, entry.filter(key, key != "name"))
+        .map(list, list.join(", "))
+        .join(", ") +
+        "), must be Multus. #####"
+      message: "##### Incorrect VM network type, must be Multus #####"
+    # Check network name regex ("projectID/SPXID", for "namespace/subnetID")
+    - expression: |
+        variables.spec.networks
+        .all(n, n.multus.networkName
+          .matches(
+            string(variables.projectID + "/" + variables.spxidRegex)
+          )
+        )
+      messageExpression: |
+        "##### " +
+        object.kind +
+        " has incorrect network name (" +
+        variables.spec.networks
+        .filter(n, !n.multus.networkName
+          .matches(
+            string(variables.projectID + "/" + variables.spxidRegex)
+          )
+        )
+        .map(entry, entry.multus.networkName)
+        .join(", ") +
+        "), should be \"namespace/subnetID\" #####"
+      message: "##### Incorrect VM network name, should be \"namespace/subnetID\" #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

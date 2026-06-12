@@ -1,0 +1,164 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "system-workloads" }}
+
+---
+# ---------------------------------------------------------------------------
+# Check that system workloads in customer namespaces have the correct fields
+# ---------------------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: labels
+      expression: object.metadata.labels
+    - name: annotations
+      expression: object.metadata.annotations
+    - name: workloadClassKey
+      expression: r"superphenix.net/workloadClass"
+    - name: ignoreNetpolKey
+      expression: r"superphenix.net/ignoreNetworkPolicies"
+    - name: ignoreNetpolValue
+      expression: r"true"
+    - name: defaultNetworkKey
+      expression: r"v1.multus-cni.io/default-network"
+    - name: defaultNetworkOvnKubApi
+      expression: r"kube-system/ovn-kubernetes-api"
+    - name: defaultNetworkSysIsoEg
+      expression: r"kube-system/system-isolated-egress"
+    - name: logicalRouterKey
+      expression: r"ovn.kubernetes.io/logical_router"
+    - name: logicalRouterValue
+      expression: r"ovn-cluster"
+    - name: logicalSwitchKey
+      expression: r"ovn.kubernetes.io/logical_switch"
+    - name: logicalSwitchValue
+      expression: r"ovn-default"
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+        scope: '*'
+  validations:
+    # Check that the "ignoreNetworkPolicies" label is present
+    - expression: |
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey] == "kaas-tenant-api-server"
+        ) ||
+        variables.ignoreNetpolKey in variables.labels
+      messageExpression: |
+        "##### " + object.kind + " is missing required label : \"" +
+        variables.ignoreNetpolKey + "\". #####"
+      message: "##### System workload is missing the \"ignoreNetworkPolicies\" label #####"
+    # Check that the "ignoreNetworkPolicies" label has the correct value ("true")
+    - expression: |
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey] == "kaas-tenant-api-server"
+        ) ||
+        variables.labels[variables.ignoreNetpolKey] == variables.ignoreNetpolValue
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for label \"" +
+        variables.ignoreNetpolKey + "\" (\"" +
+        variables.labels[variables.ignoreNetpolKey] + "\"), should be \"" +
+        variables.ignoreNetpolValue + "\". #####"
+      message: "##### System workload has an incorrect \"ignoreNetworkPolicies\" label value, should be \"true\" #####"
+    # Check that the "default-network" annotation is present
+    - expression: |
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey] == "kaas-kubevirt-csi"
+        ) ||
+        variables.defaultNetworkKey in variables.annotations
+      messageExpression: |
+        "##### " + object.kind + " is missing required annotations : \"" +
+        variables.defaultNetworkKey + "\". #####"
+      message: "##### System workload is missing the \"default-network\" annotation #####"
+    # Check that the "default-network" annotation has the correct value
+    - expression: |
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey] == "kaas-kubevirt-csi"
+        ) ||
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey]
+            in ["kaas-tenant-api-server", "kaas-kubevirt-csi"] ?
+          variables.annotations[variables.defaultNetworkKey] == variables.defaultNetworkOvnKubApi :
+          variables.annotations[variables.defaultNetworkKey] == variables.defaultNetworkSysIsoEg
+        )
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for annotation \"" +
+        variables.defaultNetworkKey + "\" (" +
+        variables.annotations[variables.defaultNetworkKey] + "), should be \"" +
+        string(
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey]
+            in ["kaas-tenant-api-server", "kaas-kubevirt-csi"] ?
+          variables.defaultNetworkOvnKubApi :
+          variables.defaultNetworkSysIsoEg
+        ) + "\". #####"
+      message: "##### System workload has an incorrect \"default-network\" annotation value #####"
+    # Check that the "logical_router" and "logical_switch" annotations are present
+    - expression: |
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey] != "kaas-kubevirt-csi"
+        ) ||
+        [variables.logicalRouterKey, variables.logicalSwitchKey]
+          .all(entry, entry in variables.annotations)
+      messageExpression: |
+        "##### " + object.kind + " is missing required annotations : " +
+        [variables.logicalRouterKey, variables.logicalSwitchKey]
+          .filter(key, !(key in variables.annotations))
+          .map(entry, string("\"" + entry + "\"")).join(", ") + ". #####"
+      message: "##### System workload is missing \"logical_router/switch\" annotations #####"
+    # Check that the "logical_router" annotation has the correct value
+    - expression: |
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey] != "kaas-kubevirt-csi"
+        ) ||
+        variables.annotations[variables.logicalRouterKey] == variables.logicalRouterValue
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for annotation \"" +
+        variables.logicalRouterKey + "\" (" +
+        variables.annotations[variables.logicalRouterKey] + "), should be \"" +
+        variables.logicalRouterValue + "\". #####"
+      message: "##### System workload has an incorrect \"logical_router\" annotation value #####"
+    # Check that the "logical_switch" annotation has the correct value
+    - expression: |
+        (
+          variables.workloadClassKey in variables.labels &&
+          variables.labels[variables.workloadClassKey] != "kaas-kubevirt-csi"
+        ) ||
+        variables.annotations[variables.logicalSwitchKey] == variables.logicalSwitchValue
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for annotation \"" +
+        variables.logicalSwitchKey + "\" (" +
+        variables.annotations[variables.logicalSwitchKey] + "), should be \"" +
+        variables.logicalSwitchValue + "\". #####"
+      message: "##### System workload has an incorrect \"logical_switch\" annotation value #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

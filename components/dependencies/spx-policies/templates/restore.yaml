@@ -1,0 +1,152 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "restore" }}
+
+---
+# ----------------------------------------------
+# Check that all VM Restores have correct fields
+# ----------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: target
+      expression: object.spec.target.name
+    - name: snapshot
+      expression: object.spec.virtualMachineSnapshotName
+    - name: overrides
+      expression: object.spec.volumeRestoreOverrides
+    - name: gitopsLabel
+      expression: r{{ include "policies.gitopsLabel" "" }}
+    - name: effectiveID
+      expression: r{{ include "policies.resEffectiveIDLabel" "" }}
+    - name: localID
+      expression: r{{ include "policies.resLocalIDLabel" "" }}
+    - name: spxidRegex
+      expression: r{{ include "policies.regex" "spxid" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["snapshot.kubevirt.io"]
+        apiVersions: ["v1beta1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["virtualmachinerestores"]
+        scope: '*'
+  validations:
+    # Check that the Target name is an SPXID
+    - expression: variables.target.matches(variables.spxidRegex)
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect Target name regex (" +
+        variables.target + "), must be an SPXID. #####"
+      message: "##### Incorrect VM Restore name regex for Target, must be an SPXID #####"
+    # Check that the VM Snapshot name is an SPXID
+    - expression: variables.snapshot.matches(variables.spxidRegex)
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect VM Snapshot name regex (" +
+        variables.snapshot + "), must be an SPXID. #####"
+      message: "##### Incorrect VM Restore name regex for VM Snapshot, must be an SPXID #####"
+    # Check presence of necessary fields if "volumeRestoreOverrides" is present
+    - expression: |
+        !has(object.spec.volumeRestoreOverrides) ||
+        ["volumeName", "restoreName", "labels"]
+        .all(field, variables.overrides
+          .all(entry, field in entry)
+        )
+      messageExpression: |
+        "##### " + object.kind + " is missing required Override fields (" +
+        ["volumeName", "restoreName", "labels"]
+        .filter(field, variables.overrides
+          .exists(entry, !(field in entry))
+        ).join(", ") + "). #####"
+      message: "##### Missing VM Restore Override fields #####"
+    # Check that the override volume name is an SPXID
+    - expression: |
+        !has(object.spec.volumeRestoreOverrides) ||
+        variables.overrides.all(entry,
+          entry.volumeName.matches(variables.spxidRegex)
+        )
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect override volume name regex (" +
+        variables.overrides.filter(entry,
+          !entry.volumeName.matches(variables.spxidRegex)
+        ).map(k, k.volumeName)
+        .join(", ") + "), must be an SPXID. #####"
+      message: "##### Incorrect VM Restore override volume name, must be an SPXID #####"
+    # Check that the override restore name is an SPXID
+    - expression: |
+        !has(object.spec.volumeRestoreOverrides) ||
+        variables.overrides.all(entry,
+          entry.restoreName.matches(variables.spxidRegex)
+        )
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect override restore name regex (" +
+        variables.overrides.filter(entry,
+          !entry.restoreName.matches(variables.spxidRegex)
+        ).map(k, k.restoreName)
+        .join(", ") + "), must be an SPXID. #####"
+      message: "##### Incorrect VM Restore override restore name, must be an SPXID #####"
+    # Check presence of necessary override labels
+    - expression: |
+        !has(object.spec.volumeRestoreOverrides) ||
+        [variables.gitopsLabel, variables.effectiveID, variables.localID]
+        .all(label, variables.overrides
+          .all(entry, label in entry.labels)
+        )
+      messageExpression: |
+        "##### " + object.kind + " is missing required Override labels (" +
+        [variables.gitopsLabel, variables.effectiveID, variables.localID]
+        .filter(label, variables.overrides
+          .exists(entry, !(label in entry.labels))
+        ).join(", ") + "). #####"
+      message: "##### Missing VM Restore Override labels #####"
+    # # Check that the gitops label is true
+    # - expression: |
+    #     !has(object.spec.volumeRestoreOverrides) ||
+    #     variables.overrides.all(entry,
+    #       entry.labels[variables.gitopsLabel] == "true"
+    #     ) 
+    #   messageExpression: |
+    #     "##### " + object.kind + " has an incorrect \"" +
+    #     variables.gitopsLabel + "\" label value (" +
+    #     variables.overrides.filter(entry,
+    #       entry.labels[variables.gitopsLabel] != "true"
+    #     ).map(k, k.labels[variables.gitopsLabel])
+    #     .join(", ") + "), must be \"true\". #####"
+    #   message: "##### Incorrect VM Restore \"gitops\" label value, must be \"true\" #####"
+    # Check that the effectiveID label matches the restore name
+    - expression: |
+        !has(object.spec.volumeRestoreOverrides) ||
+        variables.overrides.all(entry,
+          entry.labels[variables.effectiveID] == entry.restoreName
+        )
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect \"" +
+        variables.effectiveID + "\" label value (" +
+        variables.overrides.filter(entry,
+          entry.labels[variables.effectiveID] != entry.restoreName
+        ).map(k, k.labels[variables.effectiveID])
+        .join(", ") + "), must match the \"restoreName\" (" +
+        variables.overrides.filter(entry,
+          entry.labels[variables.effectiveID] != entry.restoreName
+        ).map(k, k.restoreName)
+        .join(", ") + "). #####"
+      message: "##### Incorrect VM Restore \"effectiveID\" label value, must match the \"restoreName\" #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

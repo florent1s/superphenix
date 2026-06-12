@@ -1,0 +1,76 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "iaas-name-is-effective-id" }}
+
+---
+# ---------------------------------------------------------------
+# Check that all IaaS resources' names match their effective IDs
+# ---------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: name
+      expression: "object.metadata.name"
+    - name: effectiveID
+      expression: object.metadata.labels[{{ include "policies.resEffectiveIDLabel" "" }}]
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["", "kubevirt.io", "kubeovn.io", "networking.k8s.io", "cdi.kubevirt.io", "k8s.cni.cncf.io", "snapshot.kubevirt.io", "snapshot.kubevirt.io", "snapshot.storage.k8s.io",]
+        apiVersions: ["v1", "v1beta1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          [
+            "virtualmachines",
+            "virtualmachineinstances",
+            "vpcs",
+            "vpc-nat-gateways",
+            "subnets",
+            "iptables-eips",
+            "iptables-fip-rules",
+            "iptables-snat-rules",
+            "iptables-dnat-rules",
+            "networkpolicies",
+            "network-attachment-definitions",
+            "datavolumes",
+            "volumesnapshots",
+            "virtualmachinesnapshots",
+            "virtualmachinerestores",
+          ]
+        scope: '*'
+  validations:
+    # Check that 'name' matches 'effective ID' label
+    - expression: |
+        variables.name == variables.effectiveID ||
+        (
+          object.kind == "NetworkPolicy" &&
+          variables.name.endsWith(variables.effectiveID)
+        )
+      messageExpression: |
+        "##### " + object.kind +
+        " name (" +
+        variables.name +
+        ") does not match effectiveID: " +
+        variables.effectiveID +
+        " #####"
+      message: "##### Resource name doesn't match effective ID #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

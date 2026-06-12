@@ -1,0 +1,94 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "vm-interfaces" }}
+
+---
+# ---------------------------------------------------------------
+# Check that all VirtualMachines and VirtualMachineInstances use
+# Bridge or Managedtap interfaces with the correct naming scheme
+# ---------------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: devices
+      expression: |
+        object.kind == "VirtualMachine" ?
+        object.spec.template.spec.domain.devices :
+        object.spec.domain.devices
+    - name: interfaceNameRegex
+      expression: r{{ include "policies.regex" "interfaceName" }}
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["kubevirt.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["virtualmachines", "virtualmachineinstances"]
+        scope: '*'
+  validations:
+    # Check that there are interfaces
+    - expression: has(variables.devices.interfaces)
+      messageExpression: |
+        "##### " + object.kind +
+        " has no interfaces, must be Bridge or Managedtap. #####"
+      message: "##### Missing VM interfaces, must be Bridge or Managedtap #####"
+    # Check that all interfaces are Bridges or Managedtaps
+    - expression: |
+        variables.devices.interfaces.all(n,
+          has(n.bridge) ||
+          (
+            has(n.binding) &&
+            n.binding.name == "managedtap"
+          )
+        )
+      messageExpression: |
+        "##### " + object.kind + " has incorrect interface type (" +
+        variables.devices.interfaces
+        .filter(n,
+          !has(n.bridge) &&
+          (
+            !has(n.binding) ||
+            n.binding.name != "managedtap"
+          )
+        )
+        .map(entry, entry.filter(key,key != "name"))
+        .map(list, list.join(", "))
+        .join(", ") +
+        "), must be Bridge or Managedtap. #####"
+      message: "##### Incorrect VM interface type, must be Bridge or Managedtap #####"
+    # Check interface name
+    - expression: |
+        variables.devices.interfaces
+        .all(n,
+          n.name.matches(variables.interfaceNameRegex)
+        )
+      messageExpression: |
+        "##### " + object.kind + " has incorrect interface name (" +
+        variables.devices.interfaces
+        .filter(n,
+          !n.name.matches(variables.interfaceNameRegex)
+        )
+        .map(entry, entry.name)
+        .join(", ") +
+        "), must be \"interface-NUMBER\". #####"
+      message: "##### Incorrect VM interface name, must be 'interface-NUMBER' #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}

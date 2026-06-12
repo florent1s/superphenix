@@ -1,0 +1,5 @@
+apiVersion: v2
+name: spx-policies
+description: A Helm chart for templating Validating Admission Policies
+type: application
+version: 0.1.0

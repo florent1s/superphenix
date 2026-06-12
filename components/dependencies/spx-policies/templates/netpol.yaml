@@ -1,0 +1,81 @@
+{{- range $name, $val := .Values.policies }}
+{{- if eq $name "netpol" }}
+
+---
+# --------------------------------------------------------
+# Check that all Network Policies have the correct fields
+# --------------------------------------------------------
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vap-{{ $name }}
+  labels:
+    {{- include "policies.labels" $ | nindent 4 }}
+spec:
+  variables:
+    - name: annotations
+      expression: object.metadata.annotations
+    - name: netpolEnforcementKey
+      expression: r"ovn.kubernetes.io/network_policy_enforcement"
+    - name: netpolEnforcementValue
+      expression: r"lax"
+    - name: matchLabels
+      expression: object.spec.podSelector.matchLabels
+    - name: projectIDLabel
+      expression: r{{ include "policies.projectIDLabel" "" }}
+    - name: projectID
+      expression: object.metadata.labels[variables.projectIDLabel]
+  failurePolicy: Fail
+  {{- include "policies.matchConditions" $val | nindent 2 }}
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector: {}
+    objectSelector: {}
+    resourceRules:
+      - apiGroups: ["networking.k8s.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["networkpolicies"]
+        scope: '*'
+  validations:
+    # Check that the "netpol-enforcement" annotation is present
+    - expression: |
+        has(variables.annotations) &&
+        variables.netpolEnforcementKey in variables.annotations
+      messageExpression: |
+        "##### " + object.kind + " in missing the \"" +
+        variables.netpolEnforcementKey + "\" annotation. #####"
+      message: "##### Missing \"Network Policy Enforcement\" annotation #####"
+      # Check that the "netpol-enforcement" annotation has the correct value ("lax")
+    - expression: |
+        variables.annotations[variables.netpolEnforcementKey]
+        == variables.netpolEnforcementValue
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect value for annotation \"" +
+        variables.netpolEnforcementKey + "\" (\"" +
+        variables.annotations[variables.netpolEnforcementKey] + "\"), should be \"" +
+        variables.netpolEnforcementValue + "\". #####"
+      message: "##### Incorrect \"Network Policy Enforcement\" annotation value #####"
+    # Check that the matchLabel "projectID" is the ProjectID
+    - expression: |
+        !has(object.spec.podSelector.matchLabels) ||
+        !(variables.projectIDLabel in variables.matchLabels) ||
+        variables.matchLabels[variables.projectIDLabel].matches(variables.projectID)
+      messageExpression: |
+        "##### " + object.kind + " has an incorrect matchLabel for \"" +
+        variables.projectIDLabel + "\" (" +
+        variables.matchLabels[variables.projectIDLabel] + "), must be the ProjectID (" +
+        variables.projectID + "). #####"
+      message: "##### Incorrect Network Policy matchLabel \"projectID\", must be the ProjectID #####"
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vap-{{ $name }}-binding
+spec:
+  policyName: vap-{{ $name }}
+  validationActions: {{ $val.validationActions }}
+  {{- include "policies.debug" $val | indent 2 }}
+{{- end }}
+{{- end }}
