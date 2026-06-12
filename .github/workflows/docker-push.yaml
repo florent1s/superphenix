@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -35,12 +37,37 @@ jobs:
         run: |
           set -e
           REGISTRY="ghcr.io/${{ github.repository_owner }}"
+          
+          # Identify changed files if not a manual trigger or new branch/tag
+          ALL_CHANGED=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual trigger: building all components."
+            ALL_CHANGED=true
+          else
+            BEFORE="${{ github.event.before }}"
+            if [[ "$BEFORE" == "0000000000000000000000000000000000000000" || -z "$BEFORE" ]]; then
+              echo "New branch/tag or initial push: building all components."
+              ALL_CHANGED=true
+            else
+              echo "Detecting changes between $BEFORE and ${{ github.sha }}"
+              CHANGED_FILES=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
+            fi
+          fi
 
           # Find all "docker" directories within components
           find components -type d -name "docker" | while read -r docker_dir; do
             if [ -f "$docker_dir/Dockerfile" ]; then
               # Get the component name (parent directory of the docker folder)
-              COMPONENT_NAME=$(basename "$(dirname "$docker_dir")")
+              COMPONENT_DIR=$(dirname "$docker_dir")
+              COMPONENT_NAME=$(basename "$COMPONENT_DIR")
+
+              if [[ "$ALL_CHANGED" != "true" ]]; then
+                if ! echo "$CHANGED_FILES" | grep -qE "^$COMPONENT_DIR(/|$)"; then
+                  echo "Skipping component: $COMPONENT_NAME (no changes in $COMPONENT_DIR)"
+                  continue
+                fi
+              fi
+
               IMAGE_NAME="${REGISTRY}/${COMPONENT_NAME}"
               
               echo "Processing Docker image for component: $COMPONENT_NAME"
@@ -85,10 +112,17 @@ jobs:
             fi
           done
 
-          # Find all Makefiles in components/dependencies and run their build/push targets
           find components/dependencies -name "Makefile" | while read -r makefile; do
             dir=$(dirname "$makefile")
             COMPONENT_NAME=$(basename "$dir")
+
+            if [[ "$ALL_CHANGED" != "true" ]]; then
+              if ! echo "$CHANGED_FILES" | grep -qE "^$dir(/|$)"; then
+                echo "Skipping component: $COMPONENT_NAME (no changes in $dir)"
+                continue
+              fi
+            fi
+
             IMAGE_NAME="${REGISTRY}/${COMPONENT_NAME}"
 
             echo "Processing Makefile for component: $COMPONENT_NAME in $dir"

@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install Helm
         uses: azure/setup-helm@v5
@@ -38,9 +40,32 @@ jobs:
           set -x
           REGISTRY="oci://ghcr.io/${{ github.repository_owner }}/charts"
 
-          # Find all directories containing a Chart.yaml file
+          # Identify changed files if not a manual trigger or new branch/tag
+          ALL_CHANGED=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual trigger: processing all charts."
+            ALL_CHANGED=true
+          else
+            BEFORE="${{ github.event.before }}"
+            if [[ "$BEFORE" == "0000000000000000000000000000000000000000" || -z "$BEFORE" ]]; then
+              echo "New branch/tag or initial push: processing all charts."
+              ALL_CHANGED=true
+            else
+              echo "Detecting changes between $BEFORE and ${{ github.sha }}"
+              CHANGED_FILES=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
+            fi
+          fi
+
           find components -name "Chart.yaml" | while read -r chart_file; do
             chart_dir=$(dirname "$chart_file")
+            
+            if [[ "$ALL_CHANGED" != "true" ]]; then
+              if ! echo "$CHANGED_FILES" | grep -qE "^$chart_dir(/|$)"; then
+                echo "Skipping chart in $chart_dir: no changes detected."
+                continue
+              fi
+            fi
+
             echo "Processing chart in: $chart_dir"
 
             # Extract chart name and version from Chart.yaml
