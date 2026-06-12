@@ -59,9 +59,11 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-// ------------------------------------------
-// -----------------Labels-------------------
-// ------------------------------------------
+{{/*
+------------------------------------------
+-----------------Labels-------------------
+------------------------------------------
+*/}}
 
 {{/*
 Generated label
@@ -148,9 +150,11 @@ Regex for label values and other fields
 {{- end }}
 {{- end }}
 
-// ------------------------------------------
-// ----Ignored labels (VM/VMI template)------
-// ------------------------------------------
+{{/*
+------------------------------------------
+----Ignored labels (VM/VMI template)------
+------------------------------------------
+*/}}
 
 {{/*
 Label prefixes that are ignored when checking for same labels in VM and VMI template
@@ -159,9 +163,11 @@ Label prefixes that are ignored when checking for same labels in VM and VMI temp
 ["velero.io/"]
 {{- end }}
 
-// ------------------------------------------
-// ------------Match conditions--------------
-// ------------------------------------------
+{{/*
+------------------------------------------
+------------Match conditions--------------
+------------------------------------------
+*/}}
 
 {{/*
 Do not match resources with a "generated" label
@@ -206,7 +212,7 @@ Do not match Volume Snapshots with labels starting with "snapshot.kubevirt.io/so
 Do not match Volume Snapshots with a "csi-driver/cluster" label
 */}}
 {{- define "policies.mcNotCsiDriver" -}}
-# Do not match Volume Snapshots with a "csi-driver/cluster" label"
+# Do not match Volume Snapshots with a "csi-driver/cluster" label
 - name: matchNotCsiDriver
   expression: |
     object.kind != "VolumeSnapshot" ||
@@ -267,7 +273,7 @@ Match resources with SPXID labels/namespaces/names
 {{- $orgIDLabel := include "policies.organizationIDLabel" . -}}
 {{- $projectIDLabel := include "policies.projectIDLabel" . -}}
 {{- $resEffectiveIDLabel := include "policies.resEffectiveIDLabel" . -}}
-# Match resources that have (either) an SPXID organizationID label, projectID label, resourceEffectiveID label, namespace, or name
+# Match resources that have (either) an SPXID organizationID label, projectID label, resourceEffectiveID label, namespace, or name.
 - name: matchSpxid
   expression: |
     (
@@ -334,9 +340,11 @@ matchConditions:
   {{- end }}
 {{- end }}
 
-// ------------------------------------------
-// ------------------Debug-------------------
-// ------------------------------------------
+{{/*
+------------------------------------------
+------------------Debug-------------------
+------------------------------------------
+*/}}
 
 {{/*
 Debug matching
@@ -353,9 +361,11 @@ matchResources:
 {{- end }}
 {{- end }}
 
-// ------------------------------------------
-// ---------------Annotations----------------
-// ------------------------------------------
+{{/*
+------------------------------------------
+---------------Annotations----------------
+------------------------------------------
+*/}}
 
 {{- define "policies.annotations" -}}
 
@@ -379,9 +389,11 @@ Annotations with value : true
 {{- end }}
 {{- end }}
 
-// ------------------------------------------
-// --------------Allowed CIDRs---------------
-// ------------------------------------------
+{{/*
+------------------------------------------
+--------------Allowed CIDRs---------------
+------------------------------------------
+*/}}
 
 {{/*
 List of CIDRs allowed within customer-owned subnets

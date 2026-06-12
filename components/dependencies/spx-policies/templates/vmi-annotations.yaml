@@ -50,7 +50,7 @@ spec:
         )
       )
     messageExpression: |
-      "##### " + object.kind + " has missing annotations : " +
+      "##### " + object.kind + " has missing annotations: " +
       {{ $reqAnnotations }}
       .filter(anno, variables.metadata.annotations
         .all(entry,
@@ -70,7 +70,7 @@ spec:
         )
       )
     messageExpression: |
-      "##### " + object.kind + " has incorrect annotations : " +
+      "##### " + object.kind + " has incorrect annotations: " +
       variables.metadata.annotations
       .filter(entry, 
         {{ $keySubNsAnnotations }}
