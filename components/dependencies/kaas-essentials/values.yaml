@@ -1,8 +1,13 @@
+# -- AZ in which we're deploying this chart.
+# This parameter cannot be overriden by the user.
+location: ""
+
 controlPlane:
   fqdn: ""
   network:
     apiServer:
       address: 10.96.0.1
+      konnectivityPort: 7442
       port: 7443
       proxyPort: 7444
 
@@ -18,9 +23,9 @@ kubevirtCsi:
     #   tenantClass: default
     #   infraClass: default
   
-  nodeDriverRegistrarVersion: v2.15.0 # https://github.com/kubernetes-csi/node-driver-registrar/releases
-  csiLivenessprobeVersion: v2.17.0    # https://github.com/kubernetes-csi/livenessprobe/releases
-  snapshotControllerVersion: v8.4.0   # https://github.com/kubernetes-csi/external-snapshotter/releases
+  nodeDriverRegistrarVersion: v2.16.0 # https://github.com/kubernetes-csi/node-driver-registrar/releases
+  csiLivenessprobeVersion: v2.18.0    # https://github.com/kubernetes-csi/livenessprobe/releases
+  snapshotControllerVersion: v8.5.0   # https://github.com/kubernetes-csi/external-snapshotter/releases
   csiDriverVersion: latest            # https://quay.io/repository/kubevirt/kubevirt-csi-driver?tab=tags
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -28,6 +33,8 @@ kubevirtCsi:
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 metrics-server:
   fullnameOverride: "metrics-server"
+  image:
+    tag: v0.8.1
   args:
     - --kubelet-insecure-tls=true
     - --kubelet-preferred-address-types=InternalIP
@@ -54,22 +61,28 @@ cilium:
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # %              CoreDNS              %
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#coredns:
-#  # Initial amount of DNS instances
-#  replicaCount: 2
-#  k8sAppLabelOverride: "kube-dns"
-#
-#  # IP of the DNS cluster-wide
-#  service:
-#    clusterIP: "10.96.0.10"
-#
-#  affinity:
-#    podAntiAffinity:
-#      requiredDuringSchedulingIgnoredDuringExecution:
-#        - topologyKey: kubernetes.io/hostname
-#          labelSelector:
-#            matchLabels:
-#              k8s-app: kube-dns
-#  rollingUpdate:
-#    maxUnavailable: 1
-#    maxSurge: 0
+coredns:
+  # Initial amount of DNS instances
+  replicaCount: 2
+
+  k8sAppLabelOverride: "kube-dns"
+  deployment:
+    name: coredns
+
+  service:
+    name: "kube-dns"
+    # IP of the DNS cluster-wide
+    clusterIP: "10.96.0.10"
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                k8s-app: kube-dns
+            topologyKey: kubernetes.io/hostname
+          weight: 1
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 0
