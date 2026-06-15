@@ -34,6 +34,9 @@ var (
 
 	// MaxClusterVersion is the ceiling for supported cluster versions (exclusive).
 	MaxClusterVersion = "999.999.999"
+
+	// OperatorVersion is the version of the running operator. Overridden at build time with -ldflags.
+	OperatorVersion = "dev"
 )
 
 // IsManagementUpgradeSupported checks if upgrading management from current to target version is supported.

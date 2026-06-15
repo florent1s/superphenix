@@ -23,6 +23,8 @@ import (
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 	"github.com/super-phenix/superphenix/internal/superphenix-operator/cluster"
 	"github.com/super-phenix/superphenix/internal/superphenix-operator/management"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/telemetry"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/version"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -63,6 +65,8 @@ func main() {
 	var defaultChartName string
 	var defaultVersion string
 	var syncPeriod time.Duration
+	var disableTelemetry bool
+	var telemetryEndpoint string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -95,6 +99,8 @@ func main() {
 	flag.DurationVar(&syncPeriod, "sync-period", 5*time.Minute, "The interval at which to periodically resync sub-applications")
 	flag.StringVar(&operatorNamespace, "operator-namespace", os.Getenv("OPERATOR_NAMESPACE"), "The namespace where the operator is deployed")
 	flag.BoolVar(&isManagementCluster, "is-management-cluster", false, "Whether this operator is running on a management cluster and should reconcile management components")
+	flag.BoolVar(&disableTelemetry, "disable-telemetry", false, "Disable sending anonymous telemetry to the Superphenix open-source project")
+	flag.StringVar(&telemetryEndpoint, "telemetry-endpoint", telemetry.DefaultEndpoint, "URL of the telemetry ingest endpoint")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -229,6 +235,25 @@ func main() {
 		}
 	}
 	// +kubebuilder:scaffold:builder
+
+	if !disableTelemetry {
+		runner := &telemetry.Runner{
+			Collector: &telemetry.Collector{
+				Client:          mgr.GetClient(),
+				OperatorVersion: version.OperatorVersion,
+			},
+			Client: telemetry.NewClient(telemetryEndpoint),
+		}
+		if isManagementCluster {
+			runner.Collector.ManagementVersion = managementChartVersion
+		}
+		// Register the telemetry runner. Since it implements LeaderElectionRunnable,
+		// it will only start when the manager is elected leader.
+		if err := mgr.Add(runner); err != nil {
+			setupLog.Error(err, "Failed to register telemetry runner")
+			os.Exit(1)
+		}
+	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "Failed to set up health check")
