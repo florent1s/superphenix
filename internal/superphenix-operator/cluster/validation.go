@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/super-phenix/superphenix/api/operator/v1alpha1"
-	"github.com/super-phenix/superphenix/internal/controller/version"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/version"
 )
 
 // validate runs all the validation logic for the cluster.

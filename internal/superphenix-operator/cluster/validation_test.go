@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
-	"github.com/super-phenix/superphenix/internal/controller/version"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/version"
 )
 
 var _ = Describe("Cluster Validation", func() {

@@ -14,7 +14,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
-	"github.com/super-phenix/superphenix/internal/controller/version"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/version"
 )
 
 /*
