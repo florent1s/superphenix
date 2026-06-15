@@ -21,8 +21,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
-	"github.com/super-phenix/superphenix/internal/controller/cluster"
-	"github.com/super-phenix/superphenix/internal/controller/management"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/cluster"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/management"
 	// +kubebuilder:scaffold:imports
 )
 
