@@ -70,11 +70,11 @@ jobs:
 
             # Extract chart name and version from Chart.yaml
             # We use yq to reliably parse the YAML file
-            CHART_NAME=$(yq e '.name' "$chart_file")
-            CHART_VERSION_IN_FILE=$(yq e '.version' "$chart_file")
+            CHART_NAME=$(yq -r '.name' "$chart_file")
+            CHART_VERSION_IN_FILE=$(yq -r '.version' "$chart_file")
 
             # Check for dependencies and update them if necessary
-            if yq e '.dependencies | length > 0' "$chart_file" | grep -q "true"; then
+            if yq -r '.dependencies | length > 0' "$chart_file" | grep -q "true"; then
               echo "Dependencies found for $CHART_NAME, updating..."
               helm dependency update "$chart_dir"
             fi
