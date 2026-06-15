@@ -66,14 +66,16 @@ spec:
     spec:
       hostname: {{ $vm.hostname | default (tpl $vm.name .) }}
       domain:
-        {{- if and $vm.uefi $vm.uefi.enabled (ne $vm.uefi.secureBoot false) }}
+        {{- $uefiEnabled := and $vm.uefi $vm.uefi.enabled (not $vm.bios) -}}
+        {{- if and $uefiEnabled (ne $vm.uefi.secureBoot false) }}
         features:
           smm:
             enabled: true
         {{- end }}
-        {{- if and $vm.uefi $vm.uefi.enabled }}
+        {{- if or $uefiEnabled $vm.bios }}
         firmware:
           bootloader:
+            {{- if $uefiEnabled }}
             efi:
               {{- if hasKey $vm.uefi "secureBoot" }}
               secureBoot: {{ $vm.uefi.secureBoot }}
@@ -81,6 +83,9 @@ spec:
               {{- if hasKey $vm.uefi "persistent" }}
               persistent: {{ $vm.uefi.persistent }}
               {{- end }}
+            {{- else }}
+            bios: {}
+            {{- end }}
         {{- end }}
         {{- with $compute.cpu }}
         cpu:
