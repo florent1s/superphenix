@@ -16,7 +16,6 @@
 {{- $template := $pool.template -}}
 {{- $additionalDisks := $template.additionalDisks -}}
 {{- $kubeVersion := $pool.kubeVersion | default $cluster.kubeVersion }}
-{{- $defaultImageVersion := (get $.Values.defaultImageVersion $kubeVersion) | default 0 | toString }}
 {{- $imageTag := $template.bootDisk.imageTag | default (printf "%s-%s" $.Chart.Version (trimPrefix "v" $kubeVersion)) }}
 {{- $templateVersion := $template.version | default 1 | toString }}
 {{- $vmDeployLocalID := include "sfs-kaas.getUUIDv5" (dict "NS" $projectID "NAME" (printf "%s-%s" $preID $poolName)) -}}
