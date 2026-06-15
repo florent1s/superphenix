@@ -1,0 +1,375 @@
+# -- Superphénix organization to which this project belongs, must be a generated UUIDv4.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+organizationID: "00000000-0000-0000-0000-000000000000"
+# -- Superphénix organization's friendly name.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+organizationName: "null"
+
+# -- Superphénix project to which this project belongs, must be a project within the organization, must be a generated UUIDv4.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+projectID: "00000000-0000-0000-0000-000000000000"
+# -- Superphénix project's friendly name.
+# This ID must come from the SPX API, this parameter cannot be overriden by the user.
+# @section -- Organization parameters
+projectName: "null"
+
+# -- AZ in which we're deploying this chart.
+# This parameter cannot be overriden by the user.
+location: ""
+
+# -- Whether this chart is deployed through GitOps or not
+# This parameter cannot be overriden by the user.
+gitops: false
+
+# -- Domain to use in generated urls (controlplanes, AZ IPs)
+# This parameter cannot be overriden by the user.
+domain: "superphenix.net"
+
+# -- Maximum mumber of AZs in a region (for cluster migrations).
+# This parameter cannot be overriden by the user.
+azCount: 10
+
+# -- Image URL for the worker VMs
+# This parameter cannot be overriden by the user.
+defaultImageUrl: "docker://ghcr.io/super-phenix/kaas-image"
+
+# -- Defines default values for controlplanes and worker VMs
+# Cannot be overriden by the user.
+# @section -- Cluster default parameters
+# @ignored
+clusterDefaults:
+  controlPlane:
+    replicas: 3
+    network:
+      apiServer:
+        port: 7443
+        proxyPort: 7444
+      konnectivity:
+        port: 7442
+      gatewayClass: traefik
+  kaasEssentials:
+    # -- Url of the chart that installs CNI and other essential components on tenant cluster
+    chartUrl: "oci://ghcr.io/super-phenix/charts/kaas-essentials"
+
+# -- Defines default values for datastores
+# Cannot be overriden by the user.
+# @section -- Datastore default parameters
+# @ignored
+dataStoreDefaults:
+  replicas: 3
+  version: v3.6.7 # https://quay.io/repository/coreos/etcd?tab=tags
+  storage: 8Gi
+  clusterDomain: "cluster.local"
+
+# -- Defines Kubernetes clusters.
+# Each key defines a new cluster and should be unique
+# See values.yaml for the complete syntax.
+# @default -- {}
+clusters: {}
+  # my-cluster:
+  #   # -- User-friendly name of the cluster
+  #   # @section -- Cluster
+  #   name: "my-cluster"
+    
+  #   # -- AZ in which to deploy the resource
+  #   # @section -- Cluster
+  #   location: ""
+    
+  #   # -- Kubernetes version
+  #   # @section -- Cluster
+  #   kubeVersion: v1.33.4
+    
+  #   # -- Controlplane configuration
+  #   # @section -- Cluster
+  #   # @default -- {}
+  #   controlPlane:
+  #     # -- Defines the controlplane's datastore.
+  #     # @section -- Controlplane
+  #     dataStore:
+  #       # -- Whether to create a dedicated datastore or use a standard one
+  #       # @section -- Datastore
+  #       dedicated: false
+
+  #       # -- (Optional) Datastore's friendly name if using a default one (dedicated = false).
+  #       # Automatically configured if empty.
+  #       # Format: 'spx-<region>-<az>-virt01-datastore0X'.
+  #       # @section -- Datastore
+  #       name: ""
+
+  #       # Storage class friendly name to use when 'dedicated = true'
+  #       # @section -- Datastore
+  #       storageClassName: default
+  
+  #       # -- Size of the persistentVolumeClaims when 'dedicated = true'
+  #       # @section -- Datastore
+  #       storage: 8Gi
+  
+  #       # -- Version tag of the etcd image when 'dedicated = true'
+  #       # @section -- Datastore
+  #       version: v3.6.7
+    
+  #     # -- Whether to put the controlplane in sleeping state
+  #     # (scale to 0 but keep all controlplane data)
+  #     # @section -- Controlplane
+  #     # @default -- false
+  #     paused: false
+    
+  #     network:
+  #       # -- Controlplane networkpolicy to apply, one of [default, none]
+  #       # @section -- Controlplane network
+  #       # @default -- default
+  #       defaultPolicies: default
+    
+  #       # -- FQDN to join the controlplane on
+  #       # @section -- Controlplane network
+  #       fqdn: ""
+  
+  #   # -- Worker node specification
+  #   # @section -- Cluster
+  #   # @default -- {}
+  #   workers:
+  #     network:
+
+  #       # -- Worker networkpolicy to apply, one of [default, strict, none]
+  #       # @section -- Worker network
+  #       # @default -- default
+  #       defaultPolicies: default
+
+  #     # -- Each key defines a new worker VM pool to be deployed.
+  #     # Each key should be unique.
+  #     # See values.yaml for the complete syntax.
+  #     # @section -- Workers
+  #     # @default -- {}
+  #     instances:
+
+  #       pool1:
+  #         # -- Kubernetes version for the workers
+  #         # @section -- Worker pools
+  #         # @default -- "cluster.kubeVersion"
+  #         kubeVersion: v1.33.4
+
+  #         # -- Worker pool deployment specification
+  #         # @section -- Worker pools
+  #         # @default -- {}
+  #         deployment:
+
+  #           # -- Amount of worker VMs for this pool
+  #           # @section -- Worker pool deployment
+  #           # @default -- 1
+  #           replicas: 1
+
+  #           # -- Role of this pool's workers
+  #           # @section -- Worker pool deployment
+  #           # @default -- <nodePool name>
+  #           nodeRole: worker
+
+  #           # -- Maximum number of VMs exceeding the configured replicas during rolling update
+  #           # @section -- Worker pool deployment
+  #           # @default -- 1
+  #           maxSurge: 1
+
+  #           # -- Maximum number of VMs that can be unavailable during rolling update
+  #           # @section -- Worker pool deployment
+  #           # @default -- 0
+  #           maxUnavailable: 0
+
+  #         # -- Worker VM template
+  #         # @section -- Worker pools
+  #         # @default -- {}
+  #         template:
+
+  #           # -- VM template version counter
+  #           # Changing any value in this section requires a VM rolling update
+  #           # which is triggered by incrementing this counter
+  #           # @section -- Worker VM template
+  #           # @default -- 1
+  #           version: 1
+
+  #           # -- Amount of vCPUs for the VMs
+  #           # @section -- Worker VM template
+  #           # @default -- 1
+  #           cores: 1
+
+  #           # -- Amount of memory for the VMs
+  #           # @section -- Worker VM template
+  #           # @default -- 2Gi
+  #           memory: 2Gi
+
+  #           # -- List of network interfaces for the VMs
+  #           # References subnets defined in /subnets/values.yaml
+  #           # @section -- Worker VM template
+  #           # @default -- []
+  #           interfaces:
+  #             - subnet: ""
+
+  #           # -- Storage configuration of the VM
+  #           # @section -- Worker VM template
+  #           # @default -- {}
+  #           bootDisk:
+  #             # -- Storage class friendly name for the main disk
+  #             # @section -- Worker main disk
+  #             storageClassName: default
+
+  #             # -- Main disk size
+  #             # @section -- Worker main disk
+  #             # @default -- 40Gi
+  #             storage: 40Gi
+
+  #             # -- Tag of the main disk image
+  #             # @section -- Worker main disk
+  #             imageTag: ""
+
+  #           # -- Custom taints to be set on node creation
+  #           # @section -- Worker VM template
+  #           # @default -- []
+  #           taints:
+  #             - key: superphenix.net
+  #               value: example
+  #               effect: NoSchedule
+
+  #           # -- Additional Disks for the worker VMs.
+  #           # Each key should be unique.
+  #           # @section -- Worker VM template
+  #           # @default -- {}
+  #           additionalDisks:
+  #             disk-1:
+  #               # -- Disk name
+  #               # @section -- Worker additional disks
+  #               # @default -- ""
+  #               name: disk-1
+
+  #               # -- Disk size
+  #               # @section -- Worker additional disks
+  #               # @default -- 10Gi
+  #               storage: 10Gi
+
+  #               # -- Friendly name of the disk's storage class
+  #               # @section -- Worker additional disks
+  #               # @default -- default
+  #               storageClassName: default
+
+  #               # -- Bus type to use. Supported values: virtio, sata, scsi
+  #               # @section -- Worker additional disks
+  #               # @default -- inferred by Kubevirt
+  #               bus: virtio
+
+  #               # -- Source for the disk's content. Possible values are blank, http, registry
+  #               # @section -- Worker additional disks
+  #               source:
+  #                 blank: {}
+    
+  #   # -- Essential components configuration (CNI, CSI...)
+  #   # @section -- Cluster
+  #   # @default -- {}
+  #   kaasEssentials:
+
+  #     # -- Version of the kaas-essentials chart to use
+  #     # @section -- Tenant essentials
+  #     chartVersion: ""
+
+  #     # -- Helm release revision counter
+  #     # Increment this value for changes to take effect by triggering
+  #     # a helm upgrade and restarting the Kubevirt-CSI controller
+  #     # @section -- Tenant essentials
+  #     # @default -- 1
+  #     revision: 1
+
+  #     # -- Define storage classes for the tenant cluster.
+  #     # Each key should be unique.
+  #     # @section -- Tenant essentials
+  #     # @default -- {}
+  #     storageClasses:
+
+  #       my-sc:
+  #         # -- Define this storage class as the default class
+  #         # @section -- Storage class
+  #         # @default -- false
+  #         isDefaultClass: false
+
+  #         # -- Name of this storage class inside the tenant cluster
+  #         # @section -- Storage class
+  #         # @default -- ""
+  #         tenantClass: my-sc
+
+  #         # -- Friendly name of the corresponding storage class on the virtualization cluster 
+  #         # @section -- Storage class
+  #         # @default -- ""
+  #         infraClass: default
+
+  #     # -- Define snapshot classes for the tenant cluster.
+  #     # Each key should be unique.
+  #     # @section -- Tenant essentials
+  #     # @default -- {}
+  #     snapshotclasses:
+
+  #       ssc-a:
+  #         # -- Define this snapshot class as the default class
+  #         # @section -- Snapshot class
+  #         # @default -- false
+  #         isDefaultClass: false
+
+  #         # -- Name of this snapshot class inside the tenant cluster
+  #         # @section -- Snapshot class
+  #         # @default -- ""
+  #         tenantClass: ssc-a
+
+  #         # -- Friendly name of the corresponding snapshot class on the virtualization cluster 
+  #         # @section -- Snapshot class
+  #         # @default -- ""
+  #         infraClass: default
+
+  #     # -- Define values that will be passed onto the kaas-essentials chart
+  #     # @section -- Tenant essentials
+  #     values: {}
+
+  #   # -- User-defined chart to perform additional installations in the tenant cluster
+  #   # @section -- Cluster
+  #   # @default -- {}
+  #   postInstallChart:
+
+  #     # -- Name of the chart
+  #     # @section -- Post-install chart
+  #     chartName: ""
+
+  #     # -- Version of the chart
+  #     # @section -- Post-install chart
+  #     chartVersion: ""
+
+  #     # -- Source repository
+  #     # @section -- Post-install chart
+  #     repoUrl: ""
+
+  #     # -- Target namespace
+  #     # @section -- Post-install chart
+  #     namespace: ""
+
+  #     # -- Helm release revision counter
+  #     # Increment this value for changes to take effect by triggering a helm upgrade
+  #     # @section -- Post-install chart
+  #     # @default -- 1
+  #     revision: 1
+
+  #     # -- postInstallChart values
+  #     # Values to pass to the post-install chart
+  #     # @section -- Post-install chart
+  #     # @default -- {}
+  #     values: {}
+
+kubevirtCsi:
+  # https://github.com/kubernetes-csi/external-provisioner/releases/
+  # https://github.com/kubernetes-csi/external-attacher/releases/
+  # https://github.com/kubernetes-csi/livenessprobe/releases
+  # https://github.com/kubernetes-csi/external-resizer/releases
+  # https://github.com/kubernetes-csi/external-snapshotter/releases
+  # https://github.com/kubevirt/csi-driver
+  # https://quay.io/repository/kubevirt/kubevirt-csi-driver?tab=tags
+  v1.35:
+    csiProvisionerVersion: v6.2.0
+    csiAttacherVersion: v4.11.0
+    csiLivenessprobeVersion: v2.18.0
+    csiResizerVersion: v2.1.0
+    csiSnapshotterVersion: v8.5.0
+    csiDriverVersion: latest

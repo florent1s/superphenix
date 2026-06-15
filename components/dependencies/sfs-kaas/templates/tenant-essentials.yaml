@@ -1,0 +1,157 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $controlPlane := $cluster.controlPlane -}}
+{{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+{{- $kubeVersion := $cluster.kubeVersion }}
+{{- $kubeMinor := substr 1 5 $kubeVersion -}}
+{{- $fqdn := ($controlPlane.network).fqdn | default (include "sfs-kaas.fqdn" (dict "name" $clusterID "az" $.Values.location "domain" $.Values.domain)) }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: essentials-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+data:
+  essentials.sh: |-
+    #!/bin/bash
+    # This script installs essential components on tenant cluster:
+    # Cilium, KubeApiServerProxy, kubevirt-csi
+    
+    sed "s/10.96.0.1/{{ $fqdn }}/" /job/kubeconfig > /var/run/kubeconfig
+    
+    echo -e "[+] Target cluster:\n\tID: {{ $clusterID }}\n\tName: {{ $cluster.name }}"
+    echo "[+] Checking if TCP is ready."
+    curl -kf https://{{ $fqdn }}:{{ $controlPlaneDefaults.network.apiServer.port }}/version -o /dev/null
+    while [ $? != 0 ]
+    do
+      echo "[+] Waiting 120s for TCP to be ready."
+      sleep 120
+      echo "[+] Checking if TCP is ready."
+      curl -kf https://{{ $fqdn }}:{{ $controlPlaneDefaults.network.apiServer.port }}/version -o /dev/null
+    done
+
+    echo "[+] Running helm upgrade."
+    helm upgrade --install kaas-essentials {{ $.Values.clusterDefaults.kaasEssentials.chartUrl }} \
+      --version {{ $cluster.kaasEssentials.chartVersion | default (printf "%s.*" $kubeMinor) }} \
+      --namespace kube-system \
+      --kubeconfig /var/run/kubeconfig \
+      --set location={{ $cluster.location }} \
+      --set controlPlane.fqdn={{ $fqdn | quote }} \
+      --set controlPlane.network.apiServer.port={{ $controlPlaneDefaults.network.apiServer.port | quote }} \
+      --set controlPlane.network.apiServer.proxyPort={{ $controlPlaneDefaults.network.apiServer.proxyPort | quote }} \
+      --set cilium.k8sServiceHost=10.96.0.1 \
+      --set cilium.k8sServicePort={{ $controlPlaneDefaults.network.apiServer.port | quote }} \
+      -f /job/values/values.yaml
+    if [ $? -eq 0 ]; then
+      echo "[+] Helm upgrade successful."
+      exit 0
+    else
+      echo "[!] Helm upgrade failed."
+      exit 1
+    fi
+
+  values.yaml: |-
+    # Values for essential cluster components.
+    {{- if hasKey $cluster "kaasEssentials" }}
+    {{- if or (hasKey $cluster.kaasEssentials "storageClasses") (hasKey $cluster.kaasEssentials "snapshotClasses")}}
+    kubevirtCsi:
+      {{- with $cluster.kaasEssentials }}
+      {{- if hasKey $cluster.kaasEssentials "storageClasses" }}
+      storageClasses:
+        {{- range $key, $class := .storageClasses }}
+        {{ $key }}:
+          isDefaultClass: {{ $class.isDefaultClass | default false }}
+          tenantClass: {{ $class.tenantClass }}
+          infraClass: {{ get $.Values.storageClassMapping $class.infraClass }}
+        {{- end }}
+      {{- end }}
+      {{- if hasKey $cluster.kaasEssentials "snapshotClasses" }}
+      snapshotClasses:
+        {{- range $key, $class := .snapshotClasses }}
+        {{ $key }}:
+          isDefaultClass: {{ $class.isDefaultClass | default false }}
+          tenantClass: {{ $class.tenantClass }}
+          infraClass: {{ get $.Values.storageClassMapping $class.infraClass }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+    {{- end }}
+
+    # Values from clusters.<cluster>.kaasEssentials.values are imported here
+    {{- if hasKey $cluster.kaasEssentials "values" }}
+    {{- $cluster.kaasEssentials.values | toYaml | nindent 4 }}
+    {{- end }}
+    {{- end }}
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: essentials-{{ $cluster.kaasEssentials.revision | default 1 }}-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+    superphenix.net/ignoreNetworkPolicies: "true"
+    superphenix.net/workloadClass: kaas-essentials-job
+spec:
+  template:
+    metadata:
+      annotations:
+        # We need to use a specialized network that is not restricted by client policies or lack of connectivity
+        v1.multus-cni.io/default-network: kube-system/system-isolated-egress
+      labels:
+        {{- include "sfs-kaas.labels" $ | nindent 8 }}
+        superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+        superphenix.net/resourceLocalID: {{ $preID | quote }}
+        superphenix.net/resourceName: {{ $cluster.name | quote }}
+        superphenix.net/generated: "true"
+        superphenix.net/ignoreNetworkPolicies: "true"
+        superphenix.net/workloadClass: kaas-essentials-job
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: "alpine/helm:3.19"
+          command: ["/job/script/essentials.sh"]
+          volumeMounts:
+            - name: script
+              mountPath: /job/script
+            - name: kubeconfig
+              mountPath: /job
+            - name: values
+              mountPath: /job/values
+      volumes:
+        - name: script
+          configMap:
+            name: "essentials-{{ $clusterID }}"
+            defaultMode: 0777
+            items:
+            - key: "essentials.sh"
+              path: "essentials.sh"
+        - name: kubeconfig
+          secret:
+            secretName: "{{ $clusterID }}-admin-kubeconfig"
+            defaultMode: 0555
+            items:
+            - key: admin.conf
+              path: kubeconfig
+        - name: values
+          configMap:
+            name: "essentials-{{ $clusterID }}"
+            defaultMode: 0555
+            items:
+            - key: "values.yaml"
+              path: "values.yaml"
+
+{{- end }}
+{{- end }}

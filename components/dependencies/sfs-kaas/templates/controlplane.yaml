@@ -1,0 +1,94 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $controlPlane := $cluster.controlPlane -}}
+{{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+{{- $fqdn := ($controlPlane.network).fqdn | default (include "sfs-kaas.fqdn" (dict "name" $clusterID "az" $.Values.location "domain" $.Values.domain)) }}
+{{- $dataStore := ($cluster.controlPlane).dataStore | default dict }}
+{{- $dataStoreName := $dataStore.name | default "" }}
+{{- if $dataStore.dedicated }}
+{{- $dataStoreName = printf "etcd-%s" $clusterID }}
+{{- end }}
+
+---
+# CRD: https://github.com/clastix/cluster-api-control-plane-provider-kamaji/blob/master/config/crd/bases/controlplane.cluster.x-k8s.io_kamajicontrolplanes.yaml
+
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: KamajiControlPlane
+metadata:
+  name: {{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+spec:
+  {{- if ne $dataStoreName "" }}
+  dataStoreName: {{ $dataStoreName | quote }}
+  {{- end }}
+  dataStoreSchema: {{ $clusterID | quote }}
+  addons:
+    konnectivity:
+      server:
+        port: {{ $controlPlaneDefaults.network.konnectivity.port }}
+      agent:
+        tolerations:
+          - operator: Exists
+        extraArgs:
+          - -v=3 # Kamaji default = 8
+          - --proxy-server-host=10.96.0.1
+          - --proxy-server-port={{ $controlPlaneDefaults.network.konnectivity.port }}
+  kubelet:
+    cgroupfs: systemd
+    preferredAddressTypes:
+    - InternalIP
+    - ExternalIP
+  network:
+    certSANs:
+      - {{ $fqdn }}
+    advertiseAddress: 10.96.0.1
+    serviceType: ClusterIP
+  deployment:
+    additionalMetadata:
+      labels:
+        {{- include "sfs-kaas.labels" $ | nindent 8 }}
+        superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+        superphenix.net/resourceLocalID: {{ $preID | quote }}
+        superphenix.net/resourceName: {{ $cluster.name | quote }}
+        superphenix.net/generated: "true"
+        superphenix.net/workloadClass: kaas-tenant-api-server
+    podAdditionalMetadata:
+      annotations:
+        v1.multus-cni.io/default-network: kube-system/ovn-kubernetes-api
+      labels:
+        {{- include "sfs-kaas.labels" $ | nindent 8 }}
+        superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+        superphenix.net/resourceLocalID: {{ $preID | quote }}
+        superphenix.net/resourceName: {{ $cluster.name | quote }}
+        superphenix.net/generated: "true"
+        superphenix.net/workloadClass: kaas-tenant-api-server
+    strategy:
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 1
+      type: RollingUpdate
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  kamaji.clastix.io/name: {{ $clusterID }}
+            weight: 1
+  {{- if $controlPlane.paused }}
+  replicas: 0
+  {{- else }}
+  replicas: {{ $controlPlaneDefaults.replicas }}
+  {{- end }}
+  version: {{ $cluster.kubeVersion | required "cluster.kubeVersion is required." }}
+
+{{- end }}
+{{- end }}

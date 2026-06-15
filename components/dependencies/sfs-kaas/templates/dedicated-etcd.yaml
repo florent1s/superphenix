@@ -1,0 +1,331 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $dataStore := ($cluster.controlPlane).dataStore | default dict }}
+{{- if $dataStore.dedicated }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+{{- $dataStoreName := printf "etcd-%s" $clusterID }}
+{{- $dataStoreDefaults := $.Values.dataStoreDefaults -}}
+{{- $replicas := $dataStoreDefaults.replicas }}
+
+---
+# EtcdCluster: https://github.com/aenix-io/etcd-operator/tree/main/examples/manifests
+# Kamaji certs: https://github.com/clastix/kamaji-etcd/tree/master/charts/kamaji-etcd/templates
+apiVersion: etcd.aenix.io/v1alpha1
+kind: EtcdCluster
+metadata:
+  name: {{ $dataStoreName }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  replicas: {{ $replicas }}
+  storage:
+    volumeClaimTemplate:
+      metadata:
+        labels:
+          # don't include selector labels as they conflict with those set by etcd-operator
+          superphenix.net/gitops: {{ $.Values.gitops | quote }}
+          superphenix.net/organizationID: spx-{{ $.Values.organizationID }}
+          superphenix.net/projectID: spx-{{ $.Values.projectID }}
+          {{- if $.Values.gitops }}
+          superphenix.net/organizationName: {{ $.Values.organizationName | quote }}
+          superphenix.net/projectName: {{ $.Values.projectName | quote }}
+          {{- end }}
+          superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+          superphenix.net/resourceLocalID: {{ $preID | quote }}
+          superphenix.net/resourceName: {{ $preID | quote }}
+          superphenix.net/ignoreNetworkPolicies: "true"
+          superphenix.net/workloadClass: kaas-datastore
+      spec:
+        storageClassName: {{ get $.Values.storageClassMapping (required "Must provide a storage class for the dedicated datastore." $dataStore.storageClassName )}}
+        resources:
+          requests:
+            storage: {{ $dataStore.storage | default $dataStoreDefaults.storage }}
+  podTemplate:
+    metadata:
+      annotations:
+        ovn.kubernetes.io/logical_router: ovn-cluster
+        ovn.kubernetes.io/logical_switch: ovn-default
+      labels:
+        # don't include selector labels as they conflict with those set by etcd-operator
+        superphenix.net/gitops: {{ $.Values.gitops | quote }}
+        superphenix.net/organizationID: spx-{{ $.Values.organizationID }}
+        superphenix.net/projectID: spx-{{ $.Values.projectID }}
+        {{- if $.Values.gitops }}
+        superphenix.net/organizationName: {{ $.Values.organizationName | quote }}
+        superphenix.net/projectName: {{ $.Values.projectName | quote }}
+        {{- end }}
+        superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+        superphenix.net/resourceLocalID: {{ $preID | quote }}
+        superphenix.net/resourceName: {{ $preID | quote }}
+        superphenix.net/ignoreNetworkPolicies: "true"
+        superphenix.net/workloadClass: kaas-datastore
+    spec:
+      containers:
+        - name: etcd
+          image: "quay.io/coreos/etcd:{{ $dataStore.version | default $dataStoreDefaults.version }}"
+          imagePullPolicy: IfNotPresent
+          resources: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: {{ $dataStoreName }}
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+  security:
+    tls:
+      peerTrustedCASecret: etcd-ca-{{ $clusterID }}
+      peerSecret: etcd-peer-{{ $clusterID }}
+      serverSecret: etcd-server-{{ $clusterID }}
+      clientTrustedCASecret: etcd-ca-{{ $clusterID }}
+      clientSecret: etcd-client-{{ $clusterID }}
+
+---
+apiVersion: kamaji.clastix.io/v1alpha1
+kind: DataStore
+metadata:
+  name: {{ $dataStoreName }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+spec:
+  driver: etcd
+  endpoints:
+    - {{ printf "%s.%s.svc.%s:2379" $dataStoreName $.Release.Namespace $dataStoreDefaults.clusterDomain }}
+  tlsConfig:
+    certificateAuthority:
+      certificate:
+        secretReference:
+          keyPath: tls.crt
+          name: etcd-ca-{{ $clusterID }}
+          namespace: {{ $.Release.Namespace }}
+      privateKey:
+        secretReference:
+          keyPath: tls.key
+          name: etcd-ca-{{ $clusterID }}
+          namespace: {{ $.Release.Namespace }}
+    clientCertificate:
+      certificate:
+        secretReference:
+          keyPath: tls.crt
+          name: etcd-client-{{ $clusterID }}
+          namespace: {{ $.Release.Namespace }}
+      privateKey:
+        secretReference:
+          keyPath: tls.key
+          name: etcd-client-{{ $clusterID }}
+          namespace: {{ $.Release.Namespace }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: etcd-ca-issuer-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-6"
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-ca-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-6"
+spec:
+  isCA: true
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "cert sign"
+  commonName: etcd-ca
+  secretName: etcd-ca-{{ $clusterID }}
+  secretTemplate:
+    labels:
+      {{- include "sfs-kaas.labels" $ | nindent 6 }}
+      superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+      superphenix.net/resourceLocalID: {{ $preID | quote }}
+      superphenix.net/resourceName: {{ $preID | quote }}
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  duration: 87600h # 10 years
+  renewBefore: 960h0m0s # 40 days
+  issuerRef:
+    name: etcd-ca-issuer-{{ $clusterID }}
+    kind: Issuer
+    group: cert-manager.io
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: etcd-issuer-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  ca:
+    secretName: etcd-ca-{{ $clusterID }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-server-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  secretName: etcd-server-{{ $clusterID }}
+  secretTemplate:
+    labels:
+      {{- include "sfs-kaas.labels" $ | nindent 6 }}
+      superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+      superphenix.net/resourceLocalID: {{ $preID | quote }}
+      superphenix.net/resourceName: {{ $preID | quote }}
+  isCA: false
+  usages:
+    - "client auth"
+    - "server auth"
+    - "signing"
+    - "key encipherment"
+  dnsNames:
+  {{- range $count := until (int $replicas) }}
+    - {{ printf "%s-%d" $dataStoreName $count }}
+    - {{ printf "%s-%d.%s-headless" $dataStoreName $count $dataStoreName }}
+    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreName $count $dataStoreName $.Release.Namespace }}
+    - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreName $count $dataStoreName $.Release.Namespace $dataStoreDefaults.clusterDomain }}
+  {{- end }}
+    - "{{ $dataStoreName }}.{{ $.Release.Namespace }}.svc.{{ $dataStoreDefaults.clusterDomain }}"
+    - "{{ $dataStoreName }}.{{ $.Release.Namespace }}.svc"
+    - "{{ $dataStoreName }}"
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    size: 4096
+  duration: 2160h0m0s # 3 months
+  renewBefore: 336h0m0s # 14 days
+  issuerRef:
+    name: etcd-issuer-{{ $clusterID }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-peer-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  secretName: etcd-peer-{{ $clusterID }}
+  secretTemplate:
+    labels:
+      {{- include "sfs-kaas.labels" $ | nindent 6 }}
+      superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+      superphenix.net/resourceLocalID: {{ $preID | quote }}
+      superphenix.net/resourceName: {{ $preID | quote }}
+  isCA: false
+  usages:
+    - "server auth"
+    - "client auth"
+    - "signing"
+    - "key encipherment"
+  dnsNames:
+  {{- range $count := until (int $replicas) }}
+    - {{ printf "%s-%d" $dataStoreName $count }}
+    - {{ printf "%s-%d.%s-headless" $dataStoreName $count $dataStoreName }}
+    - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreName $count $dataStoreName $.Release.Namespace }}
+    - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreName $count $dataStoreName $.Release.Namespace $dataStoreDefaults.clusterDomain }}
+  {{- end }}
+    - "{{ $dataStoreName }}.{{ $.Release.Namespace }}.svc.{{ $dataStoreDefaults.clusterDomain }}"
+    - "{{ $dataStoreName }}.{{ $.Release.Namespace }}.svc"
+    - "{{ $dataStoreName }}"
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    size: 4096
+  duration: 2160h0m0s # 3 months
+  renewBefore: 336h0m0s # 14 days
+  issuerRef:
+    name: etcd-issuer-{{ $clusterID }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: etcd-client-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $preID | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  commonName: root
+  secretName: etcd-client-{{ $clusterID }}
+  secretTemplate:
+    labels:
+      {{- include "sfs-kaas.labels" $ | nindent 6 }}
+      superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+      superphenix.net/resourceLocalID: {{ $preID | quote }}
+      superphenix.net/resourceName: {{ $preID | quote }}
+  usages:
+  - "signing"
+  - "key encipherment"
+  - "client auth"
+  privateKey:
+    rotationPolicy: Always
+    algorithm: RSA
+    size: 4096
+  duration: 2160h0m0s # 3 months
+  renewBefore: 336h0m0s # 14 days
+  issuerRef:
+    name: etcd-issuer-{{ $clusterID }}
+    kind: Issuer
+
+{{- end }}
+{{- end }}
+{{- end }}

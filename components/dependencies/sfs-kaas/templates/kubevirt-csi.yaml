@@ -1,0 +1,347 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID }}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+{{- $controlPlane := $cluster.controlPlane }}
+{{- $kvcsiLocalID := printf "%s-kubevirt-csi" $cluster.name }}
+{{- $kubeMinor := substr 0 5 $cluster.kubeVersion }}
+{{- $csiVersions := index $.Values.kubevirtCsi $kubeMinor }}
+{{- $fqdn := ($controlPlane.network).fqdn | default (include "sfs-kaas.fqdn" (dict "name" $clusterID "az" $.Values.location "domain" $.Values.domain)) }}
+{{- $internalFqdn := printf "%s.spx-%s.svc.cluster.local" $clusterID $projectID }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kvcsi-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+    superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kvcsi-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+    superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+rules:
+- apiGroups: ["cdi.kubevirt.io"]
+  resources: ["datavolumes"]
+  verbs: ["get", "create", "delete"]
+- apiGroups: ["kubevirt.io"]
+  resources: ["virtualmachineinstances", "virtualmachines"]
+  verbs: ["list", "get"]
+- apiGroups: ["subresources.kubevirt.io"]
+  resources: ["virtualmachines/addvolume", "virtualmachines/removevolume"]
+  verbs: ["update"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshots"]
+  verbs: ["get", "create", "delete"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kvcsi-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+    superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kvcsi-{{ $clusterID }}
+subjects:
+- kind: ServiceAccount
+  name: kvcsi-{{ $clusterID }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kvcsi-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+    superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kvcsi-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+    superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+roleRef:
+  kind: ClusterRole
+  name: kvcsi-{{ $clusterID }}
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: kvcsi-{{ $clusterID }}
+  namespace: {{ $.Release.Namespace }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kvcsi-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+    superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+data:
+  infraClusterNamespace: {{ $.Release.Namespace }}
+  {{- if $.Values.gitops }}
+  infraClusterLabels: csi-driver/cluster=tenant,superphenix.net/organizationID=spx-{{ $.Values.organizationID }},superphenix.net/organizationName={{ $.Values.organizationName }},superphenix.net/projectID=spx-{{ $.Values.projectID }},superphenix.net/projectName={{ $.Values.projectName }},superphenix.net/resourceEffectiveID={{ $clusterID }},superphenix.net/resourceLocalID={{ $preID }},superphenix.net/resourceName={{ $cluster.name }},superphenix.net/generated=true,superphenix.net/ignoreNetworkPolicies=true,superphenix.net/workloadClass=datavolume-importer
+  {{- else }}
+  infraClusterLabels: csi-driver/cluster=tenant,superphenix.net/organizationID=spx-{{ $.Values.organizationID }},superphenix.net/projectID=spx-{{ $.Values.projectID }},superphenix.net/resourceEffectiveID={{ $clusterID }},superphenix.net/resourceLocalID={{ $preID }},superphenix.net/generated=true,superphenix.net/ignoreNetworkPolicies=true,superphenix.net/workloadClass=datavolume-importer
+  {{- end }}
+  infraStorageClassEnforcement: |
+    allowAll: false
+    allowDefault: false
+    {{- $classes := list }}
+    {{- with $cluster.kaasEssentials }}
+    {{- range $key, $class := .storageClasses }}
+    {{- $classes = append $classes (get $.Values.storageClassMapping $class.infraClass) }}
+    {{- end }}
+    {{- if .snapshotClasses }}
+    storageSnapshotMapping:
+    - storageClasses:
+      {{- range $key, $class := .storageClasses }}
+        - {{ get $.Values.storageClassMapping $class.infraClass }}
+      {{- end }}
+      volumeSnapshotClasses:
+      {{- range $key, $class := .snapshotClasses }}
+        - {{ get $.Values.storageClassMapping $class.infraClass }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+    allowList: [{{ join "," ($classes | uniq) }}]
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kvcsi-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+    superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+    superphenix.net/ignoreNetworkPolicies: "true"
+    superphenix.net/workloadClass: kaas-kubevirt-csi
+    app: kubevirt-csi-driver
+spec:
+  {{- if $controlPlane.paused }}
+  replicas: 0
+  {{- else }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      app: kubevirt-csi-driver
+  template:
+    metadata:
+      annotations:
+        ovn.kubernetes.io/logical_router: ovn-cluster
+        ovn.kubernetes.io/logical_switch: ovn-default
+        configmap/revision: {{ $cluster.kaasEssentials.revision | default 1 | quote }}
+        # checksum/config: {{ (printf "%s\n%s" ($cluster.kaasEssentials.storageClasses | toYaml)  ($cluster.kaasEssentials.snapshotClasses | toYaml)) | sha256sum }}
+      labels:
+        {{- include "sfs-kaas.labels" $ | nindent 8 }}
+        superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+        superphenix.net/resourceLocalID: {{ $kvcsiLocalID | quote }}
+        superphenix.net/resourceName: {{ $kvcsiLocalID | quote }}
+        superphenix.net/generated: "true"
+        superphenix.net/ignoreNetworkPolicies: "true"
+        superphenix.net/workloadClass: kaas-kubevirt-csi
+        app: kubevirt-csi-driver
+    spec:
+      enableServiceLinks: false
+      serviceAccount: kvcsi-{{ $clusterID }}
+      #priorityClassName: system-cluster-critical
+      initContainers:
+        - name: write-kubeconfig
+          image: busybox:1.37 # https://hub.docker.com/_/busybox/tags
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'sed "s/10.96.0.1/{{ $internalFqdn }}/" /var/run/secrets/tenant-secret/admin.conf > /var/run/tenant-kubeconfig/kubeconfig']
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tenant-secret
+              mountPath: "/var/run/secrets/tenant-secret"
+            - name: tenant-kubeconfig
+              mountPath: "/var/run/tenant-kubeconfig"
+      containers:
+        - name: csi-driver
+          imagePullPolicy: Always
+          image: quay.io/kubevirt/kubevirt-csi-driver:{{ $csiVersions.csiDriverVersion }}
+          args:
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--infra-cluster-namespace=$(INFRACLUSTER_NAMESPACE)"
+            - "--infra-cluster-labels=$(INFRACLUSTER_LABELS)"
+            - "--tenant-cluster-kubeconfig=/var/run/tenant-kubeconfig/kubeconfig"
+            - "--run-node-service=false"
+            - "--run-controller-service=true"
+            - "--v=5"
+          ports:
+            - name: healthz
+              containerPort: 10301
+              protocol: TCP
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: INFRACLUSTER_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: kvcsi-{{ $clusterID }}
+                  key: infraClusterNamespace
+            - name: INFRACLUSTER_LABELS
+              valueFrom:
+                configMapKeyRef:
+                  name: kvcsi-{{ $clusterID }}
+                  key: infraClusterLabels
+            - name: INFRA_STORAGE_CLASS_ENFORCEMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: kvcsi-{{ $clusterID }}
+                  key: infraStorageClassEnforcement
+                  optional: true
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+            - name: tenant-kubeconfig
+              mountPath: "/var/run/tenant-kubeconfig"
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 10m
+        - name: csi-provisioner
+          image: registry.k8s.io/sig-storage/csi-provisioner:{{ $csiVersions.csiProvisionerVersion }}
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--default-fstype=ext4"
+            - "--kubeconfig=/var/run/tenant-kubeconfig/kubeconfig"
+            - "--v=5"
+            - "--timeout=3m"
+            - "--retry-interval-max=1m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+            - name: tenant-kubeconfig
+              mountPath: "/var/run/tenant-kubeconfig"
+        - name: csi-attacher
+          image: registry.k8s.io/sig-storage/csi-attacher:{{ $csiVersions.csiAttacherVersion }}
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--kubeconfig=/var/run/tenant-kubeconfig/kubeconfig"
+            - "--v=5"
+            - "--timeout=3m"
+            - "--retry-interval-max=1m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+            - name: tenant-kubeconfig
+              mountPath: "/var/run/tenant-kubeconfig"
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 10m
+        - name: csi-liveness-probe
+          image: registry.k8s.io/sig-storage/livenessprobe:{{ $csiVersions.csiLivenessprobeVersion }}
+          args:
+            - "--csi-address=/csi/csi.sock"
+            - "--probe-timeout=3s"
+            - "--health-port=10301"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 10m
+        - name: csi-snapshotter
+          args:
+          - "--v=5"
+          - "--csi-address=/csi/csi.sock"
+          - "--kubeconfig=/var/run/tenant-kubeconfig/kubeconfig"
+          - "--timeout=3m"
+          image: k8s.gcr.io/sig-storage/csi-snapshotter:{{ $csiVersions.csiSnapshotterVersion }}
+          imagePullPolicy: IfNotPresent
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+            - name: tenant-kubeconfig
+              mountPath: "/var/run/tenant-kubeconfig"
+          resources:
+            requests:
+              memory: 20Mi
+              cpu: 10m
+        - name: csi-resizer
+          image: registry.k8s.io/sig-storage/csi-resizer:{{ $csiVersions.csiResizerVersion }}
+          args:
+            - "-csi-address=/csi/csi.sock"
+            - "-kubeconfig=/var/run/tenant-kubeconfig/kubeconfig"
+            - "-v=5"
+            - "-timeout=3m"
+            - '-handle-volume-inuse-error=false'
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: tenant-kubeconfig
+              mountPath: "/var/run/tenant-kubeconfig"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 20Mi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: socket-dir
+          emptyDir: {}
+        - name: tenant-kubeconfig
+          emptyDir:
+            sizeLimit: 50Ki
+        - name: tenant-secret
+          secret:
+            secretName: {{ $clusterID }}-admin-kubeconfig
+
+{{- end }}
+{{- end }}

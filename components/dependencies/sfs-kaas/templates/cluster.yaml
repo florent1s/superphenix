@@ -1,0 +1,62 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+
+---
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: Cluster
+metadata:
+  name: {{ $clusterID | quote }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+spec:
+  # Network configuration of the cluster
+  clusterNetwork:
+    # Port on which the API server will listen
+    apiServerPort: {{ $controlPlaneDefaults.network.apiServer.port }}
+    # Domain name for services
+    serviceDomain: "cluster.local"
+    # CIDRs (IPv4/IPv6) used by the pods
+    pods:
+      cidrBlocks:
+      - 10.0.0.0/12   # 4096 nodes with a /24 per node (256 pods per node)
+      - fd00:100::/96 # 65536 nodes with a /112 per node (65536 pods per node)
+    # CIDRs (IPv4/IPv6) used by the services
+    services:
+      cidrBlocks:
+      - 10.96.0.0/16        # 2^16 (65536) services
+      - fd00:100:ffff::/112 # 2^16 (65536) services
+
+  # Control plane provider reference
+  controlPlaneRef:
+    apiGroup: controlplane.cluster.x-k8s.io
+    kind: KamajiControlPlane
+    name: {{ $clusterID }}
+
+  # Infrastructure provider reference
+  infrastructureRef:
+    apiGroup: infrastructure.cluster.x-k8s.io
+    kind: KubevirtCluster
+    name: {{ $clusterID | quote }}
+
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: KubevirtCluster
+metadata:
+  name: {{ $clusterID | quote }}
+  annotations:
+    cluster.x-k8s.io/managed-by: kamaji
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+
+{{- end }}
+{{- end }}

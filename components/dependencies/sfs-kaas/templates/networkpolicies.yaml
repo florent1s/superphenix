@@ -1,0 +1,173 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+{{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
+{{- $cpNetPol := (($cluster.controlPlane).network).defaultPolicies | default "default" }}
+{{- if and (ne $cpNetPol "default") (ne $cpNetPol "none") }}
+{{- fail "controlPlane.network.defaultPolicies must be one of [default, none]." }}
+{{- end }}
+{{- $workersNetPol := ($cluster.workers.network).defaultPolicies | default "default" }}
+{{- if and (ne $workersNetPol "strict") (ne $workersNetPol "default") (ne $workersNetPol "none") }}
+{{- fail "workers.network.defaultPolicies must be one of [default, strict, none]." }}
+{{- end }}
+
+{{- $dataStore := ($cluster.controlPlane).dataStore | default dict }}
+{{- $netpolLocalID := printf "controlplane-internal.%s" $cluster.name }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cp-internal-{{ $clusterID }}
+  annotations:
+    ovn.kubernetes.io/network_policy_enforcement: lax
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $netpolLocalID | quote }}
+    superphenix.net/resourceName: {{ $netpolLocalID | quote }}
+    superphenix.net/generated: "true"
+spec:
+  podSelector:
+    matchLabels:
+      superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+      superphenix.net/workloadClass: kaas-tenant-api-server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - ipBlock:
+        cidr: "::/0"
+    ports:
+    - port: 10257
+    - port: 10259
+    - port: 8133
+    - port: 8134
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+          superphenix.net/workloadClass: kaas-tenant-api-server
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: coredns-system
+    - podSelector:
+        matchLabels:
+          superphenix.net/workloadClass: kaas-datastore
+          superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kaas-datastore-system
+
+{{- if eq $cpNetPol "default" }}
+{{- $netpolLocalID := printf "controlplane.%s" $cluster.name }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cp-{{ $clusterID }}
+  annotations:
+    ovn.kubernetes.io/network_policy_enforcement: lax
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $netpolLocalID | quote }}
+    superphenix.net/resourceName: {{ $netpolLocalID | quote }}
+    superphenix.net/generated: "true"
+spec:
+  podSelector:
+    matchLabels:
+      superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+      superphenix.net/workloadClass: kaas-tenant-api-server
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - ipBlock:
+        cidr: "::/0"
+    ports:
+    - port: {{ $controlPlaneDefaults.network.konnectivity.port }}
+    - port: {{ $controlPlaneDefaults.network.apiServer.port }}
+    - port: {{ $controlPlaneDefaults.network.apiServer.proxyPort }}
+{{- end }}
+
+{{- if eq $workersNetPol "default" }}
+{{- $netpolLocalID := printf "workers.%s" $cluster.name }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: workers-{{ $clusterID }}
+  annotations:
+    ovn.kubernetes.io/network_policy_enforcement: lax
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $netpolLocalID | quote }}
+    superphenix.net/resourceName: {{ $netpolLocalID | quote }}
+    superphenix.net/generated: "true"
+spec:
+  podSelector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ $clusterID | quote }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - ipBlock:
+        cidr: "::/0"
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - ipBlock:
+        cidr: "::/0"
+{{- end }}
+
+{{- if eq $workersNetPol "strict" }}
+{{- $netpolLocalID := printf "workers.%s" $cluster.name }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: workers-{{ $clusterID }}
+  annotations:
+    ovn.kubernetes.io/network_policy_enforcement: lax
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $netpolLocalID | quote }}
+    superphenix.net/resourceName: {{ $netpolLocalID | quote }}
+    superphenix.net/generated: "true"
+spec:
+  podSelector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ $clusterID | quote }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          cluster.x-k8s.io/cluster-name: {{ $clusterID | quote }}
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - ipBlock:
+        cidr: "::/0"
+{{- end }}
+
+{{- end }}
+{{- end }}

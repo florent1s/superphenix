@@ -1,0 +1,344 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $controlPlane := $cluster.controlPlane -}}
+{{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
+{{- $workers := $cluster.workers -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) -}}
+{{- $imgUrl := $.Values.defaultImageUrl }}
+{{- $fqdn := ($controlPlane.network).fqdn | default (include "sfs-kaas.fqdn" (dict "name" $clusterID "az" $.Values.location "domain" $.Values.domain)) }}
+{{- $region := (split "-" $.Values.location)._0 }}
+{{- $azCount := $.Values.azCount }}
+{{- $azQueryUrl := $.Values.azQueryUrl | default (printf "azs.%s.%s" $region $.Values.domain) }}
+
+{{- range $poolName, $pool := $workers.instances -}}
+{{- $template := $pool.template -}}
+{{- $additionalDisks := $template.additionalDisks -}}
+{{- $kubeVersion := $pool.kubeVersion | default $cluster.kubeVersion }}
+{{- $defaultImageVersion := (get $.Values.defaultImageVersion $kubeVersion) | default 0 | toString }}
+{{- $imageTag := $template.bootDisk.imageTag | default (printf "%s-%s" $.Chart.Version (trimPrefix "v" $kubeVersion)) }}
+{{- $templateVersion := $template.version | default 1 | toString }}
+{{- $vmDeployLocalID := include "sfs-kaas.getUUIDv5" (dict "NS" $projectID "NAME" (printf "%s-%s" $preID $poolName)) -}}
+{{- $vmDeployID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $vmDeployLocalID) -}}
+{{- $templateName := printf "%s-%s-%s-%s" $preID $poolName $kubeVersion $templateVersion }}
+{{- $templateID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $templateName) }}
+
+---
+# CRD: https://github.com/kubernetes-sigs/cluster-api/blob/main/bootstrap/kubeadm/config/crd/bases/bootstrap.cluster.x-k8s.io_kubeadmconfigtemplates.yaml
+
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta2
+kind: KubeadmConfigTemplate
+metadata:
+  name: {{ $vmDeployID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $vmDeployID }}
+    superphenix.net/resourceLocalID: {{ $vmDeployLocalID }}
+    superphenix.net/resourceName: {{ printf "%s-%s" $preID $poolName }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "sfs-kaas.labels" $ | nindent 8 }}
+        superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+        superphenix.net/resourceLocalID: {{ $preID | quote }}
+        superphenix.net/resourceName: {{ $cluster.name | quote }}
+    spec:
+      bootCommands:
+        - ip link add api-proxy type dummy; ip addr add 10.96.0.1/32 dev api-proxy
+      preKubeadmCommands:
+        - mkdir /usr/local/kaas
+        - cp /run/kubeadm/kubeadm-join-config.yaml /usr/local/kaas/kubeadm-join-config.yaml
+      postKubeadmCommands:
+        - while [ ! -f /run/cluster-api/bootstrap-success.complete ]; do if kubeadm join --config /run/kubeadm/kubeadm-join-config.yaml; then echo success > /run/cluster-api/bootstrap-success.complete; touch /usr/local/kaas/bootstrap-success.complete; else sleep 180; fi; done
+      files:
+        # Naming convention is kubeletconfiguration{suffix}+{patchtype}.json where {suffix} is a string and {patchtype} is one of: strategic, merge, json.
+        # {suffix} determines the order of the patch files. The patches are applied in the alpha-numerical order of the {suffix}.
+        - path: /etc/kubernetes/patches/kubeletconfiguration0+strategic.json
+          owner: "root:root"
+          permissions: "0644"
+          content: |
+            {
+              "apiVersion": "kubelet.config.k8s.io/v1beta1",
+              "kind": "KubeletConfiguration",
+              "serializeImagePulls": false,
+              "maxParallelImagePulls": 3
+            }
+        - path: /etc/cron.d/k8s-join-post-reboot
+          owner: "root:root"
+          permissions: "0644"
+          content: "@reboot root export PATH=$PATH:/usr/sbin; while [ ! -f /usr/local/kaas/bootstrap-success.complete ]; do if kubeadm join --config /usr/local/kaas/kubeadm-join-config.yaml; then touch /usr/local/kaas/bootstrap-success.complete; else sleep 180; fi; done"
+        - path: /etc/haproxy/haproxy.cfg
+          owner: "root:root"
+          permissions: "0644"
+          content: |
+            global
+              maxconn 4000
+              ssl-server-verify none
+              hard-stop-after 1s
+              log stderr format raw local0 debug
+            resolvers default
+              nameserver cloudflare 1.1.1.1:53
+              nameserver cloudflare2 1.0.0.1:53
+              accepted_payload_size 8192
+            defaults
+              mode tcp
+              timeout client 60m
+              timeout server 60m
+              timeout connect 5s
+              # IPLB Client timeout 180s - Enable TCP_KEEPALIVE
+              # To keep 6000sec of inactivity idle+cnt*intvl
+              option srvtcpka
+              srvtcpka-idle 150
+              srvtcpka-cnt 23
+              srvtcpka-intvl 150
+            frontend healthz
+              mode http
+              bind "127.0.0.1:8134"
+              monitor-uri /healthz
+            frontend nodes
+              log global
+              bind "10.96.0.1":"{{ $controlPlaneDefaults.network.apiServer.port }}"
+              default_backend controlplane
+            frontend konnectivity-agent
+              log global
+              bind "10.96.0.1":"{{ $controlPlaneDefaults.network.konnectivity.port }}"
+              default_backend konnectivity-server
+            backend controlplane
+              option httpchk GET /readyz
+              server-template az "{{ $azCount }}" "{{ $azQueryUrl }}":"{{ $controlPlaneDefaults.network.apiServer.proxyPort }}" ssl sni str("{{ $fqdn }}") resolvers default check port "{{ $controlPlaneDefaults.network.apiServer.port }}" check-ssl check-sni "{{ $fqdn }}"
+            backend konnectivity-server
+              option httpchk GET /readyz
+              server-template az "{{ $azCount }}" "{{ $azQueryUrl }}":"{{ $controlPlaneDefaults.network.konnectivity.port }}" ssl sni str("{{ $fqdn }}") resolvers default check port "{{ $controlPlaneDefaults.network.apiServer.port }}" check-ssl check-sni "{{ $fqdn }}"
+      joinConfiguration:
+        discovery:
+          bootstrapToken:
+            apiServerEndpoint: "10.96.0.1:{{ $controlPlaneDefaults.network.apiServer.port }}"
+        patches:
+          directory: /etc/kubernetes/patches
+        nodeRegistration:
+          {{- if $template.taints }}
+          taints:
+            {{- $template.taints | toYaml | nindent 12 }}
+          {{- end }}
+
+---
+# CRD: https://github.com/kubernetes-sigs/cluster-api-provider-kubevirt/blob/main/config/crd/bases/infrastructure.cluster.x-k8s.io_kubevirtmachinetemplates.yaml
+
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: KubevirtMachineTemplate
+metadata:
+  name: {{ $templateID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $templateID }}
+    superphenix.net/resourceLocalID: {{ $templateName }}
+    superphenix.net/resourceName: {{ $templateName }}
+spec:
+  template:
+    spec:
+      virtualMachineBootstrapCheck:
+        checkStrategy: none
+      virtualMachineTemplate:
+        metadata:
+          labels:
+            {{- include "sfs-kaas.labels" $ | nindent 12 }}
+            {{- with $template.labels }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            superphenix.net/resourceEffectiveID: {{ $templateID }}
+            superphenix.net/resourceLocalID: {{ $templateName }}
+            superphenix.net/resourceName: {{ $templateName }}
+            superphenix.net/generated: "true"
+            superphenix.net/workloadClass: virtualmachine
+            superphenix.net/vmPool: {{ $poolName | quote }}
+        spec:
+          preference:
+            kind: VirtualMachineClusterPreference
+            name: linux
+          runStrategy: {{ $template.runStrategy | default "RerunOnFailure" }}
+          template:
+            metadata:
+              annotations:
+                kubevirt.io/allow-pod-bridge-network-live-migration: "true"
+                {{- range $template.interfaces }}
+                {{- $subnetID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" .subnet) }}
+                {{ printf "%s.%s.ovn.kubernetes.io/allow_live_migration: 'true'" $subnetID $.Release.Namespace }}
+                {{- end }}
+              labels:
+                {{- include "sfs-kaas.labels" $ | nindent 16 }}
+                {{- with $template.labels }}
+                {{- . | toYaml | nindent 16 }}
+                {{- end }}
+                superphenix.net/resourceEffectiveID: {{ $templateID }}
+                superphenix.net/resourceLocalID: {{ $templateName }}
+                superphenix.net/resourceName: {{ $templateName }}
+                superphenix.net/generated: "true"
+                superphenix.net/workloadClass: virtualmachine
+                superphenix.net/vmPool: {{ $poolName | quote }}
+            spec:
+              affinity:
+                podAntiAffinity:
+                  preferredDuringSchedulingIgnoredDuringExecution:
+                    - podAffinityTerm:
+                        topologyKey: kubernetes.io/hostname
+                        labelSelector:
+                          matchLabels:
+                            capk.cluster.x-k8s.io/kubevirt-machine-namespace: {{ $.Release.Namespace }}
+                      weight: 1
+              architecture: amd64
+              domain:
+                cpu:
+                  sockets: 1
+                  cores: {{ $template.cores | default 1 }}
+                  threads: 1
+                memory:
+                  guest: {{ $template.memory | default "2Gi" }}
+                devices:
+                  interfaces:
+                  {{- range $i, $if := $template.interfaces }}
+                    - name: {{ printf "interface-%d" $i }}
+                      state: up
+                      binding:
+                        name: managedtap
+                  {{- end }}
+                  disks:
+                    - name: boot-disk
+                      disk: {}
+                      errorPolicy: "report"
+                  {{- range $additionalDisks }}
+                    - name: {{ .name }}
+                      disk:
+                        {{- with .bus}}
+                        bus: {{ . | quote }}
+                        {{- end }}
+                      errorPolicy: "report"
+                  {{- end }}
+              volumes:
+                - name: boot-disk
+                  dataVolume:
+                    name: boot-disk
+              {{- range $additionalDisks }}
+                - name: {{ .name }}
+                  dataVolume:
+                    name: {{ .name }}
+              {{- end }}
+              networks:
+              {{- range $i, $if := $template.interfaces }}
+              {{- $subnetID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $if.subnet) }}
+                - name: {{ printf "interface-%d" $i }}
+                  multus:
+                    {{- if eq $i 0 }}
+                    default: true
+                    {{- end }}
+                    networkName: {{ $.Release.Namespace }}/{{ $subnetID }}
+              {{- end }}
+              evictionStrategy: External # required for capk
+          dataVolumeTemplates:
+            {{- $class := (required "Must provide a storage class" $template.bootDisk.storageClassName) }}
+            {{- $storageClass := get $.Values.storageClassMapping $class }}
+            - metadata:
+                name: boot-disk
+                annotations:
+                  # We need to use a specialized network that is not restricted by client policies or lack of connectivity
+                  v1.multus-cni.io/default-network: kube-system/system-isolated-egress
+                labels:
+                  {{- include "sfs-kaas.labels" $ | nindent 18 }}
+                  superphenix.net/resourceEffectiveID: {{ $templateID }}
+                  superphenix.net/resourceLocalID: {{ $templateName }}
+                  superphenix.net/resourceName: {{ $templateName }}
+                  superphenix.net/generated: "true"
+                  superphenix.net/ignoreNetworkPolicies: "true"
+                  superphenix.net/workloadClass: datavolume-importer
+              spec:
+                storage:
+                  volumeMode: Block
+                  accessModes:
+                    - ReadWriteMany
+                  resources:
+                    requests:
+                      storage: {{ $template.bootDisk.storage | default "40Gi" }}
+                  storageClassName: {{ required "No storageclass found" $storageClass | quote }}
+                source:
+                  registry:
+                    url: "{{ $imgUrl }}:{{ $imageTag }}"
+          # additional disks defined by user
+          {{- range $preID, $disk := $additionalDisks }}
+            {{- $class := (required "Must provide a storage class" $disk.storageClassName) }}
+            {{- $storageClass := get $.Values.storageClassMapping $class }}
+            - metadata:
+                name: {{ $disk.name }}
+                annotations:
+                  # We need to use a specialized network that is not restricted by client policies or lack of connectivity
+                  v1.multus-cni.io/default-network: kube-system/system-isolated-egress
+                labels:
+                  {{- include "sfs-kaas.labels" $ | nindent 18 }}
+                  superphenix.net/resourceEffectiveID: {{ $templateID }}
+                  superphenix.net/resourceLocalID: {{ $templateName }}
+                  superphenix.net/resourceName: {{ $templateName }}
+                  superphenix.net/generated: "true"
+                  superphenix.net/ignoreNetworkPolicies: "true"
+                  superphenix.net/workloadClass: datavolume-importer
+              spec:
+                storage:
+                  volumeMode: Block
+                  accessModes:
+                    - ReadWriteMany
+                  resources:
+                    requests:
+                      storage: {{ $disk.storage | default "10Gi" }}
+                  storageClassName: {{ required "No storageclass found" $storageClass | quote }}
+                source:
+                  {{- .source | toYaml | nindent 18 }}
+          {{- end }}
+
+---
+#CRD: https://github.com/kubernetes-sigs/cluster-api/blob/main/config/crd/bases/cluster.x-k8s.io_machinedeployments.yaml
+
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: MachineDeployment
+metadata:
+  name: {{ $vmDeployID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $vmDeployID }}
+    superphenix.net/resourceLocalID: {{ $vmDeployLocalID }}
+    superphenix.net/resourceName: {{ printf "%s-%s" $preID $poolName }}
+spec:
+  clusterName: {{ $clusterID | quote }}
+  replicas: {{ $pool.deployment.replicas | required "deployment.replicas must be set for nodePools." }}
+  rollout:
+    strategy:
+      rollingUpdate:
+        # no default to allow for 0 value
+        maxSurge: {{ $pool.deployment.maxSurge }}             # CRD default: 1
+        maxUnavailable: {{ $pool.deployment.maxUnavailable }} # CRD default: 0
+  template:
+    metadata:
+      labels:
+        {{- include "sfs-kaas.labels" $ | nindent 8 }}
+        superphenix.net/resourceEffectiveID: {{ $vmDeployID }}
+        superphenix.net/resourceLocalID: {{ $vmDeployLocalID }}
+        superphenix.net/resourceName: {{ printf "%s-%s" $preID $poolName }}
+        superphenix.net/generated: "true"
+        # The follwoing labels will be applied on tenant cluster nodes
+        node-role.kubernetes.io/{{ $pool.deployment.nodeRole | default $poolName }}: {{ $pool.deployment.nodeRole | default $poolName }}
+    spec:
+      clusterName: {{ $clusterID | quote }}
+      bootstrap:
+        configRef:
+          apiGroup: bootstrap.cluster.x-k8s.io
+          kind: KubeadmConfigTemplate
+          name: {{ $vmDeployID }}
+      infrastructureRef:
+        apiGroup: infrastructure.cluster.x-k8s.io
+        kind: KubevirtMachineTemplate
+        name: {{ $templateID | quote }}
+      version: {{ $kubeVersion | quote }}
+      deletion:
+        nodeDrainTimeoutSeconds: 3600
+{{- end }}
+
+{{- end }}
+{{- end }}

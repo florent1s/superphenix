@@ -1,0 +1,183 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $controlPlane := $cluster.controlPlane -}}
+{{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+{{- $fqdn := ($controlPlane.network).fqdn | default (include "sfs-kaas.fqdn" (dict "name" $clusterID "az" $.Values.location "domain" $.Values.domain)) }}
+{{- $controlPlaneService := printf "%s" $clusterID }}
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ $clusterID | quote }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+spec:
+  gatewayClassName: {{ $controlPlaneDefaults.network.gatewayClass | quote }}
+  listeners:
+    - name: proxy
+      protocol: TLS
+      port: {{ $controlPlaneDefaults.network.apiServer.proxyPort }}
+      hostname: {{ $fqdn | quote }}
+      tls:
+        mode: "Terminate"
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: gw-crt-{{ $clusterID }}
+      allowedRoutes:
+        kinds:
+          - kind: TLSRoute
+            group: gateway.networking.k8s.io
+        namespaces:
+          from: Same
+    - name: https-fqdn
+      protocol: TLS
+      port: {{ $controlPlaneDefaults.network.apiServer.port }}
+      hostname: {{ $fqdn | quote }}
+      tls:
+        mode: "Passthrough"
+      allowedRoutes:
+        kinds:
+          - kind: TLSRoute
+            group: gateway.networking.k8s.io
+        namespaces:
+          from: Same
+    - name: konnectivity
+      protocol: TLS
+      port: {{ $controlPlaneDefaults.network.konnectivity.port }}
+      hostname: {{ $fqdn | quote }}
+      tls:
+        mode: "Terminate"
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: gw-crt-{{ $clusterID }}
+      allowedRoutes:
+        kinds:
+          - kind: TLSRoute
+            group: gateway.networking.k8s.io
+        namespaces:
+          from: Same
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gw-crt-{{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+spec:
+  secretName: gw-crt-{{ $clusterID }}
+  secretTemplate:
+    labels:
+      {{- include "sfs-kaas.labels" $ | nindent 6 }}
+      superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+      superphenix.net/resourceLocalID: {{ $preID | quote }}
+      superphenix.net/resourceName: {{ $cluster.name | quote }}
+  duration: 1000h0m0s
+  renewBefore: 96h0m0s
+  dnsNames:
+  - {{ $fqdn | quote }}
+  issuerRef:
+    kind: ClusterIssuer
+    name: kaas-selfsigned-issuer
+
+---
+{{- $localID := printf "proxy.%s" $preID }}
+{{- $effectiveID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $localID) }}
+
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $localID | quote }}
+spec:
+  hostnames:
+    - {{ $fqdn | quote }}
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ $clusterID | quote }}
+    sectionName: proxy
+  rules:
+  - backendRefs:
+    - group: ''
+      kind: Service
+      name: {{ $controlPlaneService }}
+      port: {{ $controlPlaneDefaults.network.apiServer.port }}
+      weight: 1
+
+---
+{{- $localID := printf "fqdn.%s" $preID }}
+{{- $effectiveID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $localID) }}
+
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $localID | quote }}
+spec:
+  hostnames:
+    - {{ $fqdn | quote }}
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ $clusterID | quote }}
+    sectionName: https-fqdn
+  rules:
+  - backendRefs:
+    - group: ''
+      kind: Service
+      name: {{ $controlPlaneService }}
+      port: {{ $controlPlaneDefaults.network.apiServer.port }}
+      weight: 1
+
+---
+{{- $localID := printf "konnectivity.%s" $preID }}
+{{- $effectiveID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $localID) }}
+
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: {{ $effectiveID | quote }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
+    superphenix.net/resourceLocalID: {{ $localID | quote }}
+    superphenix.net/resourceName: {{ $localID | quote }}
+spec:
+  hostnames:
+    - {{ $fqdn | quote }}
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ $clusterID | quote }}
+    sectionName: konnectivity
+  rules:
+  - backendRefs:
+    - group: ''
+      kind: Service
+      name: {{ $controlPlaneService }}
+      port: {{ $controlPlaneDefaults.network.konnectivity.port }}
+      weight: 1
+
+{{- end }}
+{{- end }}

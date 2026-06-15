@@ -1,0 +1,73 @@
+{{- range $preID, $cluster := .Values.clusters }}
+{{- if eq $cluster.location $.Values.location }}
+
+{{- $projectID := $.Values.projectID -}}
+{{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
+
+---
+# === Add SPX labels to generated secrets
+# Required for resource selection (backups)
+apiVersion: admissionregistration.k8s.io/v1alpha1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: {{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  matchConstraints:
+    matchPolicy: Equivalent
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: spx-{{ $projectID }}
+    objectSelector: {}
+    resourceRules:
+    - apiGroups:   [""]
+      apiVersions: ["v1"]
+      operations:  ["CREATE","UPDATE"]
+      resources:   ["secrets"]
+      scope: '*'
+  matchConditions:
+    - name: match-kamaji-or-capi
+      expression: 'has(object.metadata.labels) && ("kamaji.clastix.io/name" in object.metadata.labels && object.metadata.labels["kamaji.clastix.io/name"].matches("{{ $clusterID }}") || "cluster.x-k8s.io/cluster-name" in object.metadata.labels && object.metadata.labels["cluster.x-k8s.io/cluster-name"].matches("{{ $clusterID }}"))'
+  failurePolicy: Fail
+  reinvocationPolicy: IfNeeded
+  mutations:
+    - patchType: "JSONPatch"
+      jsonPatch:
+        expression: >
+          [
+            JSONPatch{
+              op: "add",
+              path: "/metadata/labels/" + jsonpatch.escapeKey("superphenix.net/organizationID"),
+              value: "spx-{{ $.Values.organizationID }}"
+            },
+            JSONPatch{
+              op: "add",
+              path: "/metadata/labels/" + jsonpatch.escapeKey("superphenix.net/projectID"),
+              value: "spx-{{ $projectID }}"
+            }
+          ]
+
+---
+# === Binding for the MutatingAdmissionPolicy above
+apiVersion: admissionregistration.k8s.io/v1alpha1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: {{ $clusterID }}
+  labels:
+    {{- include "sfs-kaas.labels" $ | nindent 4 }}
+    superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
+    superphenix.net/resourceLocalID: {{ $preID | quote }}
+    superphenix.net/resourceName: {{ $cluster.name | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  policyName: {{ $clusterID }}
+
+{{- end }}
+{{- end }}
