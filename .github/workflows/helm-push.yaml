@@ -79,15 +79,20 @@ jobs:
               helm dependency update "$chart_dir"
             fi
 
-            # Determine the version to push
+            # Determine SPX-VERSION
             if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
-              VERSION="${{ github.ref_name }}"
+              SPX_VERSION="${{ github.ref_name }}"
               # Remove leading 'v' if present for Helm versioning
-              VERSION="${VERSION#v}"
-            elif [[ "$CHART_VERSION_IN_FILE" == "0.0.0" ]]; then
-              VERSION="0.0.0-latest"
+              SPX_VERSION="${SPX_VERSION#v}"
             else
-              VERSION="$CHART_VERSION_IN_FILE"
+              SPX_VERSION="0.0.0"
+            fi
+
+            # Determine the final version to push
+            if [[ "$CHART_VERSION_IN_FILE" == "0.0.0" ]]; then
+              VERSION="$SPX_VERSION"
+            else
+              VERSION="${CHART_VERSION_IN_FILE}"
             fi
 
             echo "Pushing $CHART_NAME with version $VERSION"

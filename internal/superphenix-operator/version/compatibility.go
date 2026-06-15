@@ -41,9 +41,9 @@ var (
 
 // IsManagementUpgradeSupported checks if upgrading management from current to target version is supported.
 // Upgrades are supported if the current version is at least MinManagementVersionBeforeUpgrade.
-// Special versions like "0.0.0-latest" or empty versions bypass the check.
+// Special versions like "0.0.0" or empty versions bypass the check.
 func IsManagementUpgradeSupported(current, target string) error {
-	if current == "" || current == "0.0.0-latest" || target == "0.0.0-latest" {
+	if current == "" || current == "0.0.0" || target == "0.0.0" {
 		return nil
 	}
 
@@ -53,14 +53,14 @@ func IsManagementUpgradeSupported(current, target string) error {
 
 // IsClusterUpgradeSupported checks if upgrading a cluster from current to target is supported.
 // Upgrades are supported if both the current and target versions are within the supported range [MinClusterVersion, MaxClusterVersion[.
-// Special versions like "0.0.0-latest" or empty versions bypass the check.
+// Special versions like "0.0.0" or empty versions bypass the check.
 func IsClusterUpgradeSupported(current, target string) error {
 	if current == "" || target == "" || current == target {
 		return nil
 	}
 
 	// Special case for latest
-	if target == "0.0.0-latest" {
+	if target == "0.0.0" {
 		return nil
 	}
 
@@ -82,8 +82,8 @@ func IsClusterCompatibleWithManagement(clusterVersion, managementVersion string)
 
 	constraintString := fmt.Sprintf(">= %s, < %s", MinClusterVersion, MaxClusterVersion)
 
-	if clusterVersion == "" || clusterVersion == "0.0.0-latest" {
-		if clusterVersion == "0.0.0-latest" {
+	if clusterVersion == "" || clusterVersion == "0.0.0" {
+		if clusterVersion == "0.0.0" {
 			return checkConstraint("0.0.0", clusterVersion, managementVersion, constraintString, "cluster compatibility")
 		}
 		return nil

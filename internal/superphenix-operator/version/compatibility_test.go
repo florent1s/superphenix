@@ -21,7 +21,7 @@ func TestIsManagementUpgradeSupported(t *testing.T) {
 		wantErr bool
 	}{
 		{"First install", "", "1.1.0", false},
-		{"Latest target", "1.0.0", "0.0.0-latest", false},
+		{"Latest target", "1.0.0", "0.0.0", false},
 		{"Supported upgrade", "1.0.0", "1.1.0", false},
 		{"Unsupported upgrade below min", "0.9.0", "1.1.0", true},
 		{"Unsupported upgrade to baseline", "0.9.0", "1.0.0", true},
@@ -58,7 +58,7 @@ func TestIsClusterUpgradeSupported(t *testing.T) {
 		wantErr bool
 	}{
 		{"Same version", "1.1.0", "1.1.0", false},
-		{"Latest target", "1.1.0", "0.0.0-latest", false},
+		{"Latest target", "1.1.0", "0.0.0", false},
 		{"Supported upgrade", "1.0.0", "1.1.0", false},
 		{"Unsupported upgrade to max", "1.1.0", "2.0.0", true},
 		{"Unsupported upgrade below min", "0.9.0", "1.1.0", true},
@@ -101,9 +101,9 @@ func TestIsClusterCompatibleWithManagement(t *testing.T) {
 		{"Incompatible version (at max)", "2.0.0", "1.0.0", true},
 		{"Incompatible version (below min)", "0.9.0", "1.0.0", true},
 		{"Incompatible version (above max)", "2.1.0", "1.0.0", true},
-		{"Latest cluster incompatible", "0.0.0-latest", "1.0.0", true},
+		{"Latest cluster incompatible", "0.0.0", "1.0.0", true},
 		{"Empty management", "1.0.0", "", false},
-		{"Latest management", "1.1.0", "0.0.0-latest", false},
+		{"Latest management", "1.1.0", "0.0.0", false},
 		{"Unknown management version (still works)", "1.0.0", "9.9.9", false},
 	}
 

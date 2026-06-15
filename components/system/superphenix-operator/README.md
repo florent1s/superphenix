@@ -16,11 +16,11 @@ A Helm chart for Superphenix Operator
 | config.clustersConfigMap.name | string | `"superphenix-clusters-config"` |  |
 | config.isManagementCluster | bool | `true` |  |
 | config.management.chart.url | string | `"ghcr.io/super-phenix/charts"` |  |
-| config.management.chart.version | string | `"0.0.0-latest"` |  |
+| config.management.chart.version | string | `"0.0.0"` |  |
 | config.management.values | object | `{}` |  |
 | config.system.chartName | string | `"superphenix-system"` |  |
 | config.system.repoURL | string | `"ghcr.io/super-phenix/charts"` |  |
-| config.system.version | string | `"0.0.0-latest"` |  |
+| config.system.version | string | `"0.0.0"` |  |
 | config.valuesConfigMap.name | string | `"superphenix-mgmt-values"` |  |
 | fullnameOverride | string | `""` |  |
 | health.probeBindAddress | string | `":8081"` |  |

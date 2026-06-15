@@ -71,7 +71,7 @@ config:
   management:
     chart:
       url: ghcr.io/super-phenix/charts
-      version: 0.0.0-latest
+      version: 0.0.0
     # Arbitrary Helm values merged under the "superphenix" ConfigMap key.
     values: {}
 
@@ -79,7 +79,7 @@ config:
   system:
     repoURL: ghcr.io/super-phenix/charts
     chartName: superphenix-system
-    version: 0.0.0-latest
+    version: 0.0.0
 
 # Metrics and Health
 metrics:
