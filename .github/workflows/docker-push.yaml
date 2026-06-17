@@ -9,6 +9,8 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+*'
   # Allow manual trigger for testing
   workflow_dispatch:
+env:
+  GIT_DEPTH: 1
 
 jobs:
   push-images:
@@ -21,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: 1
+          fetch-depth: ${{ env.GIT_DEPTH }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -50,7 +52,24 @@ jobs:
               ALL_CHANGED=true
             else
               echo "Detecting changes between $BEFORE and ${{ github.sha }}"
-              CHANGED_FILES=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
+              
+              # Check if BEFORE commit exists, fetch if not
+              if ! git rev-parse --quiet --verify "${BEFORE}^{commit}" >/dev/null 2>&1; then
+                echo "Commit $BEFORE not found locally. Attempting to fetch..."
+                git fetch origin "$BEFORE" --depth 1 --no-tags || git fetch origin "$BEFORE" --no-tags || true
+              fi
+
+              if git rev-parse --quiet --verify "${BEFORE}^{commit}" >/dev/null 2>&1; then
+                # Use || echo "DIFF_FAILED" to avoid exiting if git diff fails under set -e
+                CHANGED_FILES=$(git diff --name-only "$BEFORE" "${{ github.sha }}" || echo "DIFF_FAILED")
+                if [[ "$CHANGED_FILES" == "DIFF_FAILED" ]]; then
+                  echo "Warning: git diff failed. Processing all components."
+                  ALL_CHANGED=true
+                fi
+              else
+                echo "Warning: Commit $BEFORE not found. Processing all components."
+                ALL_CHANGED=true
+              fi
             fi
           fi
 
