@@ -1,0 +1,7 @@
+# -- Superphenix Console configuration
+superphenix-console:
+  enabled: true
+
+# -- Talos Operator configuration
+talos-operator:
+  enabled: false

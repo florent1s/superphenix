@@ -1,0 +1,15 @@
+apiVersion: v2
+name: superphenix-management
+description: A Helm chart for Superphenix management components
+type: application
+version: 0.0.0
+appVersion: "0.0.0"
+dependencies:
+  - name: superphenix-console
+    version: 0.0.0
+    repository: "oci://ghcr.io/super-phenix/charts"
+    condition: superphenix-console.enabled
+  - name: talos-operator
+    version: 0.0.0
+    repository: "oci://ghcr.io/super-phenix/charts"
+    condition: talos-operator.enabled
