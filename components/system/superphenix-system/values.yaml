@@ -396,7 +396,7 @@ apps:
       prune: true
       syncOptions: {}
     namespace: "kubevirt-system"
-    repoURL: "xxx"
+    repoURL: "https://github.com/super-phenix/kubevirt-manifests.git"
     targetRevision: "HEAD"
     path: "v1.7.0/"
     directory:
