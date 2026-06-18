@@ -37,18 +37,36 @@ spec:
             - --health-probe-bind-address={{ .Values.health.probeBindAddress }}
             - --metrics-bind-address={{ .Values.metrics.bindAddress }}
             - --metrics-secure={{ .Values.metrics.secure }}
+            {{- if .Values.config.argocd.chart }}
+            {{- if .Values.config.argocd.chart.url }}
             - --argocd-chart-url={{ .Values.config.argocd.chart.url }}
+            {{- end }}
+            {{- if .Values.config.argocd.chart.version }}
             - --argocd-chart-version={{ .Values.config.argocd.chart.version }}
+            {{- end }}
+            {{- end }}
             - --values-configmap-name={{ .Values.config.valuesConfigMap.name }}
             - --clusters-configmap-name={{ .Values.config.clustersConfigMap.name }}
             - --operator-namespace=$(OPERATOR_NAMESPACE)
             - --argocd-default-config=/etc/superphenix/argocd/default/values.yaml
             - --argocd-ha-config=/etc/superphenix/argocd/ha/values.yaml
+            {{- if .Values.config.management.chart }}
+            {{- if .Values.config.management.chart.url }}
             - --management-chart-url={{ .Values.config.management.chart.url }}
+            {{- end }}
+            {{- if .Values.config.management.chart.version }}
             - --management-chart-version={{ .Values.config.management.chart.version }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.config.system.repoURL }}
             - --default-repo-url={{ .Values.config.system.repoURL }}
+            {{- end }}
+            {{- if .Values.config.system.chartName }}
             - --default-chart-name={{ .Values.config.system.chartName }}
+            {{- end }}
+            {{- if .Values.config.system.version }}
             - --default-version={{ .Values.config.system.version }}
+            {{- end }}
             {{- if .Values.config.argocd.ha.enabled }}
             - --ha-enabled=true
             {{- end }}
