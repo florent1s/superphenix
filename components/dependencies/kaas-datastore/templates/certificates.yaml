@@ -37,6 +37,10 @@ spec:
     - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
     - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
   {{- end }}
+    - "{{ printf "*.%s-headless.%s.svc" $dataStoreID $.Release.Namespace }}"
+    - "{{ printf "*.%s-headless.%s.svc.%s" $dataStoreID $.Release.Namespace $clusterDomain }}"
+    - "{{ printf "*.%s.%s.svc" $dataStoreID $.Release.Namespace }}"
+    - "{{ printf "*.%s.%s.svc.%s" $dataStoreID $.Release.Namespace $clusterDomain }}"
     - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc.{{ $clusterDomain }}"
     - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc"
     - "{{ $dataStoreID }}"
@@ -74,6 +78,10 @@ spec:
     - {{ printf "%s-%d.%s-headless.%s.svc" $dataStoreID $count $dataStoreID $.Release.Namespace }}
     - {{ printf "%s-%d.%s-headless.%s.svc.%s" $dataStoreID $count $dataStoreID $.Release.Namespace $clusterDomain }}
   {{- end }}
+    - "{{ printf "*.%s-headless.%s.svc" $dataStoreID $.Release.Namespace }}"
+    - "{{ printf "*.%s-headless.%s.svc.%s" $dataStoreID $.Release.Namespace $clusterDomain }}"
+    - "{{ printf "*.%s.%s.svc" $dataStoreID $.Release.Namespace }}"
+    - "{{ printf "*.%s.%s.svc.%s" $dataStoreID $.Release.Namespace $clusterDomain }}"
     - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc.{{ $clusterDomain }}"
     - "{{ $dataStoreID }}.{{ $.Release.Namespace }}.svc"
     - "{{ $dataStoreID }}"
