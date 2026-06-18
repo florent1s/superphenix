@@ -64,6 +64,19 @@ data:
         .sidebar {
           background-color: #000;
         }
+        .sidebar__logo img {
+            display: none;
+        }
+        .sidebar__version {
+            display: none;
+        }
+        .sidebar__logo {
+            background: url(https://docs.superphenix.net/assets/SPX_white.svg);
+            background-size: 80%;
+            background-repeat: no-repeat;
+            padding-left: 1rem !important;
+            margin-left: 10px !important;
+        }
 
     controller:
       metrics:
