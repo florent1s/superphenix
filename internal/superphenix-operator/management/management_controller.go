@@ -116,7 +116,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 		return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
 	}
 
-	// Reconcile the management stack (console, auth, api, ...).
+	// Reconcile the management stack (console, auth, API, ...).
 	if err := r.reconcileManagementStack(ctx); err != nil {
 		log.Error(err, "Management stack reconciliation failed")
 		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
@@ -315,7 +315,7 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 	}
 
 	if isHelmReleaseInstalled(actionConfig, ArgoCDApp) {
-		log.Info("ArgoCD Helm release already exists, skipping initial install")
+		log.Info("ArgoCD Helm release already exists, skipping initial install (delete the helm release secret to override)")
 		return nil
 	}
 

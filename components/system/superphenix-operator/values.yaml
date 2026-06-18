@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: harbor.agc.dpk-agc-cl04.agoracalyce.net/superphenix-operator/superphenix-operator
+  repository: ghcr.io/super-phenix/superphenix-operator
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
@@ -91,3 +91,68 @@ health:
 
 leaderElection:
   enabled: false
+
+# Superphenix clusters to be managed by this operator.
+clusters: {}
+#  example-cluster:
+#    # DeploymentTopology defines whether the cluster is part of an hyperconverged or decoupled deployment.
+#    # Accepted values: hyperconverged, decoupled
+#    deploymentTopology: Hyperconverged
+#
+#    # Type specifies the cluster type (Storage or Virtualization) when DeploymentTopology is Decoupled.
+#    # type: Storage
+#
+#    # Region is the geographic region where this cluster is located.
+#    region: us
+#
+#    # AvailabilityZone is the availability zone identifier within the region.
+#    availabilityZone: east-1
+#
+#    # Version is the Superphenix version to deploy for this cluster.
+#    # version: v1.0.0
+#
+#    # RepoURL is the URL of the repository where the Superphenix system chart is located.
+#    # repoURL: ghcr.io/super-phenix/charts
+#
+#    # ChartName is the name of the Superphenix system chart.
+#    # chartName: superphenix-system
+#
+#    # SystemConfiguration is a YAML dict of values that will be passed to the system configuration chart.
+#    # systemConfiguration:
+#    #  network:
+#    #    mtu: 1500
+#
+#    # Connection defines the parameters to connect to the remote cluster.
+#    connection:
+#      # Mode specifies the connection mode (Remote or Local).
+#      # Set to Local if the operator will deploy Superphenix on the cluster where the operator is installed.
+#      # Accepted values: Remote, Local
+#      mode: Local
+#      # URL is the address of the remote cluster API server (required if mode is Remote).
+#      # url: https://remote-cluster-api:6443
+#      # SecretRef is a reference to a secret containing the connection credentials (required if mode is Remote).
+#      # secretRef:
+#      #   name: remote-cluster-creds
+#      #   namespace: superphenix
+#
+#      # Credentials allows to pass connection credentials directly through the chart.
+#      # If provided, a secret will be automatically created and referenced.
+#      # credentials:
+#      #   bearerToken: ""
+#      #   caData: ""
+#      #   certData: ""
+#      #   keyData: ""
+#      #   username: ""
+#      #   password: ""
+#      #   insecure: false
+#      #   serverName: ""
+#
+#    # PauseSync allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
+#    # pauseSync: false
+#
+#    # Manual allows to disable the autosync of all applications on this cluster.
+#    # manual: false
+#
+#    # Optional labels and annotations for the Cluster resource
+#    # labels: {}
+#    # annotations: {}

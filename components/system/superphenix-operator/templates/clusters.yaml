@@ -1,0 +1,62 @@
+{{- range $name, $cluster := .Values.clusters }}
+---
+apiVersion: operator.superphenix.net/v1alpha1
+kind: Cluster
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "superphenix-operator.labels" $ | nindent 4 }}
+    {{- with $cluster.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with $cluster.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  deploymentTopology: {{ $cluster.deploymentTopology | default "Hyperconverged" }}
+  {{- if eq $cluster.deploymentTopology "Decoupled" }}
+  type: {{ $cluster.type }}
+  {{- end }}
+  region: {{ $cluster.region }}
+  availabilityZone: {{ $cluster.availabilityZone }}
+  {{- if $cluster.version }}
+  version: {{ $cluster.version }}
+  {{- end }}
+  {{- if $cluster.repoURL }}
+  repoURL: {{ $cluster.repoURL }}
+  {{- end }}
+  {{- if $cluster.chartName }}
+  chartName: {{ $cluster.chartName }}
+  {{- end }}
+  {{- if $cluster.systemConfiguration }}
+  systemConfiguration:
+    {{- toYaml $cluster.systemConfiguration | nindent 4 }}
+  {{- end }}
+  connection:
+    {{- $connection := $cluster.connection | default (dict "mode" "Local") }}
+    mode: {{ $connection.mode | default "Local" }}
+    {{- if eq $connection.mode "Remote" }}
+    {{- if $connection.url }}
+    url: {{ $connection.url }}
+    {{- end }}
+    {{- if or $connection.secretRef $connection.credentials }}
+    secretRef:
+      {{- if $connection.secretRef }}
+      name: {{ $connection.secretRef.name }}
+      {{- if $connection.secretRef.namespace }}
+      namespace: {{ $connection.secretRef.namespace }}
+      {{- end }}
+      {{- else }}
+      name: {{ printf "%s-connection-creds" $name }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+  {{- if hasKey $cluster "pauseSync" }}
+  pauseSync: {{ $cluster.pauseSync }}
+  {{- end }}
+  {{- if hasKey $cluster "manual" }}
+  manual: {{ $cluster.manual }}
+  {{- end }}
+{{- end }}
