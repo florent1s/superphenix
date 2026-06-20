@@ -1029,6 +1029,7 @@ apps:
   tuned:
     enabled: false
     wave: "0"
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
       enabled: true
       selfHeal: true
