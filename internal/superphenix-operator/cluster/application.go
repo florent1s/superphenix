@@ -93,7 +93,7 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 
 	syncPolicy := map[string]interface{}{
 		"automated": map[string]interface{}{
-			"enabled":  !cluster.Spec.PauseSync,
+			"enabled":  !cluster.Spec.PauseSync && !cluster.Spec.Manual,
 			"prune":    true,
 			"selfHeal": true,
 		},
