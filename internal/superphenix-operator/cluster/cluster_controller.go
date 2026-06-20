@@ -53,6 +53,7 @@ type Reconciler struct {
 	DefaultChartName      string
 	DefaultVersion        string
 	SyncPeriod            time.Duration
+	SyncTimeout           time.Duration
 
 	// ArgoCDWatcher handles dynamic watching of ArgoCD Applications.
 	ArgoCDWatcher *argocd.Watcher
@@ -243,7 +244,7 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		return res, err
 	}
 
-	if !cluster.Spec.PauseSync {
+	if !cluster.Spec.PauseSync && !cluster.Spec.Manual {
 		// Periodically resync sub-applications to address drifts.
 		// We resync if:
 		// - There is no error (normal operation)
@@ -257,20 +258,8 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		}
 
 		if reconcileErr == nil || !ready {
-			// Check if we should sync based on the LastSync time
-			shouldSync := true
-			if cluster.Status.LastSync != nil {
-				if time.Since(cluster.Status.LastSync.Time) < r.SyncPeriod || cluster.Spec.Manual || cluster.Spec.PauseSync {
-					shouldSync = false
-					log.Info("Skipping periodic sync, last sync was recent", "lastSync", cluster.Status.LastSync.Time, "syncPeriod", r.SyncPeriod)
-				}
-			}
-
-			if shouldSync {
-				r.syncSubApplications(ctx, cluster)
-				// Update LastSync in status
+			if r.runPeriodicSync(ctx, cluster) {
 				now := metav1.Now()
-				// We need to patch the status again to persist LastSync
 				if _, err := r.syncStatus(ctx, cluster, app, k8sVersion, reconcileErr, &now); err != nil {
 					log.Error(err, "Failed to update LastSync in status")
 				}

@@ -917,7 +917,7 @@ apps:
     namespace: "kaas-datastore-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/kaas-datastore"
     path: "."
-    targetRevision: "0.1.1"
+    targetRevision: "0.2.2"
     helm:
       chart: "kaas-datastore"
       releaseName: "kaas-datastore"
