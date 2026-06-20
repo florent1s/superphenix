@@ -242,7 +242,7 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Data: map[string][]byte{
-					"bearerToken": []byte("c29tZS10b2tlbg=="), // base64 for "some-token"
+					"bearerToken": []byte("some-token"), // raw token
 				},
 			}
 			Expect(k8sClient.Create(ctx, newSecret)).To(Succeed())
@@ -289,8 +289,8 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Data: map[string][]byte{
-					"certData": []byte("Y2xpZW50LWNlcnQ="), // base64 for "client-cert"
-					"keyData":  []byte("Y2xpZW50LWtleQ=="), // base64 for "client-key"
+					"certData": []byte("client-cert"), // raw cert
+					"keyData":  []byte("client-key"),  // raw key
 				},
 			}
 			Expect(k8sClient.Create(ctx, certSecret)).To(Succeed())
@@ -323,8 +323,8 @@ var _ = Describe("Cluster Controller", func() {
 					Namespace: "default",
 				},
 				Data: map[string][]byte{
-					"bearerToken": []byte("c29tZS10b2tlbg=="), // base64 for "some-token"
-					"insecure":    []byte("dHJ1ZQ=="),         // base64 for "true"
+					"bearerToken": []byte("some-token"), // raw token
+					"insecure":    []byte("true"),         // raw boolean string
 				},
 			}
 			Expect(k8sClient.Create(ctx, insecureSecret)).To(Succeed())

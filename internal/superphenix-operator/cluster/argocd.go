@@ -126,18 +126,6 @@ func (r *Reconciler) extractConnectionData(secret *corev1.Secret) *connectionDat
 		tlsClientConfig: make(map[string]interface{}),
 	}
 
-	decode := func(b []byte) []byte {
-		s := strings.TrimSpace(string(b))
-		if s == "true" || s == "false" {
-			return []byte(s)
-		}
-		decoded, err := base64.StdEncoding.DecodeString(s)
-		if err != nil {
-			return b
-		}
-		return decoded
-	}
-
 	// Helper to get data from either Data or StringData
 	getData := func(key string) []byte {
 		if val, ok := secret.Data[key]; ok {
@@ -149,29 +137,37 @@ func (r *Reconciler) extractConnectionData(secret *corev1.Secret) *connectionDat
 		return nil
 	}
 
+	// Helper to get data as a trimmed string
+	getString := func(key string) string {
+		if val := getData(key); val != nil {
+			return strings.TrimSpace(string(val))
+		}
+		return ""
+	}
+
 	// Auth
-	if token := getData("bearerToken"); token != nil {
-		data.bearerToken = string(decode(token))
+	if token := getString("bearerToken"); token != "" {
+		data.bearerToken = token
 		data.hasAuth = true
 	}
-	if username := getData("username"); username != nil {
-		data.username = string(decode(username))
+	if username := getString("username"); username != "" {
+		data.username = username
 		data.hasAuth = true
 	}
-	if password := getData("password"); password != nil {
-		data.password = string(decode(password))
+	if password := getString("password"); password != "" {
+		data.password = password
 		data.hasAuth = true
 	}
 
 	// TLS
 	if caData := getData("caData"); caData != nil {
-		data.caData = decode(caData)
+		data.caData = caData
 		if len(data.caData) > 0 {
 			data.tlsClientConfig["caData"] = base64.StdEncoding.EncodeToString(data.caData)
 		}
 	}
 	if certData := getData("certData"); certData != nil {
-		data.certData = decode(certData)
+		data.certData = certData
 		if len(data.certData) > 0 {
 			data.tlsClientConfig["certData"] = base64.StdEncoding.EncodeToString(data.certData)
 		}
@@ -180,17 +176,17 @@ func (r *Reconciler) extractConnectionData(secret *corev1.Secret) *connectionDat
 		}
 	}
 	if keyData := getData("keyData"); keyData != nil {
-		data.keyData = decode(keyData)
+		data.keyData = keyData
 		if len(data.keyData) > 0 {
 			data.tlsClientConfig["keyData"] = base64.StdEncoding.EncodeToString(data.keyData)
 		}
 	}
-	if insecure := getData("insecure"); insecure != nil {
-		data.insecure = string(decode(insecure)) == "true"
+	if insecure := getString("insecure"); insecure != "" {
+		data.insecure = insecure == "true"
 		data.tlsClientConfig["insecure"] = data.insecure
 	}
-	if serverName := getData("serverName"); serverName != nil {
-		data.serverName = string(decode(serverName))
+	if serverName := getString("serverName"); serverName != "" {
+		data.serverName = serverName
 		data.tlsClientConfig["serverName"] = data.serverName
 	}
 
