@@ -398,7 +398,7 @@ apps:
     namespace: "kubevirt-system"
     repoURL: "https://github.com/super-phenix/kubevirt-manifests.git"
     targetRevision: "HEAD"
-    path: "v1.7.0/"
+    path: "v1.7.3/"
     directory:
       recurse: true
 
