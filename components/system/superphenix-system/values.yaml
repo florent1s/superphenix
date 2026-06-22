@@ -16,38 +16,6 @@ forceManual: false
 
 # -- "Per application" settings
 apps:
-  # YAML -- Pure YAML injected to the cluster from a Git repository
-  yaml:
-    enabled: false
-    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
-    automation:
-      enabled: true
-      selfHeal: true
-      prune: false
-      syncOptions: {}
-    namespace: "default"
-    repoURL: ""
-    path: ""
-    targetRevision: "main"
-    directory:
-      recurse: true
-
-  # Argo -- ArgoCD applications injected to the cluster from a Git repository
-  argo:
-    enabled: false
-    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
-    automation:
-      enabled: true
-      selfHeal: true
-      prune: true
-      syncOptions: {}
-    namespace: "argocd-system"
-    repoURL: ""
-    path: ""
-    targetRevision: "main"
-    directory:
-      recurse: true
-
   # Metrics-server -- Pod metrics aggregator for HPA/VPA
   metrics-server:
     enabled: true
