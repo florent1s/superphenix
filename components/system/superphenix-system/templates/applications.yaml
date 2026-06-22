@@ -17,6 +17,10 @@ kind: Application
 metadata:
   name: {{ $cluster.name }}-{{ $app | lower }}
   namespace: {{ $argocd.namespace }}
+  {{- if or $.Values.cleanupOnDeletion (default false $values.automation.cleanupOnDeletion) }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  {{- end }}
   labels:
     operator.superphenix.net/clusterName: {{ $cluster.name }}
     {{ $labels | nindent 4 }}

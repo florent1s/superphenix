@@ -14,6 +14,9 @@ disableAll: false
 # -- Force manual sync for all applications and override "per application" setting
 forceManual: false
 
+# -- Cleanup resources on deletion (cascading deletion) for all applications and override "per application" setting
+cleanupOnDeletion: false
+
 # -- "Per application" settings
 apps:
   # Metrics-server -- Pod metrics aggregator for HPA/VPA
@@ -25,6 +28,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "metrics-server-system"
     repoURL: "https://kubernetes-sigs.github.io/metrics-server/"
@@ -55,6 +59,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "ingress-nginx-system"
     nsLabels:
@@ -108,6 +113,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "cert-manager-system"
     repoURL: "https://charts.jetstack.io"
@@ -152,6 +158,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions:
         - ServerSideApply=true
     namespace: "prometheus-system"
@@ -244,6 +251,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "promtail-system"
     nsLabels:
@@ -270,6 +278,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "loki-system"
     repoURL: "https://grafana.github.io/helm-charts"
@@ -359,6 +368,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "kubevirt-system"
     repoURL: "https://github.com/super-phenix/kubevirt-manifests.git"
@@ -376,6 +386,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "cdi-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/cdi"
@@ -396,6 +407,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "rook-system"
     nsLabels:
@@ -437,6 +449,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "spx-storage"
     nsLabels:
@@ -605,6 +618,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       # The endpoint ConfigMap is edited on the fly by Rook and must be ignored during syncs, unless it doesn't exist on the cluster
       syncOptions:
         - RespectIgnoreDifferences=true
@@ -631,6 +645,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "volume-replicator"
     repoURL: "ghcr.io/super-phenix/helm-charts"
@@ -649,6 +664,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "kube-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/spx-policies"
@@ -665,6 +681,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "talos-backup"
     repoURL: "oci://ghcr.io/super-phenix/charts/talos-backup"
@@ -682,6 +699,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "velero-system"
     nsLabels:
@@ -779,6 +797,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "csi-addons-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/csi-addons"
@@ -797,6 +816,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "csi-snapshotter-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/external-snapshotter"
@@ -815,6 +835,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "kyverno-system"
     repoURL: "https://kyverno.github.io/kyverno/"
@@ -832,6 +853,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "snapscheduler-system"
     repoURL: "https://backube.github.io/helm-charts/"
@@ -860,6 +882,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "kaas-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/kaas-controller"
@@ -878,6 +901,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "kaas-datastore-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/kaas-datastore"
@@ -899,6 +923,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "kamaji-system"
     repoURL: "xxx"
@@ -943,6 +968,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "capi-operator-system"
     repoURL: "https://kubernetes-sigs.github.io/cluster-api-operator"
@@ -974,6 +1000,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "etcd-operator-system"
     repoURL: "xxx"
@@ -999,6 +1026,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "tuned-system"
     repoURL: "oci://ghcr.io/super-phenix/charts/tuned"
@@ -1018,6 +1046,7 @@ apps:
       enabled: true
       selfHeal: true
       prune: true
+      cleanupOnDeletion: false
       syncOptions: {}
     namespace: "traefik-system"
     nsLabels:
