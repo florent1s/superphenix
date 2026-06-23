@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <strong>A full cloud stack running on your own hardware.</strong>
+  <strong>Build your own cloud platform with Superphenix</strong>
 </p>
 
 <p align="center">
