@@ -1266,9 +1266,7 @@ apps:
                       app.kubernetes.io/name: kamaji
                   topologyKey: kubernetes.io/hostname
         resources:
-          limits:
-            cpu: null
-            memory: null
+          limits: null
           requests:
             cpu: 100m
             memory: 200Mi
