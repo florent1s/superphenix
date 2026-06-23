@@ -177,7 +177,7 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(argoCDApp.GetName()).To(Equal(resourceName))
 			Expect(argoCDApp.GetOwnerReferences()).To(HaveLen(1))
 			Expect(argoCDApp.GetOwnerReferences()[0].Name).To(Equal(resourceName))
-			Expect(argoCDApp.GetFinalizers()).To(ContainElement("resources-finalizer.argocd.argoproj.io"))
+			Expect(argoCDApp.GetFinalizers()).NotTo(ContainElement("resources-finalizer.argocd.argoproj.io"))
 
 			spec, found, err := unstructured.NestedMap(argoCDApp.Object, "spec")
 			Expect(err).NotTo(HaveOccurred())
@@ -324,7 +324,7 @@ var _ = Describe("Cluster Controller", func() {
 				},
 				Data: map[string][]byte{
 					"bearerToken": []byte("some-token"), // raw token
-					"insecure":    []byte("true"),         // raw boolean string
+					"insecure":    []byte("true"),       // raw boolean string
 				},
 			}
 			Expect(k8sClient.Create(ctx, insecureSecret)).To(Succeed())
@@ -1139,6 +1139,85 @@ var _ = Describe("Cluster Controller", func() {
 			forceManual, found, _ := unstructured.NestedBool(app.Object, "spec", "source", "helm", "valuesObject", "forceManual")
 			Expect(found).To(BeTrue())
 			Expect(forceManual).To(BeTrue())
+		})
+
+		It("should set cleanupOnDeletion to true in Helm values and add finalizer when CleanupOnDeletion is true", func() {
+			clusterName := "cleanup-cluster"
+			clusterNamespace := "default"
+			clusterNamespacedName := types.NamespacedName{
+				Name:      clusterName,
+				Namespace: clusterNamespace,
+			}
+
+			cluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: clusterNamespace,
+				},
+				Spec: operatorv1alpha1.ClusterSpec{
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+					Region:             "us-east-1",
+					AvailabilityZone:   "us-east-1a",
+					Version:            "1.0.0",
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeLocal,
+					},
+					CleanupOnDeletion: true,
+				},
+			}
+			Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
+			defer func() {
+				_ = k8sClient.Delete(ctx, cluster)
+			}()
+
+			controllerReconciler := &Reconciler{
+				Client:            k8sClient,
+				Scheme:            k8sClient.Scheme(),
+				OperatorNamespace: "default",
+				DefaultRepoURL:    "git@github.com:super-phenix/superphenix.git",
+				DefaultChartName:  "superphenix-system",
+				DefaultVersion:    "1.0.0",
+				SyncPeriod:        5 * time.Minute,
+				SyncTimeout:       15 * time.Minute,
+			}
+
+			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: clusterNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			// Verify ArgoCD Application
+			app := &unstructured.Unstructured{}
+			app.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "Application",
+			})
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: "default"}, app)).To(Succeed())
+
+			// Verify finalizer
+			Expect(app.GetFinalizers()).To(ContainElement("resources-finalizer.argocd.argoproj.io"))
+
+			// Verify Helm values
+			cleanupOnDeletion, found, _ := unstructured.NestedBool(app.Object, "spec", "source", "helm", "valuesObject", "cleanupOnDeletion")
+			Expect(found).To(BeTrue())
+			Expect(cleanupOnDeletion).To(BeTrue())
+
+			By("Setting CleanupOnDeletion to false")
+			Expect(k8sClient.Get(ctx, clusterNamespacedName, cluster)).To(Succeed())
+			cluster.Spec.CleanupOnDeletion = false
+			Expect(k8sClient.Update(ctx, cluster)).To(Succeed())
+
+			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: clusterNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: "default"}, app)).To(Succeed())
+			Expect(app.GetFinalizers()).NotTo(ContainElement("resources-finalizer.argocd.argoproj.io"))
+			cleanupOnDeletion, found, _ = unstructured.NestedBool(app.Object, "spec", "source", "helm", "valuesObject", "cleanupOnDeletion")
+			Expect(found).To(BeTrue())
+			Expect(cleanupOnDeletion).To(BeFalse())
 		})
 	})
 })

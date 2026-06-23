@@ -151,6 +151,14 @@ type ClusterSpec struct {
 	// +optional
 	// +kubebuilder:default=false
 	Manual bool `json:"manual,omitempty"`
+
+	// CleanupOnDeletion allows the cleanup of the cluster when it gets deleted.
+	// When set to true, deleting the cluster resource will automatically propagate the deletion
+	// to the target, with every application getting cascade deleted. This option is dangerous
+	// and should usually be set to true only before a deletion is planned to avoid any accident.
+	// +optional
+	// +kubebuilder:default=false
+	CleanupOnDeletion bool `json:"cleanupOnDeletion,omitempty"`
 }
 
 // ConnectionMode defines how the operator connects to the cluster.

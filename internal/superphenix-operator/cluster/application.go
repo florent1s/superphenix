@@ -28,6 +28,15 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 			return err
 		}
 
+		// Handle finalizers based on CleanupOnDeletion
+		// This finalizer propagates the deletion of the app to the resources it manages
+		finalizer := "resources-finalizer.argocd.argoproj.io"
+		if cluster.Spec.CleanupOnDeletion {
+			controllerutil.AddFinalizer(app, finalizer)
+		} else {
+			controllerutil.RemoveFinalizer(app, finalizer)
+		}
+
 		// Define and set Application Spec
 		spec := r.buildApplicationSpec(cluster)
 		return unstructured.SetNestedMap(app.Object, spec, "spec")
@@ -57,9 +66,6 @@ func (r *Reconciler) initApplication(cluster *operatorv1alpha1.Cluster) *unstruc
 	app.SetLabels(map[string]string{
 		version.ClusterLabel: cluster.Name,
 	})
-
-	// The application will clean up its children's resources on deletion using this finalizer
-	app.SetFinalizers([]string{"resources-finalizer.argocd.argoproj.io"})
 
 	return app
 }
@@ -144,7 +150,8 @@ func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster
 			"namespace": r.OperatorNamespace,
 			"project":   cluster.Name,
 		},
-		"forceManual": cluster.Spec.Manual,
+		"forceManual":       cluster.Spec.Manual,
+		"cleanupOnDeletion": cluster.Spec.CleanupOnDeletion,
 	}
 
 	if cluster.Spec.Type != nil {
