@@ -10,7 +10,7 @@ A Helm chart for Superphenix Operator
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
 | config.argocd.chart.url | string | `"https://argoproj.github.io/argo-helm"` |  |
-| config.argocd.chart.version | string | `"9.5.2"` |  |
+| config.argocd.chart.version | string | `"9.7.0"` |  |
 | config.argocd.ha.enabled | bool | `false` |  |
 | config.argocd.values | object | `{}` |  |
 | config.clustersConfigMap.name | string | `"superphenix-clusters-config"` |  |
