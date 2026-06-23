@@ -19,6 +19,323 @@ cleanupOnDeletion: false
 
 # -- "Per application" settings
 apps:
+  # -- CoreDNS used for DNS resolution within the Kubernetes clusters
+  coredns:
+    enabled: false
+    wave: "-100"
+    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      cleanupOnDeletion: false
+      syncOptions:
+        - SkipDryRunOnMissingResource=true
+    repoURL: https://coredns.github.io/helm
+    chart: coredns
+    targetRevision: "1.37.3"
+    namespace: coredns-system
+    helm:
+      releaseName: coredns
+      values:
+        # Initial amount of DNS instances
+        replicaCount: 2
+
+        # IP of the DNS cluster-wide
+        service:
+          clusterIP: fd00:100:ffff::a
+          clusterIPs:
+            - fd00:100:ffff::a
+            - 10.16.0.10
+          ipFamilyPolicy: RequireDualStack
+
+        # Monitoring for CoreDNS
+        prometheus:
+          service:
+            enabled: true
+          monitor:
+            enabled: true
+
+  # -- Kube-OVN is used as the CNI for the virtualization layer
+  kubeovn:
+    enabled: false
+    wave: "-100"
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      cleanupOnDeletion: false
+      syncOptions: {}
+      #  - Validate=false
+    repoURL: oci://ghcr.io/kubeovn/charts/kube-ovn-v2
+    targetRevision: v1.16.0
+    namespace: kube-system
+    helm:
+      chart: kube-ovn-v2
+      releaseName: kube-ovn
+      values:
+        # Which nodes we want to use to deploy the OVS control plane
+        masterNodesLabels:
+          node-role.kubernetes.io/control-plane: ""
+          kube-ovn/role: null
+
+        # IP of the nodes hosting the control plane (csv)
+        masterNodes: "invalid,invalid,invalid"
+
+        # We want to run dual-stack
+        networking:
+          stack: Dual
+          pods:
+            # By default, Kube-OVN will auto-determine the MTU to take GENEVE into account
+            # If you're running a high underlay MTU, you can force the overlay MTU to 1500
+            # mtu: 1500
+            cidr:
+              v4: "10.0.0.0/12"
+              v6: "fd00:100:0000:0::/96"
+            gateways:
+              v4: "10.0.0.1"
+              v6: "fd00:100:0000:0::1"
+          services:
+            cidr:
+              v4: "10.16.0.0/12"
+              v6: "fd00:100:ffff:0::/112"
+          join:
+            cidr:
+              v4: "100.64.0.0/12"
+              v6: "fd00:100:64::/112"
+
+        features:
+          enableNetworkPolicies: true
+
+        natGw:
+          namePrefix: "nat-gateway"
+
+        validatingWebhook:
+          enabled: true
+
+        apiNad:
+          enabled: true
+
+        ovsOvn:
+          disableModulesManagement: true
+          ovsDirectory: "/var/lib/openvswitch"
+          ovnDirectory: "/var/lib/ovn"
+
+        extraObjects:
+          - apiVersion: kubeovn.io/v1
+            kind: Subnet
+            metadata:
+              name: system-blackhole
+            spec:
+              protocol: IPv6
+              cidrBlock: fd00:666::/64
+              vpc: system-blackhole-vpc
+              disableGatewayCheck: true
+              # Block all traffic in that subnet
+              acls:
+              - action: drop
+                direction: from-lport
+                match: ip
+              - action: drop
+                direction: to-lport
+                match: ip
+              provider: system-blackhole.kube-system.ovn
+          - apiVersion: kubeovn.io/v1
+            kind: Vpc
+            metadata:
+              name: system-blackhole-vpc
+            spec: {}
+          - apiVersion: "k8s.cni.cncf.io/v1"
+            kind: NetworkAttachmentDefinition
+            metadata:
+              name: system-blackhole
+              namespace: kube-system
+            spec:
+              config: '{
+                  "cniVersion": "0.3.0",
+                  "type": "kube-ovn",
+                  "server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
+                  "provider": "system-blackhole.kube-system.ovn"
+                }'
+          - apiVersion: kubeovn.io/v1
+            kind: Subnet
+            metadata:
+              name: system-isolated-egress
+            spec:
+              # The CDI might reach both v4 and v6 IPs on the Internet, so we need both protocols.
+              # We will NAT anyway (using the IP of the nodes), but we only do NAT44 and NAT66.
+              # Maybe later we'll give a proper GUA of IPv6, but we cannot do it for IPv4 and 
+              # Kube-OVN doesn't support NATing only the IPv4 side.
+              protocol: Dual
+              cidrBlock: 10.32.0.0/16,fd00:110::/64
+              # Only the default VPC can do outgoing NAT, but it puts us at danger of lateral movements
+              # This is mitigated by settings "private" to false and by adding a network policy blocking
+              # everything except traffic going to the public Internet
+              vpc: ovn-cluster
+              # Any node can be a gateway
+              gatewayType: distributed
+              # We set MTU to 9000 on the interfaces. To prevent PMTUD problems, we restrict the MTU to the appropriate size for Geneve
+              mtu: 1380
+              acls:
+              # Allow traffic to the DNS
+              - action: allow-related
+                direction: from-lport
+                match: ip4.dst == 10.16.0.10 || ip6.dst == fd00:100:ffff::a
+                priority: 1001
+
+              # Allow the gateways
+              - action: allow-related
+                direction: from-lport
+                match: ip4.src == 10.32.0.1 || ip6.src == fd00:110::1
+                priority: 1001
+
+              # Block IPv4 private CIDR (RFC1918)
+              - action: drop
+                direction: from-lport
+                match: ip4.dst == 10.0.0.0/8 && ip4.dst != 10.32.0.1 && ip4.src == 10.0.0.0/8
+                priority: 1000
+              - action: drop
+                direction: from-lport
+                match: ip4.dst == 172.16.0.0/12 && ip
+                priority: 1000
+              - action: drop
+                direction: from-lport
+                match: ip4.dst == 192.168.0.0/16 && ip
+                priority: 1000
+              - action: drop
+                direction: from-lport
+                match: ip4.dst == 100.64.0.0/10 && ip
+                priority: 1000
+              - action: drop
+                direction: from-lport
+                match: ip4.dst == 169.254.0.0/16 && ip
+                priority: 1000
+
+              # Block IPv6 private CIDR
+              - action: drop
+                direction: from-lport
+                match: ip6.dst == fc00::/7 && ip6.dst != fd00:110::1 && ip6.src == fd00:110::/64
+                priority: 1000
+
+              # Don't allow pods in the subnet to talk to each other
+              allowEWTraffic: false
+
+              # Egress using the IP of the nodes
+              natOutgoing: true
+              provider: system-isolated-egress.kube-system.ovn
+          # Network attachment definition for CDI
+          - apiVersion: "k8s.cni.cncf.io/v1"
+            kind: NetworkAttachmentDefinition
+            metadata:
+              name: system-isolated-egress
+              namespace: kube-system
+            spec:
+              config: '{
+                  "cniVersion": "0.3.0",
+                  "type": "kube-ovn",
+                  "server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
+                  "provider": "system-isolated-egress.kube-system.ovn"
+                }'
+
+  # -- Multus is used for multi-attached pods/VMs
+  multus:
+    enabled: false
+    wave: "-100"
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      cleanupOnDeletion: false
+      syncOptions: {}
+    repoURL: oci://ghcr.io/super-phenix/charts/multus
+    targetRevision: "0.1.0"
+    namespace: kube-system
+    helm:
+      chart: multus
+      releaseName: multus
+      values:
+        tolerations:
+          - effect: NoSchedule
+            operator: Exists
+          - effect: NoExecute
+            operator: Exists
+
+  # -- Cilium is used as the CNI on storage clusters
+  # TODO: Maybe phase out Cilium and use Kube-OVN everywhere?
+  cilium:
+    enabled: false
+    wave: "-100"
+    modes: [DecoupledStorage]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      cleanupOnDeletion: false
+      syncOptions: {}
+    repoURL: https://helm.cilium.io/
+    chart: cilium
+    targetRevision: "1.17.2"
+    namespace: kube-system
+    helm:
+      releaseName: cilium
+      values:
+        # We don't need the Envoy proxy
+        envoy:
+          enabled: false
+
+        # Use the IP block allocated to each node, and not CiliumNodes, to reduce complexity
+        ipam:
+          mode: kubernetes
+
+        # Talos needs a specific security context to allow Cilium to run
+        securityContext:
+          capabilities:
+            ciliumAgent:
+              - CHOWN
+              - KILL
+              - NET_ADMIN
+              - NET_RAW
+              - IPC_LOCK
+              - SYS_ADMIN
+              - SYS_RESOURCE
+              - DAC_OVERRIDE
+              - FOWNER
+              - SETGID
+              - SETUID
+            cleanCiliumState:
+              - NET_ADMIN
+              - SYS_ADMIN
+              - SYS_RESOURCE
+
+        # Talos has the cgroups in a different location
+        cgroup:
+          autoMount:
+            enabled: false
+          hostRoot: /sys/fs/cgroup
+
+        # Talos has a local loadbalancer (Kubeprism) to expose the controlplanes under one IP, it listens on localhost:7445
+        k8sServiceHost: localhost
+        k8sServicePort: 7445
+
+        # Cilium will handle the function of kube-proxy
+        kubeProxyReplacement: true
+
+        # Do not startup if the K8s nodes are misconfigured and do not have both an IPv6 and IPv4 CIDR
+        k8s:
+          requireIPv4PodCIDR: true
+          requireIPv6PodCIDR: true
+
+        # Run Cilium in dual stack mode
+        ipv4:
+          enabled: true
+        ipv6:
+          enabled: true
+
+        hubble:
+          enabled: false
+
   # Metrics-server -- Pod metrics aggregator for HPA/VPA
   metrics-server:
     enabled: true
