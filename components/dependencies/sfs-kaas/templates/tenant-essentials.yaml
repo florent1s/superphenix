@@ -40,7 +40,7 @@ data:
 
     echo "[+] Running helm upgrade."
     helm upgrade --install kaas-essentials {{ $.Values.clusterDefaults.kaasEssentials.chartUrl }} \
-      --version {{ $cluster.kaasEssentials.chartVersion | default (printf "%s.*" $kubeMinor) }} \
+      --version {{ $cluster.kaasEssentials.chartVersion | default $.Chart.Version }} \
       --namespace kube-system \
       --kubeconfig /var/run/kubeconfig \
       --set location={{ $cluster.location }} \
