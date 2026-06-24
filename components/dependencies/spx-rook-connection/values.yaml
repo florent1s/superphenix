@@ -29,6 +29,8 @@ clusters: []
 #        storageClasses:
 #          - name: "" # Name must be unique across all pools of the same cluster
 #            # fullName: ""
+#            # -- Data pool specified for erasure coded storage classes
+#            dataPool: ""
 #            default: true
 #            reclaimPolicy: Delete
 #            # -- Enable encryption for the StorageClass
