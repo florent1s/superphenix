@@ -849,7 +849,7 @@ apps:
         cephBlockPools:
           # We need to override the ".mgr" pool because it doesn't have a device class by default
           # This configuration ensures it has a device class of type "nvme"
-          # TODO: Remove
+          # TODO: remove
           - name: mgr
             spec:
               name: .mgr
@@ -896,36 +896,6 @@ apps:
                 csi.storage.k8s.io/fstype: ext4
               mountOptions:
                 - discard
-
-          # Block storage to be used by remote SPX clusters
-          # Device type: NVMe
-          # Replication: 3x
-          # TODO: Remove
-          - name: spx-rbd-nvme-3x
-            spec:
-              failureDomain: host
-              enableRBDStats: true
-              deviceClass: nvme
-              replicated:
-                size: 3
-              enableCrushUpdates: true
-            storageClass:
-              enabled: false
-
-          # Block storage to be used by remote SPX clusters
-          # Device type: NVMe
-          # Replication: 2x
-          # TODO: Remove
-          - name: spx-rbd-nvme-2x
-            spec:
-              failureDomain: host
-              enableRBDStats: true
-              deviceClass: nvme
-              replicated:
-                size: 2
-              enableCrushUpdates: true
-            storageClass:
-              enabled: false
 
   rook-connection:
     enabled: true
