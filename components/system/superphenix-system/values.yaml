@@ -32,10 +32,10 @@ apps:
       syncOptions:
         - SkipDryRunOnMissingResource=true
     repoURL: https://coredns.github.io/helm
-    chart: coredns
     targetRevision: "1.37.3"
     namespace: coredns-system
     helm:
+      chart: coredns
       releaseName: coredns
       values:
         # Initial amount of DNS instances
