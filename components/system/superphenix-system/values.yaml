@@ -21,7 +21,7 @@ cleanupOnDeletion: false
 apps:
   # -- CoreDNS used for DNS resolution within the Kubernetes clusters
   coredns:
-    enabled: false
+    enabled: true
     wave: "-100"
     modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
     automation:
