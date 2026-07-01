@@ -65,6 +65,7 @@ func (r *Reconciler) initApplication(cluster *operatorv1alpha1.Cluster) *unstruc
 
 	app.SetLabels(map[string]string{
 		version.ClusterLabel: cluster.Name,
+		version.ManagedLabel: "true",
 	})
 
 	return app

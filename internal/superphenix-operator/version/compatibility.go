@@ -23,6 +23,11 @@ const (
 var (
 	// ClusterLabel is the label used to identify the cluster in ArgoCD.
 	ClusterLabel = "operator.superphenix.net/clusterName"
+
+	// ManagedLabel identifies Applications managed by the Superphenix operator
+	// (root cluster Apps, superphenix-system child Apps, and management Apps).
+	// It is used to scope the Application informer.
+	ManagedLabel = "operator.superphenix.net/managed"
 )
 
 var (
