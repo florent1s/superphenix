@@ -240,7 +240,7 @@ apps:
 
   # -- Multus is used for multi-attached pods/VMs
   multus:
-    enabled: false
+    enabled: true
     wave: "-100"
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
