@@ -275,10 +275,10 @@ apps:
       cleanupOnDeletion: false
       syncOptions: {}
     repoURL: https://helm.cilium.io/
-    chart: cilium
     targetRevision: "1.17.2"
     namespace: kube-system
     helm:
+      chart: cilium
       releaseName: cilium
       values:
         # We don't need the Envoy proxy
