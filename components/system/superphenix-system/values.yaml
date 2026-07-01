@@ -1213,7 +1213,7 @@ apps:
       cleanupOnDeletion: false
       syncOptions: {}
     namespace: "kamaji-system"
-    repoURL: "xxx"
+    repoURL: "harbor.agc.dpk-agc-cl04.agoracalyce.net/kats"
     targetRevision: "2026.2.24"
     helm:
       chart: "kamaji"
@@ -1290,8 +1290,9 @@ apps:
       cleanupOnDeletion: false
       syncOptions: {}
     namespace: "etcd-operator-system"
-    repoURL: "xxx"
-    targetRevision: "0.1.0"
+    repoURL: "harbor.agc.dpk-agc-cl04.agoracalyce.net/spx-helm"
+    targetRevision: "26.3.31"
+    #targetRevision: "0.1.0"
     helm:
       chart: "etcd-operator"
       releaseName: "etcd-operator"
