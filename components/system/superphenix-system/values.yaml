@@ -58,7 +58,7 @@ apps:
 
   # -- Kube-OVN is used as the CNI for the virtualization layer
   kubeovn:
-    enabled: false
+    enabled: true
     wave: "-100"
     modes: [Hyperconverged, DecoupledVirtualization]
     automation:
@@ -265,7 +265,7 @@ apps:
   # -- Cilium is used as the CNI on storage clusters
   # TODO: Maybe phase out Cilium and use Kube-OVN everywhere?
   cilium:
-    enabled: false
+    enabled: true
     wave: "-100"
     modes: [DecoupledStorage]
     automation:
