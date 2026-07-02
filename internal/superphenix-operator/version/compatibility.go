@@ -28,6 +28,9 @@ var (
 	// (root cluster Apps, superphenix-system child Apps, and management Apps).
 	// It is used to scope the Application informer.
 	ManagedLabel = "operator.superphenix.net/managed"
+
+	// RootApplicationLabel is the label used to identify root applications in ArgoCD.
+	RootApplicationLabel = "operator.superphenix.net/root"
 )
 
 var (
