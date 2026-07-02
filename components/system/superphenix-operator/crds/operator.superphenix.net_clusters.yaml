@@ -28,10 +28,10 @@ spec:
       name: AZ
       type: string
     - jsonPath: .status.currentVersion
-      name: Version
+      name: SPX version
       type: string
     - jsonPath: .status.kubernetesVersion
-      name: K8s Version
+      name: K8S version
       type: string
     - jsonPath: .status.phase
       name: Phase
