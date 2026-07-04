@@ -29,19 +29,20 @@ const (
 // Allowed metric names.
 const (
 	MetricOperatorInfo  = "operator_info"
-	MetricAZInfo        = "az_info"
+	MetricClusterInfo   = "cluster_info"
 	MetricComponentInfo = "component_info"
+	MetricRegionCount   = "region_count"
 	MetricAZCount       = "az_count"
-	MetricNodesPerAZ    = "nodes_per_az"
+	MetricNodeCount     = "node_count"
 )
 
-// Allowed values for the az_info "topology" label.
+// Allowed values for the cluster_info "topology" label.
 const (
 	TopologyHyperconverged = "hyperconverged"
 	TopologyDecoupled      = "decoupled"
 )
 
-// Allowed values for the az_info "type" label.
+// Allowed values for the cluster_info "type" label.
 const (
 	TypeStorage        = "storage"
 	TypeVirtualization = "virtualization"

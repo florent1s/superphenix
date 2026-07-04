@@ -2,6 +2,8 @@ package telemetry
 
 import (
 	"context"
+	"fmt"
+	"hash/fnv"
 	"regexp"
 	"strings"
 
@@ -59,19 +61,39 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 		return report, err
 	}
 
+	regionAZs := make(map[string]map[string]struct{})
+	for i := range clusters.Items {
+		r := clusters.Items[i].Spec.Region
+		az := clusters.Items[i].Spec.AvailabilityZone
+		if regionAZs[r] == nil {
+			regionAZs[r] = make(map[string]struct{})
+		}
+		regionAZs[r][az] = struct{}{}
+	}
+
 	report.Metrics = append(report.Metrics, Metric{
-		Name:  MetricAZCount,
+		Name:  MetricRegionCount,
 		Kind:  KindGauge,
-		Value: float64(len(clusters.Items)),
+		Value: float64(len(regionAZs)),
 	})
+
+	for region, azs := range regionAZs {
+		report.Metrics = append(report.Metrics, Metric{
+			Name:   MetricAZCount,
+			Kind:   KindGauge,
+			Value:  float64(len(azs)),
+			Labels: map[string]string{"region": anonymize(region)},
+		})
+	}
 
 	for i := range clusters.Items {
 		cl := &clusters.Items[i]
 		report.Metrics = append(report.Metrics, Metric{
-			Name:  MetricAZInfo,
+			Name:  MetricClusterInfo,
 			Kind:  KindGauge,
 			Value: 1,
 			Labels: map[string]string{
+				"cluster":  anonymize(cl.Name),
 				"topology": topologyLabel(cl.Spec.DeploymentTopology),
 				"type":     typeLabel(cl.Spec.DeploymentTopology, cl.Spec.Type),
 				"version":  sanitizeVersion(cl.Status.CurrentVersion),
@@ -84,6 +106,14 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 	}
 
 	return report, nil
+}
+
+// anonymize converts a string into a numeric identifier string to satisfy
+// the telemetry server's anonymization requirements.
+func anonymize(s string) string {
+	h := fnv.New64a()
+	h.Write([]byte(s))
+	return fmt.Sprintf("%d", h.Sum64())
 }
 
 func topologyLabel(t operatorv1alpha1.DeploymentTopology) string {
