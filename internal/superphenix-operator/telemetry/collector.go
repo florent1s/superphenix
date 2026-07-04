@@ -99,6 +99,17 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 				"version":  sanitizeVersion(cl.Status.CurrentVersion),
 			},
 		})
+
+		if cl.Status.NodeCount > 0 {
+			report.Metrics = append(report.Metrics, Metric{
+				Name:  MetricNodeCount,
+				Kind:  KindGauge,
+				Value: float64(cl.Status.NodeCount),
+				Labels: map[string]string{
+					"cluster": anonymize(cl.Name),
+				},
+			})
+		}
 	}
 
 	if len(report.Metrics) > MaxMetricsPerReport {

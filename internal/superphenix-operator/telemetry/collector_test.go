@@ -26,6 +26,7 @@ func TestCollector_Collect(t *testing.T) {
 		},
 		Status: operatorv1alpha1.ClusterStatus{
 			CurrentVersion: "v1.2.3",
+			NodeCount:      3,
 		},
 	}
 	cluster2 := &operatorv1alpha1.Cluster{
@@ -38,6 +39,7 @@ func TestCollector_Collect(t *testing.T) {
 		},
 		Status: operatorv1alpha1.ClusterStatus{
 			CurrentVersion: "v1.2.4",
+			NodeCount:      5,
 		},
 	}
 	cluster3 := &operatorv1alpha1.Cluster{
@@ -120,6 +122,23 @@ func TestCollector_Collect(t *testing.T) {
 		}
 	}
 	assert.Equal(t, 4, clustersFound)
+
+	// Check node_count
+	nodeCountsFound := 0
+	for _, m := range report.Metrics {
+		if m.Name == MetricNodeCount {
+			nodeCountsFound++
+			switch m.Labels["cluster"] {
+			case anonymize("cluster-1"):
+				assert.Equal(t, float64(3), m.Value)
+			case anonymize("cluster-2"):
+				assert.Equal(t, float64(5), m.Value)
+			default:
+				t.Errorf("unexpected node_count for cluster %s", m.Labels["cluster"])
+			}
+		}
+	}
+	assert.Equal(t, 2, nodeCountsFound)
 }
 
 func ptr[T any](v T) *T {
