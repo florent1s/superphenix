@@ -25,15 +25,11 @@ type Collector struct {
 	OperatorVersion string
 
 	// ManagementVersion is the currently deployed superphenix-management
-	// chart version on this cluster. Empty when this operator does not run
-	// on a management cluster, in which case no component_info metric for
-	// the management chart is emitted.
+	// chart version on this cluster.
 	ManagementVersion string
 
 	// ArgoCDVersion is the currently deployed argocd chart version on
-	// this cluster. Empty when this operator does not run on a management
-	// cluster, in which case no component_info metric for argocd is
-	// emitted.
+	// this cluster.
 	ArgoCDVersion string
 }
 
