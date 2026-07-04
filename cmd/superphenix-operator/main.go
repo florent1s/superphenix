@@ -280,6 +280,7 @@ func main() {
 		}
 		if isManagementCluster {
 			runner.Collector.ManagementVersion = managementChartVersion
+			runner.Collector.ArgoCDVersion = argocdChartVersion
 		}
 		// Register the telemetry runner. Since it implements LeaderElectionRunnable,
 		// it will only start when the manager is elected leader.

@@ -29,6 +29,12 @@ type Collector struct {
 	// on a management cluster, in which case no component_info metric for
 	// the management chart is emitted.
 	ManagementVersion string
+
+	// ArgoCDVersion is the currently deployed argocd chart version on
+	// this cluster. Empty when this operator does not run on a management
+	// cluster, in which case no component_info metric for argocd is
+	// emitted.
+	ArgoCDVersion string
 }
 
 // Collect returns the current Report. It always includes operator_info;
@@ -52,6 +58,18 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Labels: map[string]string{
 				"name":    "superphenix-management",
 				"version": sanitizeVersion(c.ManagementVersion),
+			},
+		})
+	}
+
+	if c.ArgoCDVersion != "" {
+		report.Metrics = append(report.Metrics, Metric{
+			Name:  MetricComponentInfo,
+			Kind:  KindGauge,
+			Value: 1,
+			Labels: map[string]string{
+				"name":    "argocd",
+				"version": sanitizeVersion(c.ArgoCDVersion),
 			},
 		})
 	}
@@ -97,6 +115,17 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 				"topology": topologyLabel(cl.Spec.DeploymentTopology),
 				"type":     typeLabel(cl.Spec.DeploymentTopology, cl.Spec.Type),
 				"version":  sanitizeVersion(cl.Status.CurrentVersion),
+			},
+		})
+
+		report.Metrics = append(report.Metrics, Metric{
+			Name:  MetricComponentInfo,
+			Kind:  KindGauge,
+			Value: 1,
+			Labels: map[string]string{
+				"cluster": anonymize(cl.Name),
+				"name":    "superphenix-system",
+				"version": sanitizeVersion(cl.Status.CurrentVersion),
 			},
 		})
 

@@ -66,6 +66,7 @@ func TestCollector_Collect(t *testing.T) {
 		Client:            fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(cluster1, cluster2, cluster3, cluster4).Build(),
 		OperatorVersion:   "v1.0.0",
 		ManagementVersion: "v2.0.0",
+		ArgoCDVersion:     "v9.7.0",
 	}
 
 	report, err := c.Collect(context.Background())
@@ -139,6 +140,51 @@ func TestCollector_Collect(t *testing.T) {
 		}
 	}
 	assert.Equal(t, 2, nodeCountsFound)
+
+	// Check component_info for superphenix-system
+	systemComponentsFound := 0
+	for _, m := range report.Metrics {
+		if m.Name == MetricComponentInfo && m.Labels["name"] == "superphenix-system" {
+			systemComponentsFound++
+			switch m.Labels["cluster"] {
+			case anonymize("cluster-1"):
+				assert.Equal(t, "v1.2.3", m.Labels["version"])
+			case anonymize("cluster-2"):
+				assert.Equal(t, "v1.2.4", m.Labels["version"])
+			case anonymize("cluster-3"):
+				assert.Equal(t, "v1.2.3", m.Labels["version"])
+			case anonymize("cluster-4"):
+				assert.Equal(t, "unknown", m.Labels["version"])
+			default:
+				t.Errorf("unexpected superphenix-system for cluster %s", m.Labels["cluster"])
+			}
+		}
+	}
+	assert.Equal(t, 4, systemComponentsFound)
+
+	// Check management component info
+	mgmtFound := false
+	for _, m := range report.Metrics {
+		if m.Name == MetricComponentInfo && m.Labels["name"] == "superphenix-management" {
+			mgmtFound = true
+			assert.Equal(t, "v2.0.0", m.Labels["version"])
+			_, clusterPresent := m.Labels["cluster"]
+			assert.False(t, clusterPresent, "cluster label should not be present for superphenix-management")
+		}
+	}
+	assert.True(t, mgmtFound, "superphenix-management component info missing")
+
+	// Check argocd component info
+	argocdFound := false
+	for _, m := range report.Metrics {
+		if m.Name == MetricComponentInfo && m.Labels["name"] == "argocd" {
+			argocdFound = true
+			assert.Equal(t, "v9.7.0", m.Labels["version"])
+			_, clusterPresent := m.Labels["cluster"]
+			assert.False(t, clusterPresent, "cluster label should not be present for argocd")
+		}
+	}
+	assert.True(t, argocdFound, "argocd component info missing")
 }
 
 func ptr[T any](v T) *T {
