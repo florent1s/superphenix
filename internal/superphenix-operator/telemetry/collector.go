@@ -99,12 +99,17 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 	})
 
 	for region, azs := range regionAZs {
-		report.Metrics = append(report.Metrics, Metric{
-			Name:   MetricAZCount,
-			Kind:   KindGauge,
-			Value:  float64(len(azs)),
-			Labels: map[string]string{"region": anon.Hash(region)},
-		})
+		for az := range azs {
+			report.Metrics = append(report.Metrics, Metric{
+				Name:  MetricAZCount,
+				Kind:  KindGauge,
+				Value: 1,
+				Labels: map[string]string{
+					"region": anon.Hash(region),
+					"az":     anon.Hash(az),
+				},
+			})
+		}
 	}
 
 	for i := range clusters.Items {
@@ -115,6 +120,7 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Value: 1,
 			Labels: map[string]string{
 				"cluster":  anon.Hash(string(cl.UID)),
+				"region":   anon.Hash(cl.Spec.Region),
 				"az":       anon.Hash(cl.Spec.AvailabilityZone),
 				"topology": topologyLabel(cl.Spec.DeploymentTopology),
 				"type":     typeLabel(cl.Spec.DeploymentTopology, cl.Spec.Type),

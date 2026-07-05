@@ -111,15 +111,22 @@ func TestCollector_Collect(t *testing.T) {
 	assert.True(t, found, "region_count missing")
 
 	// Check az_count
-	azCounts := make(map[string]float64)
+	foundAZs := make(map[string]map[string]float64)
 	for _, m := range report.Metrics {
 		if m.Name == MetricAZCount {
-			azCounts[m.Labels["region"]] = m.Value
+			r := m.Labels["region"]
+			if foundAZs[r] == nil {
+				foundAZs[r] = make(map[string]float64)
+			}
+			foundAZs[r][m.Labels["az"]] = m.Value
 		}
 	}
-	assert.Equal(t, 2, len(azCounts))
-	assert.Equal(t, float64(2), azCounts[testAnonymize("us-east-1")])
-	assert.Equal(t, float64(1), azCounts[testAnonymize("eu-west-1")])
+	assert.Equal(t, 2, len(foundAZs))
+	assert.Equal(t, 2, len(foundAZs[testAnonymize("us-east-1")]))
+	assert.Equal(t, float64(1), foundAZs[testAnonymize("us-east-1")][testAnonymize("us-east-1a")])
+	assert.Equal(t, float64(1), foundAZs[testAnonymize("us-east-1")][testAnonymize("us-east-1b")])
+	assert.Equal(t, 1, len(foundAZs[testAnonymize("eu-west-1")]))
+	assert.Equal(t, float64(1), foundAZs[testAnonymize("eu-west-1")][testAnonymize("eu-west-1a")])
 
 	// Check cluster_info
 	clustersFound := 0
