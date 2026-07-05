@@ -120,7 +120,6 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Value: 1,
 			Labels: map[string]string{
 				"cluster":  anon.Hash(string(cl.UID)),
-				"region":   anon.Hash(cl.Spec.Region),
 				"az":       anon.Hash(cl.Spec.AvailabilityZone),
 				"topology": topologyLabel(cl.Spec.DeploymentTopology),
 				"type":     typeLabel(cl.Spec.DeploymentTopology, cl.Spec.Type),
