@@ -112,13 +112,19 @@ func TestCollector_Collect(t *testing.T) {
 			clustersFound++
 			switch m.Labels["cluster"] {
 			case anonymize("cluster-1"):
+				assert.Equal(t, anonymize("us-east-1a"), m.Labels["az"])
 				assert.Equal(t, "hyperconverged", m.Labels["topology"])
 				assert.Equal(t, "none", m.Labels["type"])
 				assert.Equal(t, "v1.2.3", m.Labels["version"])
 			case anonymize("cluster-2"):
+				assert.Equal(t, anonymize("us-east-1b"), m.Labels["az"])
 				assert.Equal(t, "decoupled", m.Labels["topology"])
 				assert.Equal(t, "storage", m.Labels["type"])
 				assert.Equal(t, "v1.2.4", m.Labels["version"])
+			case anonymize("cluster-3"):
+				assert.Equal(t, anonymize("eu-west-1a"), m.Labels["az"])
+			case anonymize("cluster-4"):
+				assert.Equal(t, anonymize("us-east-1b"), m.Labels["az"])
 			}
 		}
 	}

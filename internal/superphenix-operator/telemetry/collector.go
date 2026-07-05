@@ -108,6 +108,7 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Value: 1,
 			Labels: map[string]string{
 				"cluster":  anonymize(cl.Name),
+				"az":       anonymize(cl.Spec.AvailabilityZone),
 				"topology": topologyLabel(cl.Spec.DeploymentTopology),
 				"type":     typeLabel(cl.Spec.DeploymentTopology, cl.Spec.Type),
 				"version":  sanitizeVersion(cl.Status.CurrentVersion),
