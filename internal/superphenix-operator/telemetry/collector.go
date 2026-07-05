@@ -2,13 +2,13 @@ package telemetry
 
 import (
 	"context"
-	"fmt"
-	"hash/fnv"
 	"regexp"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/super-phenix/superphenix-telemetry/pkg/anonymizer"
 	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 )
 
@@ -23,6 +23,7 @@ var labelValueRe = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
 type Collector struct {
 	Client          client.Reader
 	OperatorVersion string
+	Namespace       string
 
 	// ManagementVersion is the currently deployed superphenix-management
 	// chart version on this cluster.
@@ -38,6 +39,12 @@ type Collector struct {
 // readable.
 func (c *Collector) Collect(ctx context.Context) (Report, error) {
 	report := Report{SchemaVersion: SchemaVersion}
+
+	instUID := c.getInstallationUID(ctx)
+	// We use a fixed salt for the anonymizer to remain consistent across restarts.
+	// UIDs are already unique, so a fixed salt is sufficient to make them opaque.
+	anon, _ := anonymizer.New("superphenix-telemetry-salt")
+	report.InstallationID = anon.Hash(instUID)
 
 	report.Metrics = append(report.Metrics, Metric{
 		Name:   MetricOperatorInfo,
@@ -96,7 +103,7 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Name:   MetricAZCount,
 			Kind:   KindGauge,
 			Value:  float64(len(azs)),
-			Labels: map[string]string{"region": anonymize(region)},
+			Labels: map[string]string{"region": anon.Hash(region)},
 		})
 	}
 
@@ -107,8 +114,8 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Kind:  KindGauge,
 			Value: 1,
 			Labels: map[string]string{
-				"cluster":  anonymize(cl.Name),
-				"az":       anonymize(cl.Spec.AvailabilityZone),
+				"cluster":  anon.Hash(string(cl.UID)),
+				"az":       anon.Hash(cl.Spec.AvailabilityZone),
 				"topology": topologyLabel(cl.Spec.DeploymentTopology),
 				"type":     typeLabel(cl.Spec.DeploymentTopology, cl.Spec.Type),
 				"version":  sanitizeVersion(cl.Status.CurrentVersion),
@@ -120,7 +127,7 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Kind:  KindGauge,
 			Value: 1,
 			Labels: map[string]string{
-				"cluster": anonymize(cl.Name),
+				"cluster": anon.Hash(string(cl.UID)),
 				"name":    "superphenix-system",
 				"version": sanitizeVersion(cl.Status.CurrentVersion),
 			},
@@ -132,7 +139,7 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 				Kind:  KindGauge,
 				Value: float64(cl.Status.NodeCount),
 				Labels: map[string]string{
-					"cluster": anonymize(cl.Name),
+					"cluster": anon.Hash(string(cl.UID)),
 				},
 			})
 		}
@@ -145,12 +152,18 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 	return report, nil
 }
 
-// anonymize converts a string into a numeric identifier string to satisfy
-// the telemetry server's anonymization requirements.
-func anonymize(s string) string {
-	h := fnv.New64a()
-	h.Write([]byte(s))
-	return fmt.Sprintf("%d", h.Sum64())
+// getInstallationUID fetches the UID of the kube-system namespace or fallbacks to the operator namespace.
+func (c *Collector) getInstallationUID(ctx context.Context) string {
+	ns := &corev1.Namespace{}
+	if err := c.Client.Get(ctx, client.ObjectKey{Name: "kube-system"}, ns); err == nil {
+		return string(ns.UID)
+	}
+	if c.Namespace != "" {
+		if err := c.Client.Get(ctx, client.ObjectKey{Name: c.Namespace}, ns); err == nil {
+			return string(ns.UID)
+		}
+	}
+	return "unknown"
 }
 
 func topologyLabel(t operatorv1alpha1.DeploymentTopology) string {

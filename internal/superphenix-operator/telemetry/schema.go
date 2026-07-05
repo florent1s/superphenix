@@ -51,8 +51,9 @@ const (
 
 // Report is the top-level body posted to the ingest endpoint.
 type Report struct {
-	SchemaVersion int      `json:"schema_version"`
-	Metrics       []Metric `json:"metrics"`
+	SchemaVersion  int      `json:"schema_version"`
+	InstallationID string   `json:"installation_id"`
+	Metrics        []Metric `json:"metrics"`
 }
 
 // Metric describes a single observation.

@@ -273,14 +273,14 @@ func main() {
 	if !disableTelemetry {
 		runner := &telemetry.Runner{
 			Collector: &telemetry.Collector{
-				Client:          mgr.GetClient(),
-				OperatorVersion: version.OperatorVersion,
+				Client:            mgr.GetClient(),
+				OperatorVersion:   version.OperatorVersion,
+				Namespace:         operatorNamespace,
+				ManagementVersion: managementChartVersion,
+				ArgoCDVersion:     argocdChartVersion,
 			},
 			Client: telemetry.NewClient(telemetryEndpoint),
 		}
-
-		runner.Collector.ManagementVersion = managementChartVersion
-		runner.Collector.ArgoCDVersion = argocdChartVersion
 
 		// Register the telemetry runner. Since it implements LeaderElectionRunnable,
 		// it will only start when the manager is elected leader.
