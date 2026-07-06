@@ -14,9 +14,6 @@ reclaimPolicy: {{ .reclaimPolicy | default "Delete" }}
 parameters:
   objectStoreName: {{ printf "%s.%s" $cluster $storeName }}
   objectStoreNamespace: {{ $cluster }}
-  {{- if .region }}
-  region: {{ .region }}
-  {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

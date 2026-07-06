@@ -77,5 +77,3 @@ clusters: []
 #          - name: "bucket" # SC name will be "<cluster>.<name>" unless fullName is set. Name must be unique across every storageclass name in the cluster.
 #            # fullName: ""
 #            reclaimPolicy: Delete
-#            # -- Optional RGW zone/region to forward to the provisioner
-#            # region: ""
