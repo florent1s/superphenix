@@ -738,6 +738,7 @@ apps:
         # We want to bind to the IPv6 SPX storage network
         useOperatorHostNetwork: true
         enforceHostNetwork: true
+
         # Container Storage Interface
         csi:
           # Necessary for volume replication and mirroring
@@ -752,11 +753,16 @@ apps:
           # Monitoring config
           serviceMonitor:
             enabled: true
+
         monitoring:
           enabled: true
+
         # Discover new disks to show them on the dashboard
         enableDiscoveryDaemon: true
         discoveryDaemonInterval: 5m
+
+        # Allow additional options on ObjectBucketClaims for self-service
+        obcAllowAdditionalConfigFields: "maxObjects,maxSize,bucketMaxObjects,bucketMaxSize,bucketPolicy,bucketLifecycle"
 
   rook-local-cluster:
     enabled: true
