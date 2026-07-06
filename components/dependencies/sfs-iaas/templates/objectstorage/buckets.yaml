@@ -12,7 +12,7 @@ metadata:
   # We need to add a prefix, as the OBC generates ConfigMaps/Secrets with the same name as the OBC.
   # If another resource has the same projectID and also generates ConfigMaps/Secrets using its own name,
   # it will conflict with the OBC.
-  name: bucket-{{ $effectiveID | quote }}
+  name: bucket-{{ $effectiveID }}
   labels:
     {{- include "sfs-iaas.labels" $ | nindent 4 }}
     superphenix.net/resourceEffectiveID: {{ $effectiveID | quote }}
