@@ -1344,7 +1344,6 @@ apps:
       syncOptions: {}
     namespace: "traefik-system"
     nsLabels:
-      # allow hostnetwork
       pod-security.kubernetes.io/enforce: privileged
     repoURL: "https://traefik.github.io/charts"
     targetRevision: "39.0.2" # https://github.com/traefik/traefik-helm-chart/releases
@@ -1352,22 +1351,39 @@ apps:
       chart: "traefik"
       releaseName: "traefik"
       values:
+        # -- Deploy Traefik as a DaemonSet so that every node can receive traffic
+        deployment:
+          enabled: true
+          kind: DaemonSet
+
+        # We're deploying on baremetal (maybe replace by hostPort in .ports structure?)
+        hostNetwork: true
+
+        # -- Use a ClusterIP instead of a loadbalancer, as we're deploying on baremetal
+        service:
+          enabled: true # TODO: remove on update of traefik
+          single: true # TODO: remove on update of traefik
+          type: ClusterIP
+
+        # -- TODO: Use Traefik as an nginx replacmeent
+        ingressClass:
+          enabled: false
+
+        # -- Gateways
         gateway:
           enabled: false
         gatewayClass:
           enabled: true
           name: traefik
-        deployment:
-          enabled: true
-          kind: DaemonSet
-        ingressClass:
-          enabled: false
+
+        # -- Ports on which Traefik listens
+        # TODO: rename kaas ports
         ports:
           web:
             port: 8000
             expose:
               default: false
-          # HTTPS API server
+          # KaaS HTTPS API server
           websecure:
             port: 7443
             exposedPort: 7443
@@ -1377,7 +1393,7 @@ apps:
             http:
               tls:
                 enabled: true
-          # TLS API server (HAProxy)
+          # KaaS TLS API server (HAProxy)
           api-tls:
             port: 7444
             expose:
@@ -1387,7 +1403,7 @@ apps:
             http:
               tls:
                 enabled: true
-          # Konnectivity server
+          # Kaas Konnectivity server
           konnectivity:
             port: 7442
             exposedPort: 7442
@@ -1400,22 +1416,19 @@ apps:
           metrics:
             port: 9101
             exposedPort: 9101
-        service:
-          enabled: true
-          single: true
-          type: ClusterIP
-        ingressRoute:
-          dashboard:
-            enabled: false
+
+        # -- We do not use the dashboard by default to save on compute and RAM
         api:
           dashboard: false
-        hostNetwork: true
+
+        # TODO: remove on upgrade, as it is the defaults
         updateStrategy:
           type: RollingUpdate
           rollingUpdate:
-            # required for daemonset
             maxUnavailable: 1
             maxSurge: 0
+
+        # -- We're listening for ingress-nginx annotations
         providers:
           kubernetesIngress:
             enabled: false
