@@ -27,7 +27,7 @@ clusters: []
 #      - name: "test"
 #        # Create StorageClasses
 #        storageClasses:
-#          - name: "" # Name must be unique across all pools of the same cluster
+#          - name: "" # Name must be unique across every storageclass name in the cluster
 #            # fullName: ""
 #            # -- Data pool specified for erasure coded storage classes
 #            dataPool: ""
@@ -74,7 +74,7 @@ clusters: []
 #        #   cert: ""
 #        # -- Bucket StorageClasses to create for this object store
 #        storageClasses:
-#          - name: "bucket" # SC name will be "<cluster>.<name>" unless fullName is set
+#          - name: "bucket" # SC name will be "<cluster>.<name>" unless fullName is set. Name must be unique across every storageclass name in the cluster.
 #            # fullName: ""
 #            reclaimPolicy: Delete
 #            # -- Optional RGW zone/region to forward to the provisioner

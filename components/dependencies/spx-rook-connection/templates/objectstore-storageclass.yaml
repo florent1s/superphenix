@@ -12,7 +12,7 @@ metadata:
 provisioner: {{ $.Values.rookOperatorNamespace }}.ceph.rook.io/bucket
 reclaimPolicy: {{ .reclaimPolicy | default "Delete" }}
 parameters:
-  objectStoreName: {{ $storeName }}
+  objectStoreName: {{ printf "%s.%s" $cluster $storeName }}
   objectStoreNamespace: {{ $cluster }}
   {{- if .region }}
   region: {{ .region }}
