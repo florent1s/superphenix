@@ -27,7 +27,7 @@ clusters: []
 #      - name: "test"
 #        # Create StorageClasses
 #        storageClasses:
-#          - name: "" # Name must be unique across every storageclass name in the cluster
+#          - name: "" # SC name will be "<cluster>.<name>" unless fullName is set. Name must be unique across every storageclass name in the cluster
 #            # fullName: ""
 #            # -- Data pool specified for erasure coded storage classes
 #            dataPool: ""
