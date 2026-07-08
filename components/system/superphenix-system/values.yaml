@@ -1346,45 +1346,43 @@ apps:
     nsLabels:
       pod-security.kubernetes.io/enforce: privileged
     repoURL: "https://traefik.github.io/charts"
-    targetRevision: "39.0.2" # https://github.com/traefik/traefik-helm-chart/releases
+    targetRevision: "41.0.1" # https://github.com/traefik/traefik-helm-chart/releases
     helm:
       chart: "traefik"
       releaseName: "traefik"
       values:
+        # -- Disable logs signaling about new versions
+        global:
+          checkNewVersion: false
+
         # -- Deploy Traefik as a DaemonSet so that every node can receive traffic
         deployment:
           enabled: true
           kind: DaemonSet
 
-        # We're deploying on baremetal (maybe replace by hostPort in .ports structure?)
-        hostNetwork: true
-
         # -- Use a ClusterIP instead of a loadbalancer, as we're deploying on baremetal
         service:
-          enabled: true # TODO: remove on update of traefik
-          single: true # TODO: remove on update of traefik
           type: ClusterIP
 
-        # -- TODO: Use Traefik as an nginx replacmeent
-        ingressClass:
-          enabled: false
+        # -- We're deploying on baremetal (maybe replace by hostPort in .ports structure?)
+        hostNetwork: true
 
-        # -- Gateways
+        # -- Gateway API default gateway (we do not use it)
         gateway:
           enabled: false
+
         gatewayClass:
           enabled: true
           name: traefik
 
+        # -- Enable the access logs within the Traefik pods
+        accessLog:
+          enabled: true
+
         # -- Ports on which Traefik listens
-        # TODO: rename kaas ports
         ports:
-          web:
-            port: 8000
-            expose:
-              default: false
-          # KaaS HTTPS API server
-          websecure:
+          # -- KaaS HTTPS API server
+          kaas-https:
             port: 7443
             exposedPort: 7443
             expose:
@@ -1393,8 +1391,8 @@ apps:
             http:
               tls:
                 enabled: true
-          # KaaS TLS API server (HAProxy)
-          api-tls:
+          # -- KaaS TLS API server (HAProxy)
+          kaas-api-tls:
             port: 7444
             expose:
               default: true
@@ -1403,8 +1401,8 @@ apps:
             http:
               tls:
                 enabled: true
-          # Kaas Konnectivity server
-          konnectivity:
+          # -- KaaS Konnectivity server
+          kaas-konnectivity:
             port: 7442
             exposedPort: 7442
             expose:
@@ -1421,18 +1419,17 @@ apps:
         api:
           dashboard: false
 
-        # TODO: remove on upgrade, as it is the defaults
-        updateStrategy:
-          type: RollingUpdate
-          rollingUpdate:
-            maxUnavailable: 1
-            maxSurge: 0
+        # -- Create a Traefik default ingress class
+        ingressClass:
+          enabled: true
 
-        # -- We're listening for ingress-nginx annotations
+        # -- We're listening for ingress-nginx annotations to support previous deployments
         providers:
           kubernetesIngress:
             enabled: false
+          kubernetesIngressNGINX:
+            enabled: true
           kubernetesGateway:
             enabled: true
-            # enable TLSRoute
+            # -- Enable TLSRoute
             experimentalChannel: true
