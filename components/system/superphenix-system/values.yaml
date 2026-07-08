@@ -464,7 +464,7 @@ apps:
                 solvers:
                 - http01:
                     ingress:
-                      class: spx-nginx
+                      class: traefik
 
   # Prometheus -- Metric aggregation and analysis
   prometheus-stack:
@@ -526,7 +526,6 @@ apps:
         grafana:
           ingress:
             enabled: true
-            ingressClassName: "spx-nginx"
             hosts:
               - "invalid"
             tls:
@@ -801,7 +800,6 @@ apps:
               - hosts:
                   - "invalid"
                 secretName: ceph-dashboard-tls
-            ingressClassName: spx-nginx
 
         cephClusterSpec:
           cephConfig:
