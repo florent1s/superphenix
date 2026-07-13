@@ -371,7 +371,7 @@ apps:
   ingress-nginx:
     enabled: true
     wave: "-10"
-    modes: [Hyperconverged, DecoupledStorage, DecoupledVirtualization]
+    modes: [DecoupledStorage]
     automation:
       enabled: true
       selfHeal: true
@@ -1448,6 +1448,7 @@ apps:
         providers:
           kubernetesIngressNGINX:
             enabled: true
+            watchIngressWithoutClass: true
           kubernetesGateway:
             enabled: true
             # -- Enable TLSRoute
