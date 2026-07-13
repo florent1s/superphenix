@@ -1377,8 +1377,24 @@ apps:
         accessLog:
           enabled: true
 
+        # -- Security context to bind on port < 1024 (80 and 443)
+        securityContext:
+          capabilities:
+            drop:
+              - ALL
+            add:
+              - NET_BIND_SERVICE
+        podSecurityContext:
+          runAsGroup: 0
+          runAsUser: 0
+          runAsNonRoot: false
+
         # -- Ports on which Traefik listens
         ports:
+          web:
+            port: 80
+          websecure:
+            port: 443
           # -- KaaS HTTPS API server
           kaas-https:
             port: 7443
@@ -1392,9 +1408,9 @@ apps:
           # -- KaaS TLS API server (HAProxy)
           kaas-api-tls:
             port: 7444
+            exposedPort: 7444
             expose:
               default: true
-            exposedPort: 7444
             protocol: TCP
             http:
               tls:
@@ -1421,10 +1437,15 @@ apps:
         ingressClass:
           enabled: true
 
+        # -- Update strategy for hostNetwork deployment
+        updateStrategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxUnavailable: 1
+            maxSurge: 0
+
         # -- We're listening for ingress-nginx annotations to support previous deployments
         providers:
-          kubernetesIngress:
-            enabled: false
           kubernetesIngressNGINX:
             enabled: true
           kubernetesGateway:
