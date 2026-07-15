@@ -33,7 +33,7 @@ For the full list of permissions and PermissionSets, see [Permissions documentat
 Initialize the Permify client before using any wrapper methods:
 
 ```go
-import "permify-wrapper/pkg/client"
+import "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/client"
 
 err := client.InitPermify("permify.server:3478")
 ```
@@ -41,7 +41,7 @@ err := client.InitPermify("permify.server:3478")
 ### Checking permissions
 
 ```go
-import "permify-wrapper/pkg/permission"
+import "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/permission"
 
 allowed, err := permission.CheckPermission(ctx, organizationId, entity.Project, projectId, userId, "ProjectInstanceRead")
 ```
@@ -49,7 +49,7 @@ allowed, err := permission.CheckPermission(ctx, organizationId, entity.Project, 
 ### Using the middleware
 
 ```go
-import "permify-wrapper/pkg/middleware"
+import "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/middleware"
 
 r.With(middleware.CheckPermission("ProjectInstanceWrite")).Post("/instances", handler)
 ```
@@ -57,7 +57,7 @@ r.With(middleware.CheckPermission("ProjectInstanceWrite")).Post("/instances", ha
 ### Managing groups and relationships
 
 ```go
-import pkg "permify-wrapper/pkg"
+import pkg "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg"
 
 err := pkg.UpdateRelationGroupPermissions(ctx, orgId, pkg.Group{
     Id:             groupId,

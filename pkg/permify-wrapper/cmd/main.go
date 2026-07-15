@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"permify-wrapper/pkg"
-	v1 "permify-wrapper/pkg/base/v1"
-	"permify-wrapper/pkg/base/v1/entity"
-	basePermission "permify-wrapper/pkg/base/v1/permission"
-	"permify-wrapper/pkg/client"
-	"permify-wrapper/pkg/permission"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/entity"
+	basePermission "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permission"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/client"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/permission"
 
 	"github.com/rs/zerolog/log"
 )

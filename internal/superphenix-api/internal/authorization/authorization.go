@@ -3,12 +3,12 @@ package authorization
 import (
 	"net/http"
 	"slices"
-	"superphenix-api/internal/consts"
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 
-	"permify-wrapper/pkg/base/v1/entity"
-	pwV1 "permify-wrapper/pkg/base/v1/permission"
-	pw "permify-wrapper/pkg/permission"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/entity"
+	pwV1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permission"
+	pw "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/permission"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"

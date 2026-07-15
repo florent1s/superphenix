@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"time"
 )
 

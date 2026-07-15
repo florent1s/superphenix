@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 )
 
 // errInvalidPrefix maps resolution failures to a 400 in the HTTP handlers.

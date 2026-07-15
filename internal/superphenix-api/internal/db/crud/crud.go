@@ -2,7 +2,7 @@ package crud
 
 import (
 	"encoding/json"
-	"superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
 )
 
 func FindAll[T interface{}, K interface{}](object T, preload ...string) ([]K, error) {

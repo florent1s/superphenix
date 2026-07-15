@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"superphenix-controller/internal/informers"
-	"superphenix-controller/internal/utils"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

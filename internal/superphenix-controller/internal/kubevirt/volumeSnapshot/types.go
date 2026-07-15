@@ -1,7 +1,7 @@
 package volumeSnapshot
 
 import (
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 type RetentionPolicy struct {

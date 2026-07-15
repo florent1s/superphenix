@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"superphenix-controller/internal/utils"
-	"superphenix-controller/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	v1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

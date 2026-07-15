@@ -3,7 +3,7 @@ package vpc
 import (
 	"cmp"
 	"slices"
-	"superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 	"testing"
 
 	google_cmp "github.com/google/go-cmp/cmp"

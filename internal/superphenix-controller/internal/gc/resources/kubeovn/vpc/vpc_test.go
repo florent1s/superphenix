@@ -2,10 +2,10 @@ package vpc
 
 import (
 	"context"
-	"superphenix-controller/internal/gc/resources/testhelper"
-	"superphenix-controller/internal/gc/utils"
-	"superphenix-controller/internal/informers"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/testhelper"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"testing"
 	"time"
 
@@ -14,7 +14,7 @@ import (
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 func newVpc(name string, labels map[string]string) *v1.Vpc {

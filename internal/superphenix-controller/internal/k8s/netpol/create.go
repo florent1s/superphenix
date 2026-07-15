@@ -3,10 +3,10 @@ package netpol
 import (
 	"context"
 	"fmt"
-	"superphenix-controller/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	v1 "k8s.io/api/networking/v1"
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

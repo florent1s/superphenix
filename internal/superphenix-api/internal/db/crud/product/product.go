@@ -3,11 +3,11 @@ package product
 import (
 	"context"
 	"strconv"
-	"superphenix-api/internal/db"
-	"superphenix-api/internal/db/crud"
-	"superphenix-api/internal/db/crud/quota"
-	"superphenix-api/internal/db/model"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/quota"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/google/uuid"
 )

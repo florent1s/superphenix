@@ -2,7 +2,7 @@ package user
 
 import (
 	"regexp"
-	"superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
 	"testing"
 	"time"
 

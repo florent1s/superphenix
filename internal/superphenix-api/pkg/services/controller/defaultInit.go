@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"superphenix-api/internal/az"
-	"superphenix-api/internal/db/crud/product"
-	"superphenix-api/internal/db/model"
-	"superphenix-api/pkg/api/publicHttp/proxy"
-	"superphenix-api/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/az"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/product"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/proxy"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/google/uuid"
 )

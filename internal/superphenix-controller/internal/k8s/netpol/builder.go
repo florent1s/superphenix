@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"superphenix-controller/internal/utils"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"

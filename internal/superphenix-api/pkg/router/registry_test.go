@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"superphenix-api/pkg/router"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
 
 	"github.com/go-chi/chi/v5"
 )

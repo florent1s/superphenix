@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	argoApp "superphenix-api/pkg/services/controller/argo-app"
+	argoApp "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/argo-app"
 
 	// Use v2 because v3 indent with 4 spaces instead of 2
 	"gopkg.in/yaml.v2"

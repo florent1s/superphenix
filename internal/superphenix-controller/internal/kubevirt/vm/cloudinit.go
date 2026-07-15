@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 )
 
 const cloudInitNameFormat = "cloudinit-%s"

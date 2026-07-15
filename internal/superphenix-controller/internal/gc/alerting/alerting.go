@@ -2,10 +2,10 @@ package alerting
 
 import (
 	"context"
-	"superphenix-controller/internal/gc/utils"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"

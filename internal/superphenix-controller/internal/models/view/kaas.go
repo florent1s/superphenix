@@ -1,7 +1,7 @@
 package view
 
 import (
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"sigs.k8s.io/cluster-api/api/core/v1beta2"
 )

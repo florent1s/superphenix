@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 func TestParseNetworkInfo(t *testing.T) {

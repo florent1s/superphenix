@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 )
 
 func TestGetByCode(t *testing.T) {

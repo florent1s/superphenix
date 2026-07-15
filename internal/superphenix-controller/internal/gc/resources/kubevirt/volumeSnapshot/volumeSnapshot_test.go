@@ -2,10 +2,10 @@ package volumeSnapshot
 
 import (
 	"context"
-	"superphenix-controller/internal/gc/resources/testhelper"
-	"superphenix-controller/internal/gc/utils"
-	"superphenix-controller/internal/informers"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/testhelper"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"testing"
 	"time"
 
@@ -17,7 +17,7 @@ import (
 	k8stesting "k8s.io/client-go/testing"
 	snapshotfake "kubevirt.io/client-go/externalsnapshotter/typed/volumesnapshot/v1/fake"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 func newVolumeSnapshot(name, namespace string, labels map[string]string) *volumesnapshotv1.VolumeSnapshot {

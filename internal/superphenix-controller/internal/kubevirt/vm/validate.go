@@ -2,7 +2,7 @@ package vm
 
 import (
 	"fmt"
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 )
 
 // validateNetworkIP checks that any provided static IP falls within the subnet CIDR.

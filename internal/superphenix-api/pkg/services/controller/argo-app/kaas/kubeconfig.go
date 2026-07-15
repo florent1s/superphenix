@@ -5,7 +5,7 @@ import (
 	"net"
 	"net/url"
 
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 
 	"k8s.io/client-go/tools/clientcmd"
 )

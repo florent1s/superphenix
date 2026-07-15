@@ -2,7 +2,7 @@ package view
 
 import (
 	"encoding/json"
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 
 	v1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	"github.com/rs/zerolog/log"

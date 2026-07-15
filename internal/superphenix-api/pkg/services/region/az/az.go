@@ -3,11 +3,11 @@ package az
 import (
 	"encoding/json"
 	"net/http"
-	"superphenix-api/internal/az"
-	httpModel "superphenix-api/pkg/api/publicHttp/model"
-	"superphenix-api/pkg/api/publicHttp/proxy"
-	"superphenix-api/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/az"
+	httpModel "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/proxy"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/go-chi/chi/v5"
 )

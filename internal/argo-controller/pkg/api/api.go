@@ -1,11 +1,11 @@
 package api
 
 import (
-	"argo-controller/api"
-	v1 "argo-controller/pkg/api/v1"
-	"argo-controller/pkg/config"
-	"argo-controller/pkg/metrics"
-	"argo-controller/pkg/opentelemetry/tracing"
+	"github.com/super-phenix/superphenix/internal/argo-controller/api"
+	v1 "github.com/super-phenix/superphenix/internal/argo-controller/pkg/api/v1"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/metrics"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/opentelemetry/tracing"
 	"context"
 	"net/http"
 

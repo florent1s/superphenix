@@ -1,8 +1,8 @@
 package api
 
 import (
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/server"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/server"
 
 	"github.com/rs/zerolog/log"
 )

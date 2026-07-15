@@ -7,13 +7,13 @@ import (
 	"os"
 	"time"
 
-	"argo-controller/pkg/api"
-	"argo-controller/pkg/config"
-	"argo-controller/pkg/gc"
-	"argo-controller/pkg/metrics"
-	"argo-controller/pkg/opentelemetry/tracing"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/api"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/gc"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/metrics"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/opentelemetry/tracing"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"

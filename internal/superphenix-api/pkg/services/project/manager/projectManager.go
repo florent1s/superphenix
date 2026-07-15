@@ -3,10 +3,10 @@ package manager
 import (
 	"encoding/json"
 	"net/http"
-	"superphenix-api/internal/authorization"
-	"superphenix-api/internal/consts"
-	"superphenix-api/internal/db/crud"
-	"superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm/clause"

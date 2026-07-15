@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"testing"
 	"time"
 )

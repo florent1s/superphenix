@@ -2,10 +2,10 @@ package vm
 
 import (
 	"context"
-	"superphenix-controller/internal/models/view"
-	"superphenix-controller/internal/utils"
-	"superphenix-controller/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -3,7 +3,7 @@ package v1
 import (
 	_ "embed"
 
-	"permify-wrapper/pkg/base/v1/permissionSet"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permissionSet"
 )
 
 //go:embed schema/schema_default.perm

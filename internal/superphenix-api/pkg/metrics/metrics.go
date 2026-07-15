@@ -3,7 +3,7 @@ package metrics
 import (
 	"net/http"
 	"strconv"
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"

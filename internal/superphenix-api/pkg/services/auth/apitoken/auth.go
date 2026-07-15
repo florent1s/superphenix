@@ -5,12 +5,12 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"superphenix-api/internal/consts"
-	apiToken "superphenix-api/internal/db/crud/api-token"
-	"superphenix-api/internal/db/model"
-	"superphenix-api/pkg/api/publicHttp/authentication"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	apiToken "github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/api-token"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication"
 	"time"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/google/uuid"
 )

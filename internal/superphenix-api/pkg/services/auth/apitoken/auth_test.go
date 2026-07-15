@@ -3,8 +3,8 @@ package apiToken
 import (
 	"net/http"
 	"net/http/httptest"
-	"superphenix-api/internal/consts"
-	"superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
 	"testing"
 	"time"
 

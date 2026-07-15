@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 func TestFilterLabels(t *testing.T) {

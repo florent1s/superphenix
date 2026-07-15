@@ -1,7 +1,7 @@
 package crud
 
 import (
-	"superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"

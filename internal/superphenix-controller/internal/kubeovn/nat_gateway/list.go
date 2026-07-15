@@ -1,10 +1,10 @@
 package natGateway
 
 import (
-	"superphenix-controller/internal/informers"
-	"superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )

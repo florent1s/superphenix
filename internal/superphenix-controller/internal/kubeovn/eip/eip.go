@@ -3,9 +3,9 @@ package eip
 import (
 	"context"
 	"fmt"
-	k8s "superphenix-controller/pkg/config"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

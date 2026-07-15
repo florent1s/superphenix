@@ -2,12 +2,12 @@ package eip
 
 import (
 	"context"
-	"superphenix-controller/internal/kubeovn/eip/dnat"
-	"superphenix-controller/internal/kubeovn/eip/snat"
-	"superphenix-controller/internal/utils"
-	k8s "superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubeovn/eip/dnat"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubeovn/eip/snat"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"time"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

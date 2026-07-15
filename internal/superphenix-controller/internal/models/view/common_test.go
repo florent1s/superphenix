@@ -1,7 +1,7 @@
 package view
 
 import (
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"

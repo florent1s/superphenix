@@ -1,4 +1,4 @@
-module superphenix-api
+module github.com/super-phenix/superphenix/internal/superphenix-api
 
 go 1.25.0
 
@@ -13,6 +13,10 @@ require (
 	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0
 	go.opentelemetry.io/otel/sdk v1.40.0
+	github.com/super-phenix/superphenix/pkg/permify-wrapper v0.0.0
+	github.com/super-phenix/superphenix/pkg/utils v0.0.0
+	github.com/super-phenix/superphenix/pkg/superphenix-id v0.0.0
+	github.com/super-phenix/superphenix/pkg/chi-helper v0.0.0
 )
 
 require (

@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"superphenix-api/internal/consts"
-	crud "superphenix-api/internal/db/crud/product"
-	"superphenix-api/internal/db/model"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	crud "github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/product"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

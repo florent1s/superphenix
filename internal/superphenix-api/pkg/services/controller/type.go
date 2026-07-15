@@ -1,7 +1,7 @@
 package controller
 
 import (
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 // CreateVPCSpxControllerBody is the body send to superphenix-controller to create a VPC.

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"superphenix-controller/internal/kubeovn/eip/fip"
-	k8s "superphenix-controller/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubeovn/eip/fip"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/google/uuid"
 	v1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"

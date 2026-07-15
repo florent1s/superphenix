@@ -3,18 +3,18 @@ package membership
 import (
 	"encoding/json"
 	"net/http"
-	"superphenix-api/internal/db/crud/group"
-	"superphenix-api/internal/db/crud/organization"
-	"superphenix-api/internal/db/crud/user"
-	httpModel "superphenix-api/pkg/api/publicHttp/model"
-	"utils/decoder"
-	httpError "utils/error"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/group"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/organization"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"
+	httpModel "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
+	"github.com/super-phenix/superphenix/pkg/utils/decoder"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
-	pw "permify-wrapper/pkg"
-	v1 "permify-wrapper/pkg/base/v1"
+	pw "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"

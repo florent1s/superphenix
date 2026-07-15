@@ -2,8 +2,8 @@ package quota
 
 import (
 	"errors"
-	"superphenix-api/internal/db/crud"
-	"superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

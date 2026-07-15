@@ -3,7 +3,7 @@ package view
 import (
 	"encoding/json"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	v1 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	"github.com/rs/zerolog/log"

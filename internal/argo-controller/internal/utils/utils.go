@@ -1,13 +1,13 @@
 package utils
 
 import (
-	"argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"fmt"
 	"net/http"
 	"slices"
-	httpError "utils/error"
-	logger "utils/log"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/go-chi/chi/v5"
 )

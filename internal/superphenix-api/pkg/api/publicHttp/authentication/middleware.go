@@ -3,7 +3,7 @@ package authentication
 import (
 	"net/http"
 
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 // Authenticate is a middleware that detect and validate multiple auth method

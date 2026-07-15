@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"testing"
 	"time"
 )

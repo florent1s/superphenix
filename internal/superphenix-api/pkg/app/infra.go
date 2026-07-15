@@ -4,10 +4,10 @@ package app
 import (
 	"sync"
 
-	"superphenix-api/internal/db"
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 
-	pwClient "permify-wrapper/pkg/client"
+	pwClient "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/client"
 )
 
 var (

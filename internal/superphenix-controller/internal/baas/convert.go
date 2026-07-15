@@ -1,8 +1,8 @@
 package baas
 
 import (
-	"superphenix-controller/internal/models/view"
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 	"time"
 
 	"github.com/rs/zerolog/log"

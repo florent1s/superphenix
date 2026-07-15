@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"superphenix-controller/internal/gc/resources/testhelper"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/testhelper"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 )
 
 // TestCreateLoadBalancer_EndpointIPv4Validation verifies only valid IPv4 endpoints are accepted.

@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 	"slices"
-	"superphenix-api/internal/db"
-	"superphenix-api/internal/db/model"
-	"superphenix-api/pkg/services/iam/group"
-	"utils/decoder"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/iam/group"
+	"github.com/super-phenix/superphenix/pkg/utils/decoder"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
-	v1 "permify-wrapper/pkg/base/v1"
-	"permify-wrapper/pkg/schema"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/schema"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"

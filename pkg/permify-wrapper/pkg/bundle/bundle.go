@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"permify-wrapper/pkg/client"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/client"
 
 	permifyPayload "buf.build/gen/go/permifyco/permify/protocolbuffers/go/base/v1"
 	"github.com/rs/zerolog/log"

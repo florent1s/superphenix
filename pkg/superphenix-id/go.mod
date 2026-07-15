@@ -1,4 +1,4 @@
-module superphenix-id
+module github.com/super-phenix/superphenix/pkg/superphenix-id
 
 go 1.25.7
 

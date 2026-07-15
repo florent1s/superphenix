@@ -3,7 +3,7 @@ package permissionSet
 import (
 	"strings"
 
-	"permify-wrapper/pkg/base/v1/entity"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/entity"
 )
 
 const InternalPrefix = "spx_"

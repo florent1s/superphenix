@@ -1,9 +1,9 @@
 package vm
 
 import (
-	"superphenix-controller/internal/kubevirt/datavolume"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/datavolume"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 type Network struct {

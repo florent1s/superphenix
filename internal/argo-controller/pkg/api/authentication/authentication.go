@@ -1,10 +1,10 @@
 package authentication
 
 import (
-	"argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"net/http"
 	"strings"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 // BearerAuth implements a simple middleware handler for adding bearer http auth to a route.

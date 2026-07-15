@@ -3,14 +3,14 @@ package config
 import (
 	"encoding/json"
 	"net/http"
-	kovm "superphenix-controller/internal/kubevirt/vm"
-	"superphenix-controller/internal/kubevirt/vmClusterPreference"
-	_ "superphenix-controller/internal/models/view"
-	"superphenix-controller/pkg/api/utils"
-	"superphenix-controller/pkg/config"
-	httpError "utils/error"
+	kovm "github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/vm"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/vmClusterPreference"
+	_ "github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
 	"github.com/go-chi/chi/v5"
 )

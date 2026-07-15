@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"chi-helper/model"
+	"github.com/super-phenix/superphenix/pkg/chi-helper/model"
 
 	"github.com/rs/zerolog/log"
 )

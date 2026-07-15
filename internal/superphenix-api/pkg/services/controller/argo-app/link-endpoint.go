@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	ctrlutils "superphenix-api/pkg/services/controller/utils"
-	httpError "utils/error"
-	logger "utils/log"
+	ctrlutils "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/utils"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/go-chi/chi/v5"
 )

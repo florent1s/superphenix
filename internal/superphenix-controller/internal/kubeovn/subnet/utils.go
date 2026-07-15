@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/rs/zerolog/log"
 )

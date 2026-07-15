@@ -3,21 +3,21 @@ package kubeovn
 import (
 	"encoding/json"
 	"net/http"
-	"superphenix-controller/internal/k8s"
-	lb "superphenix-controller/internal/kubeovn/load_balancer"
-	"superphenix-controller/internal/models/view"
-	"superphenix-controller/pkg/api/utils"
-	"utils/decoder"
-	httpError "utils/error"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/k8s"
+	lb "github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubeovn/load_balancer"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
+	"github.com/super-phenix/superphenix/pkg/utils/decoder"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/go-chi/chi/v5"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
-	spxIdMiddleware "superphenix-id/middleware"
+	spxIdMiddleware "github.com/super-phenix/superphenix/pkg/superphenix-id/middleware"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 )

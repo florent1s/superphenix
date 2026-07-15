@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"

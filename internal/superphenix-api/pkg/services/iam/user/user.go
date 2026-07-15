@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"superphenix-api/internal/db/crud/user"
-	"superphenix-api/internal/utils"
-	httpError "utils/error"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/utils"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/google/uuid"
 )

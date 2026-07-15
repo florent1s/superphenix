@@ -1,7 +1,7 @@
 package testhelper
 
 import (
-	"superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
 
 	"k8s.io/client-go/tools/cache"
 )

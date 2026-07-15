@@ -3,11 +3,11 @@ package kaas
 import (
 	"context"
 	"fmt"
-	"superphenix-controller/internal/utils"
-	k8s "superphenix-controller/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

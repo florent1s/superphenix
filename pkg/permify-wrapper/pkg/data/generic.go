@@ -3,12 +3,12 @@ package data
 import (
 	"context"
 	"fmt"
-	v1 "permify-wrapper/pkg/base/v1"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
 	"slices"
 
 	"github.com/rs/zerolog/log"
 
-	"permify-wrapper/pkg/client"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/client"
 
 	permifyPayload "buf.build/gen/go/permifyco/permify/protocolbuffers/go/base/v1"
 )

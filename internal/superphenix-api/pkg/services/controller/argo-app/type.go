@@ -1,6 +1,6 @@
 package argoApp
 
-import spxId "superphenix-id"
+import spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 // AppArgoCtrlBody is the body send to Argo Ctrl to create or update an App
 type AppArgoCtrlBody struct {

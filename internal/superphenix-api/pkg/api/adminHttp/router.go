@@ -1,13 +1,13 @@
 package adminHttp
 
 import (
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/metrics"
-	"superphenix-api/pkg/opentelemetry/tracing"
-	"superphenix-api/pkg/router"
-	"superphenix-api/pkg/services/admin/az"
-	"superphenix-api/pkg/services/admin/billing"
-	"superphenix-api/pkg/services/admin/permission"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/metrics"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/opentelemetry/tracing"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/admin/az"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/admin/billing"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/admin/permission"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

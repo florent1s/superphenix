@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"gopkg.in/yaml.v2"
 )

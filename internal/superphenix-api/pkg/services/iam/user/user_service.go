@@ -3,10 +3,10 @@ package user
 import (
 	"net/http"
 
-	"superphenix-api/pkg/api/publicHttp/authentication"
-	"superphenix-api/pkg/api/publicHttp/authentication/jwt"
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/router"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication/jwt"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
 )
 
 const moduleName = "user"

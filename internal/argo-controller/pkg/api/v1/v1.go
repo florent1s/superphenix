@@ -1,10 +1,10 @@
 package publicHttp
 
 import (
-	"argo-controller/internal/utils"
-	"argo-controller/pkg/api/authentication"
-	"argo-controller/pkg/api/gc"
-	"argo-controller/pkg/api/v1/argo"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/api/authentication"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/api/gc"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/api/v1/argo"
 
 	"github.com/go-chi/chi/v5"
 )

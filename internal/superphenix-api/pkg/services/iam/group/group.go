@@ -3,23 +3,23 @@ package group
 import (
 	"encoding/json"
 	"net/http"
-	groupDb "superphenix-api/internal/db/crud/group"
-	"superphenix-api/internal/db/crud/project"
-	"superphenix-api/internal/db/model"
-	"superphenix-api/internal/utils"
-	httpModel "superphenix-api/pkg/api/publicHttp/model"
-	"utils/decoder"
-	logger "utils/log"
+	groupDb "github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/group"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/project"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/utils"
+	httpModel "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
+	"github.com/super-phenix/superphenix/pkg/utils/decoder"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"context"
 
 	"github.com/go-chi/chi/v5"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
-	pw "permify-wrapper/pkg"
-	v1 "permify-wrapper/pkg/base/v1"
-	v1PSet "permify-wrapper/pkg/base/v1/permissionSet"
+	pw "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
+	v1PSet "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permissionSet"
 
 	"github.com/google/uuid"
 )

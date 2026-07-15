@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"superphenix-controller/internal/models/view"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/mock/gomock"
@@ -19,7 +19,7 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 func boolPtr(b bool) *bool { return &b }

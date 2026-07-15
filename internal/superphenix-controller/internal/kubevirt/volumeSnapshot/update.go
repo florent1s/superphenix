@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"math/rand/v2"
-	"superphenix-controller/internal/utils"
-	"superphenix-controller/pkg/config"
-	logger "utils/log"
-	"utils/schedule"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
+	"github.com/super-phenix/superphenix/pkg/utils/schedule"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

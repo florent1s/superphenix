@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"superphenix-api/internal/consts"
-	"superphenix-api/internal/db"
-	"superphenix-api/internal/db/crud/user"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 func RetrieveUserFromSession(r *http.Request) (*http.Request, error) {

@@ -3,10 +3,10 @@ package snat
 import (
 	"context"
 	"strings"
-	k8s "superphenix-controller/pkg/config"
-	logger "utils/log"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/google/uuid"
 	v1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"

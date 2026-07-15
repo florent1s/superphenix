@@ -3,14 +3,14 @@ package permission
 import (
 	"net/http"
 
-	"superphenix-api/internal/authorization/permify"
-	"superphenix-api/pkg/api/publicHttp/authentication"
-	"superphenix-api/pkg/api/publicHttp/authentication/jwt"
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/router"
-	apiToken "superphenix-api/pkg/services/auth/apitoken"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization/permify"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication/jwt"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
+	apiToken "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/auth/apitoken"
 
-	pwPermission "permify-wrapper/pkg/base/v1/permission"
+	pwPermission "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permission"
 )
 
 const ModuleName = "permission"

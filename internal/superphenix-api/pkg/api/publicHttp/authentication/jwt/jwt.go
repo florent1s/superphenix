@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"superphenix-api/internal/authentication/jwt"
-	"superphenix-api/pkg/api/publicHttp/authentication"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authentication/jwt"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 var (

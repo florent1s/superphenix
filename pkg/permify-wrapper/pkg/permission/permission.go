@@ -3,9 +3,9 @@ package permission
 import (
 	"context"
 	"fmt"
-	utils "permify-wrapper/internal"
-	"permify-wrapper/pkg/base/v1/entity"
-	"permify-wrapper/pkg/client"
+	utils "github.com/super-phenix/superphenix/pkg/permify-wrapper/internal"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/entity"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/client"
 
 	permifyPayload "buf.build/gen/go/permifyco/permify/protocolbuffers/go/base/v1"
 	"github.com/rs/zerolog/log"

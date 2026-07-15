@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"superphenix-controller/pkg/config"
-	httpError "utils/error"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/go-chi/chi/v5"
 )

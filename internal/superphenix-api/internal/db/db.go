@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"superphenix-api/internal/db/migration"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/migration"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"

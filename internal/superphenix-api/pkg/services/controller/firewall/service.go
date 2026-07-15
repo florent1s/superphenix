@@ -3,11 +3,11 @@ package firewall
 import (
 	"net/http"
 
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/router"
-	"superphenix-api/pkg/services/controller"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller"
 
-	pwPermission "permify-wrapper/pkg/base/v1/permission"
+	pwPermission "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permission"
 )
 
 const moduleName = "spx-controller-firewall"

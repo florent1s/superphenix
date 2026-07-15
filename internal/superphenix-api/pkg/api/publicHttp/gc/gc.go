@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"superphenix-api/internal/az"
-	"superphenix-api/pkg/api/publicHttp/proxy"
-	"superphenix-api/pkg/config"
-	logger "utils/log"
+
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/az"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/proxy"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 const markEndpoint = "mark"

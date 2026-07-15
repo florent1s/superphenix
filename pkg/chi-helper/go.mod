@@ -1,4 +1,4 @@
-module chi-helper
+module github.com/super-phenix/superphenix/pkg/chi-helper
 
 go 1.25.7
 

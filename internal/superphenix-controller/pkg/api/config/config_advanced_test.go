@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"superphenix-controller/internal/models/view"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/mock/gomock"

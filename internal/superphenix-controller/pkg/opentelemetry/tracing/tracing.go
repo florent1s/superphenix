@@ -2,7 +2,7 @@ package tracing
 
 import (
 	"context"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"

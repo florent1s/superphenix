@@ -3,15 +3,15 @@ package permission
 import (
 	"encoding/json"
 	"net/http"
-	"superphenix-api/internal/authorization"
-	"superphenix-api/internal/consts"
-	"utils/decoder"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/pkg/utils/decoder"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
-	"permify-wrapper/pkg/base/v1/permission"
-	pw "permify-wrapper/pkg/permission"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permission"
+	pw "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/permission"
 
 	"github.com/go-chi/chi/v5"
 )

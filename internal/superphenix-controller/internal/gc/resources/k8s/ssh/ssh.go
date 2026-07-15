@@ -3,10 +3,10 @@ package ssh
 import (
 	"context"
 	"fmt"
-	"superphenix-controller/internal/gc/alerting"
-	"superphenix-controller/internal/gc/utils"
-	"superphenix-controller/internal/informers"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/alerting"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"github.com/rs/zerolog"
 	v1 "k8s.io/api/core/v1"

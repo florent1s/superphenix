@@ -1,8 +1,8 @@
 package group
 
 import (
-	"superphenix-api/internal/db"
-	httpModel "superphenix-api/pkg/api/publicHttp/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	httpModel "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"

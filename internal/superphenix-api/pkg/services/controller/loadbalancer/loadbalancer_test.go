@@ -3,7 +3,7 @@ package loadbalancer
 import (
 	"testing"
 
-	"utils/validation"
+	"github.com/super-phenix/superphenix/pkg/utils/validation"
 
 	"github.com/stretchr/testify/assert"
 )

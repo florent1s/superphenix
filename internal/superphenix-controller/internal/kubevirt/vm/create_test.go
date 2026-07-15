@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	v1 "kubevirt.io/api/core/v1"
 )

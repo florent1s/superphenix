@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"superphenix-api/internal/consts"
-	"superphenix-api/internal/db/crud"
-	"superphenix-api/internal/db/model"
-	httpError "utils/error"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"

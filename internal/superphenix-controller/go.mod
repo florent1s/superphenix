@@ -1,4 +1,4 @@
-module superphenix-controller
+module github.com/super-phenix/superphenix/internal/superphenix-controller
 
 go 1.25.7
 
@@ -27,6 +27,8 @@ require (
 	kubevirt.io/client-go v1.8.0-alpha.0
 	sigs.k8s.io/cluster-api v1.12.2
 	sigs.k8s.io/cluster-api-provider-kubevirt v0.11.1
+	github.com/super-phenix/superphenix/pkg/superphenix-id v0.0.0
+	github.com/super-phenix/superphenix/pkg/utils v0.0.0
 )
 
 require (

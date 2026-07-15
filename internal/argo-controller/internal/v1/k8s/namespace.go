@@ -1,12 +1,12 @@
 package k8s
 
 import (
-	"argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"fmt"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

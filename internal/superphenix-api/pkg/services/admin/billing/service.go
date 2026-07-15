@@ -3,9 +3,9 @@ package billing
 import (
 	"net/http"
 
-	"superphenix-api/pkg/api/adminHttp/authentication"
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/router"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/adminHttp/authentication"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
 )
 
 const ModuleName = "billing"

@@ -2,9 +2,9 @@ package view
 
 import (
 	"encoding/json"
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	snapschedulerv1 "github.com/backube/snapscheduler/api/v1"
 	v1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"

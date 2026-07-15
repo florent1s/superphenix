@@ -2,11 +2,11 @@ package subnet
 
 import (
 	"context"
-	natGateway "superphenix-controller/internal/kubeovn/nat_gateway"
-	"superphenix-controller/internal/kubevirt/nad"
-	"superphenix-controller/internal/utils"
-	k8s "superphenix-controller/pkg/config"
-	logger "utils/log"
+	natGateway "github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubeovn/nat_gateway"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/nad"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

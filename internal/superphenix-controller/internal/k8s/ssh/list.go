@@ -2,9 +2,9 @@ package ssh
 
 import (
 	"context"
-	"superphenix-controller/internal/informers"
-	"superphenix-controller/internal/models/view"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )

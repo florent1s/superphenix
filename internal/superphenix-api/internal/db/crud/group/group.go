@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"strconv"
-	"superphenix-api/internal/db"
-	"superphenix-api/internal/db/crud"
-	"superphenix-api/internal/db/crud/quota"
-	"superphenix-api/internal/db/model"
-	httpModel "superphenix-api/pkg/api/publicHttp/model"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/quota"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
+	httpModel "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	v1 "permify-wrapper/pkg/base/v1"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
 
 	"github.com/google/uuid"
 )

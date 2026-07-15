@@ -1,7 +1,7 @@
 package volumeSnapshot
 
 import (
-	"superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 	"testing"
 
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

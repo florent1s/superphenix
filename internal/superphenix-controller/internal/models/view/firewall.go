@@ -3,9 +3,9 @@ package view
 import (
 	"fmt"
 	"strings"
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/networking/v1"

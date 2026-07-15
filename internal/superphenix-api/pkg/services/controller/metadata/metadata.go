@@ -3,7 +3,7 @@ package metadata
 import (
 	"net/http"
 
-	ctrlutils "superphenix-api/pkg/services/controller/utils"
+	ctrlutils "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/utils"
 )
 
 // StorageClass

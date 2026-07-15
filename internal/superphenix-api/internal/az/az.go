@@ -3,7 +3,7 @@ package az
 import (
 	"errors"
 	"slices"
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 )
 
 var ErrAZNotFound = errors.New("az not found")

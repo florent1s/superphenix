@@ -1,8 +1,8 @@
 package argoapp
 
 import (
-	"argo-controller/internal/gc/utils"
-	"argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"fmt"
 
@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 type Cleaner struct {

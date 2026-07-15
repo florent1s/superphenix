@@ -2,9 +2,9 @@ package view
 
 import (
 	"encoding/json"
-	"superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/rs/zerolog/log"
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

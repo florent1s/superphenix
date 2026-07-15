@@ -8,9 +8,9 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
-	"superphenix-api/internal/consts"
-	"superphenix-api/pkg/config"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/go-chi/chi/v5/middleware"
 )

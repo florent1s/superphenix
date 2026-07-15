@@ -1,6 +1,6 @@
 package permission
 
-import "permify-wrapper/pkg/base/v1/entity"
+import "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/entity"
 
 // Permissions
 const (

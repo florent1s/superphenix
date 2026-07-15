@@ -1,4 +1,4 @@
-module argo-controller
+module github.com/super-phenix/superphenix/internal/argo-controller
 
 go 1.25.0
 
@@ -19,6 +19,7 @@ require (
 	k8s.io/api v0.34.0
 	k8s.io/apimachinery v0.34.0
 	k8s.io/client-go v0.34.0
+	github.com/super-phenix/superphenix/pkg/utils v0.0.0
 )
 
 require (

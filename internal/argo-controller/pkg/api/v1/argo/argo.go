@@ -1,20 +1,20 @@
 package argo
 
 import (
-	"argo-controller/internal/utils"
-	appProject "argo-controller/internal/v1/app_project"
-	argoApp "argo-controller/internal/v1/argo_app"
-	"argo-controller/internal/v1/k8s"
-	"argo-controller/internal/v1/models/view"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/utils"
+	appProject "github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/app_project"
+	argoApp "github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/argo_app"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/k8s"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/models/view"
 	"encoding/json"
 	"net/http"
-	"utils/decoder"
-	httpError "utils/error"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/pkg/utils/decoder"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
-	ch "chi-helper"
+	ch "github.com/super-phenix/superphenix/pkg/chi-helper"
 
 	"github.com/go-chi/chi/v5"
 	"k8s.io/apimachinery/pkg/api/errors"

@@ -1,10 +1,10 @@
 package utils
 
 import (
-	v1 "permify-wrapper/pkg/base/v1"
-	"permify-wrapper/pkg/base/v1/entity"
-	basePermission "permify-wrapper/pkg/base/v1/permission"
-	basePSet "permify-wrapper/pkg/base/v1/permissionSet"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/entity"
+	basePermission "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permission"
+	basePSet "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permissionSet"
 )
 
 // StrToTuple convert string to Permify Tuple

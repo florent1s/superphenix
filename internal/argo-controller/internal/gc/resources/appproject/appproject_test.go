@@ -1,19 +1,19 @@
 package appproject
 
 import (
-	"argo-controller/internal/gc/utils"
-	"argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"testing"
 	"time"
 
-	"argo-controller/internal/gc/resources/testhelper"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/resources/testhelper"
 
 	argocdv1alpha1 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 func newAppProject(name, namespace string, labels map[string]string) argocdv1alpha1.AppProject {

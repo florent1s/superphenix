@@ -2,7 +2,7 @@ package view
 
 import (
 	"encoding/json"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"github.com/rs/zerolog/log"
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

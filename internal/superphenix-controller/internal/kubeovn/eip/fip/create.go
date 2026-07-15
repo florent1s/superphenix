@@ -3,9 +3,9 @@ package fip
 import (
 	"context"
 	"strings"
-	k8s "superphenix-controller/pkg/config"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	v1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	"github.com/rs/zerolog/log"

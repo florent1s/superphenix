@@ -18,8 +18,7 @@ RUN adduser               \
 WORKDIR $GOPATH/src/$PROJECT/
 
 # Copy workspace and module definitions
-COPY go.work* ./
-COPY cmd/go.mod* cmd/go.sum* ./cmd/
+COPY go.work* go.mod* go.sum* ./
 COPY internal/argo-controller/go.mod* internal/argo-controller/go.sum* ./internal/argo-controller/
 COPY internal/superphenix-api/go.mod* internal/superphenix-api/go.sum* ./internal/superphenix-api/
 COPY internal/superphenix-controller/go.mod* internal/superphenix-controller/go.sum* ./internal/superphenix-controller/
@@ -31,11 +30,12 @@ COPY pkg/utils/go.mod* pkg/utils/go.sum* ./pkg/utils/
 RUN go mod download && go mod verify
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-w -s' -o /bin/main cmd/superphenix-api/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags '-w -s' -o /bin/main ./cmd/superphenix-api
 
 FROM scratch
 
 ARG PROJECT
+ARG USER=$PROJECT
 WORKDIR /
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

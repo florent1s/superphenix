@@ -8,11 +8,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"superphenix-api/pkg/config"
-	argoApp "superphenix-api/pkg/services/controller/argo-app"
-	logger "utils/log"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	argoApp "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/argo-app"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	// Use v2 because v3 indent with 4 spaces instead of 2
 	"gopkg.in/yaml.v2"

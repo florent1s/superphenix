@@ -3,12 +3,12 @@ package session
 import (
 	"net/http"
 
-	"superphenix-api/pkg/api/publicHttp/authentication"
-	"superphenix-api/pkg/api/publicHttp/authentication/jwt"
-	"superphenix-api/pkg/api/publicHttp/authentication/kratos"
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/router"
-	apiToken "superphenix-api/pkg/services/auth/apitoken"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication/jwt"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication/kratos"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
+	apiToken "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/auth/apitoken"
 )
 
 const ModuleName = "session"

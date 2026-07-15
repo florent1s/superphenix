@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"superphenix-controller/internal/models/view"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"go.uber.org/mock/gomock"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -15,7 +15,7 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 // vmiNotFound builds a K8s NotFound error for a VMI (returned when the VM is stopped).

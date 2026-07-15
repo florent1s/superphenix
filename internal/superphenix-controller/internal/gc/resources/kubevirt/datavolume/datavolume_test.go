@@ -2,10 +2,10 @@ package datavolume
 
 import (
 	"context"
-	"superphenix-controller/internal/gc/resources/testhelper"
-	"superphenix-controller/internal/gc/utils"
-	"superphenix-controller/internal/informers"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/testhelper"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"testing"
 	"time"
 
@@ -16,7 +16,7 @@ import (
 	"kubevirt.io/client-go/kubecli"
 	"kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 )
 
 func newDataVolume(name, namespace string, labels map[string]string) *v1beta1.DataVolume {

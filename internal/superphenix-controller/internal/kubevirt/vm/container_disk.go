@@ -3,12 +3,12 @@ package vm
 import (
 	"context"
 	"fmt"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "kubevirt.io/api/core/v1"
 
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 )
 
 // ContainerDiskSpec is one mounted disk. The ID is the catalog id and the

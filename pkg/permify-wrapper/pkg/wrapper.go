@@ -2,18 +2,18 @@ package pkg
 
 import (
 	"context"
-	"permify-wrapper/pkg/base/v1/permissionSet"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/permissionSet"
 
 	"github.com/rs/zerolog/log"
 
-	utils "permify-wrapper/internal"
+	utils "github.com/super-phenix/superphenix/pkg/permify-wrapper/internal"
 
-	v1 "permify-wrapper/pkg/base/v1"
-	"permify-wrapper/pkg/base/v1/entity"
-	"permify-wrapper/pkg/bundle"
-	"permify-wrapper/pkg/data"
-	"permify-wrapper/pkg/schema"
-	"permify-wrapper/pkg/tenancy"
+	v1 "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/base/v1/entity"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/bundle"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/data"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/schema"
+	"github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/tenancy"
 )
 
 type Organization struct {

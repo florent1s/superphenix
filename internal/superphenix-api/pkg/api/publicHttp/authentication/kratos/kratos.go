@@ -3,9 +3,9 @@ package kratos
 import (
 	"context"
 	"net/http"
-	"superphenix-api/internal/consts"
-	"superphenix-api/internal/db/provider"
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/provider"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/rs/zerolog/log"

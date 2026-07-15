@@ -1,13 +1,13 @@
 package argoApp
 
 import (
-	"argo-controller/internal/v1/models/view"
-	"argo-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/models/view"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"fmt"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

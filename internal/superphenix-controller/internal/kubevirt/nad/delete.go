@@ -2,8 +2,8 @@ package nad
 
 import (
 	"context"
-	k8s "superphenix-controller/pkg/config"
-	logger "utils/log"
+	k8s "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

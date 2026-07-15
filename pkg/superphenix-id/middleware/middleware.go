@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"

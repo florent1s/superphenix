@@ -23,7 +23,7 @@ The `requestId` field is automatically injected from Chi's `RequestID` middlewar
 ### Creating an Error Response
 
 ```go
-import httpError "utils/error"
+import httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 
 // Create an error response with an HTTP status code
 httpError.Http(w, r, http.StatusBadRequest)
@@ -63,7 +63,7 @@ All context methods return `*Message` for chaining.
 When proxying requests to other services, use `RetrieveHttpError` to decode error responses:
 
 ```go
-import httpError "utils/error"
+import httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 
 errBody := httpError.RetrieveHttpError(resp)
 if errBody != nil {

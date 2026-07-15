@@ -3,11 +3,11 @@ package informers
 import (
 	"context"
 	"fmt"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"time"
-	gcLog "utils/log"
+	gcLog "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	k8scnicncfiov1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	kubeovn "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"

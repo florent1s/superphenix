@@ -3,7 +3,7 @@ package vm
 import (
 	"testing"
 
-	"superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 
 	v1 "kubevirt.io/api/core/v1"
 )

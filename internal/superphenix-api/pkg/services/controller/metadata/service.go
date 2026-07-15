@@ -3,9 +3,9 @@ package metadata
 import (
 	"net/http"
 
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/router"
-	"superphenix-api/pkg/services/controller"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller"
 )
 
 const moduleName = "spx-controller-metadata"

@@ -1,4 +1,4 @@
-module permify-wrapper
+module github.com/super-phenix/superphenix/pkg/permify-wrapper
 
 go 1.25.7
 

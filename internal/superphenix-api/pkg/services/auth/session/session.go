@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"superphenix-api/internal/authentication/jwt"
-	"superphenix-api/internal/consts"
-	"superphenix-api/internal/db"
-	"superphenix-api/internal/db/crud/user"
-	"superphenix-api/pkg/api/publicHttp/authentication"
-	"superphenix-api/pkg/api/publicHttp/model"
-	"superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authentication/jwt"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 	"time"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 var RefreshAuth = authentication.AuthType{

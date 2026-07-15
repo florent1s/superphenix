@@ -2,7 +2,7 @@ package eip
 
 import (
 	"context"
-	logger "utils/log"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 // cleanEip deletes the matching EIP, used when IpTablesRule creation fails.

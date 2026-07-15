@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 )
 
 func setCatalog(t *testing.T, entries []config.ContainerDiskCatalogEntry) {

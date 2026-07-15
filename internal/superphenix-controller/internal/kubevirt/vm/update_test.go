@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"superphenix-controller/internal/utils"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"go.uber.org/mock/gomock"
 	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

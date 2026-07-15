@@ -1,7 +1,7 @@
 package migration
 
 import (
-	"superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"

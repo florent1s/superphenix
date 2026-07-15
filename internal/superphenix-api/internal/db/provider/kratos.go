@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/services/iam/organization"
-	"superphenix-api/pkg/services/project/project"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/iam/organization"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/project/project"
 
-	"superphenix-api/internal/consts"
-	"superphenix-api/internal/db"
-	"superphenix-api/internal/db/model"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 
 	kratos "github.com/ory/kratos-client-go"
 

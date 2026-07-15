@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	httpError "utils/error"
-	logger "utils/log"
+	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
-	"superphenix-controller/pkg/api/utils"
-	"superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"

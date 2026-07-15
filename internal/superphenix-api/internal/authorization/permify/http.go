@@ -2,8 +2,8 @@ package permify
 
 import (
 	"net/http"
-	"superphenix-api/internal/authorization"
-	"superphenix-api/internal/consts"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"

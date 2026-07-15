@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"net/http"
-	p "permify-wrapper/pkg/permission"
+	p "github.com/super-phenix/superphenix/pkg/permify-wrapper/pkg/permission"
 
 	"github.com/rs/zerolog/log"
 )

@@ -1,6 +1,6 @@
 package kaas
 
-import argoApp "superphenix-api/pkg/services/controller/argo-app"
+import argoApp "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/argo-app"
 
 var (
 	CpuValueList    = []int{1, 2, 4, 8, 16, 32}

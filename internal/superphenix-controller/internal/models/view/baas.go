@@ -1,7 +1,7 @@
 package view
 
 import (
-	spxId "superphenix-id"
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
