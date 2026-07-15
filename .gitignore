@@ -33,6 +33,8 @@ go.work
 # Examples are private for now
 examples/
 
+# Temporary build & push to local registry
+hacks/.build-and-push.sh
 
 # AI agents
 .claude/
