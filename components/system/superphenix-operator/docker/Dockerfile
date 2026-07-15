@@ -4,9 +4,15 @@ ARG TARGETOS
 ARG TARGETARCH
 
 WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
+# Copy workspace and module definitions
+COPY go.work* go.mod* go.sum* ./
+COPY internal/argo-controller/go.mod* internal/argo-controller/go.sum* ./internal/argo-controller/
+COPY internal/superphenix-api/go.mod* internal/superphenix-api/go.sum* ./internal/superphenix-api/
+COPY internal/superphenix-controller/go.mod* internal/superphenix-controller/go.sum* ./internal/superphenix-controller/
+COPY pkg/chi-helper/go.mod* pkg/chi-helper/go.sum* ./pkg/chi-helper/
+COPY pkg/permify-wrapper/go.mod* pkg/permify-wrapper/go.sum* ./pkg/permify-wrapper/
+COPY pkg/superphenix-id/go.mod* pkg/superphenix-id/go.sum* ./pkg/superphenix-id/
+COPY pkg/utils/go.mod* pkg/utils/go.sum* ./pkg/utils/
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 RUN go mod download
