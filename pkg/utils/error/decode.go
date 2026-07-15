@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	logger "utils/log"
+
+	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 
 func RetrieveHttpError(resp *http.Response) *ErrorBody {

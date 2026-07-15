@@ -1,4 +1,4 @@
-module utils
+module github.com/super-phenix/superphenix
 
 go 1.25.0
 

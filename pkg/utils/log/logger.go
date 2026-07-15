@@ -3,7 +3,7 @@ package log
 import (
 	"context"
 
-	"github.com/go-chi/chi/v5/middleware"
+	middleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -14,7 +14,6 @@ const (
 
 // GetLogger return logger depending on the context
 func GetLogger(ctx context.Context) zerolog.Logger {
-
 	loggedUser := ctx.Value("UserId")
 
 	if loggedUser == nil {
