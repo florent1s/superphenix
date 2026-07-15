@@ -1,0 +1,7 @@
+apiVersion: v2
+name: superphenix-api
+description: Helm chart to deploy the Superphenix API
+type: application
+
+version: 0.1.0
+appVersion: "0.0.1"

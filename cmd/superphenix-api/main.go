@@ -4,13 +4,14 @@ import (
 	"context"
 	l "log"
 	"os"
-	"superphenix-api/pkg/api"
-	"superphenix-api/pkg/config"
-	"superphenix-api/pkg/metrics"
-	"superphenix-api/pkg/opentelemetry/tracing"
 	"time"
 
-	spxId "superphenix-id"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/metrics"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/opentelemetry/tracing"
+
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"

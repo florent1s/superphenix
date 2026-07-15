@@ -5,14 +5,15 @@ import (
 	"errors"
 	l "log"
 	"os"
-	"superphenix-controller/pkg/api"
-	"superphenix-controller/pkg/config"
-	"superphenix-controller/pkg/gc"
-	"superphenix-controller/pkg/metrics"
-	"superphenix-controller/pkg/opentelemetry/tracing"
 	"time"
 
-	spxId "superphenix-id"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/gc"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/metrics"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/opentelemetry/tracing"
+
+	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
