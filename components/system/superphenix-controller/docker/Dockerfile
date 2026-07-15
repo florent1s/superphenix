@@ -18,8 +18,7 @@ RUN adduser               \
 WORKDIR $GOPATH/src/$PROJECT/
 
 # Copy workspace and module definitions
-COPY go.work* ./
-COPY cmd/go.mod* cmd/go.sum* ./cmd/
+COPY go.work* go.mod* go.sum* ./
 COPY internal/argo-controller/go.mod* internal/argo-controller/go.sum* ./internal/argo-controller/
 COPY internal/superphenix-api/go.mod* internal/superphenix-api/go.sum* ./internal/superphenix-api/
 COPY internal/superphenix-controller/go.mod* internal/superphenix-controller/go.sum* ./internal/superphenix-controller/
