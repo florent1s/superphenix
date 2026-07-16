@@ -51,9 +51,40 @@ function namespace_secret() {
 	echo $NS
 }
 
+function create_remove_path_cm() {
+	msg_action "Creating resource modifier ConfigMap $BWhite remove-path$RST\n"
+	cat <<EOF | kubectl apply --context=admin@${CLUSTER} -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: remove-path
+  namespace: ${VELERO_NAMESPACE}
+data:
+  remove-path.yaml: |
+    version: v1
+    resourceModifierRules:
+    - conditions:
+        groupResource: "persistentvolume"
+      patches:
+        - operation: remove
+          path: "/spec/capacity"
+        - operation: remove
+          path: "/spec/claimRef"
+EOF
+}
+
+# To ensure we can modify the PVCs once they're exported, we would need to change their secrets
+#     - operation: replace
+#      path: "/spec/csi/controllerExpandSecretRef/namespace"
+#      value: "spx-aq01-test01-storage01"
+#    - operation: replace
+#      path: "/spec/csi/nodeStageSecretRef/namespace"
+#      value: "spx-aq01-test01-storage01"
+
 function apply_restore() {
 if [[ $REPLICATION == "true" ]]; then
 msg_info "Restoring from replication\n"
+create_remove_path_cm
 cat <<EOF | kubectl apply --context=admin@${CLUSTER} -f -
 apiVersion: velero.io/v1
 kind: Restore
