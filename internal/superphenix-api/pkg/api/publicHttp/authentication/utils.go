@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"

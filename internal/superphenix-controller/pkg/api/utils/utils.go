@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"

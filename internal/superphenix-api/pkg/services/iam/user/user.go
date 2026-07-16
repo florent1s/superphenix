@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/utils"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"

@@ -1,14 +1,15 @@
 package gc
 
 import (
-	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/resources/appproject"
-	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/resources/argoapp"
-	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/utils"
-	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/resources/appproject"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/resources/argoapp"
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	gcLog "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/google/uuid"

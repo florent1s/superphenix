@@ -3,6 +3,7 @@ package membership
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/group"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/organization"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"

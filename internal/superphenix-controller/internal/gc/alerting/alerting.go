@@ -2,6 +2,7 @@ package alerting
 
 import (
 	"context"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 

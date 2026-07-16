@@ -3,6 +3,9 @@ package gc
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/alerting"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/k8s/namespace"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/k8s/netpol"
@@ -19,8 +22,6 @@ import (
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
-	"sync"
-	"time"
 	gcLog "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	"github.com/google/uuid"

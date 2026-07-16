@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authentication/jwt"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
@@ -13,7 +15,6 @@ import (
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/authentication"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
-	"time"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 

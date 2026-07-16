@@ -3,11 +3,12 @@ package eip
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/alerting"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/informers"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
-	"time"
 
 	v1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	"github.com/rs/zerolog"

@@ -2,6 +2,8 @@ package api
 
 import (
 	"net/http"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/api"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/authentication"
 	configApi "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/config"
@@ -15,7 +17,6 @@ import (
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/metrics"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/opentelemetry/tracing"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

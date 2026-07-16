@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 	httpModel "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
-	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

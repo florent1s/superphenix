@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 

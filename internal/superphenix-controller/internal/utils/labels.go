@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"

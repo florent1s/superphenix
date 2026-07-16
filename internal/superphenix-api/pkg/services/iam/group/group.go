@@ -3,6 +3,7 @@ package group
 import (
 	"encoding/json"
 	"net/http"
+
 	groupDb "github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/group"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/project"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"

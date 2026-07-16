@@ -1,13 +1,14 @@
 package argo
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/argo-controller/internal/utils"
 	appProject "github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/app_project"
 	argoApp "github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/argo_app"
 	"github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/k8s"
 	"github.com/super-phenix/superphenix/internal/argo-controller/internal/v1/models/view"
-	"encoding/json"
-	"net/http"
 	"github.com/super-phenix/superphenix/pkg/utils/decoder"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"

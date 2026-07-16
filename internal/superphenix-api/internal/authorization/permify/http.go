@@ -2,6 +2,7 @@ package permify
 
 import (
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 

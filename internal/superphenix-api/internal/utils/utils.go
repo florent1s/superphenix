@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 
 	"github.com/google/uuid"

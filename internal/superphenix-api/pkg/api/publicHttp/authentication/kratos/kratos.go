@@ -3,6 +3,7 @@ package kratos
 import (
 	"context"
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/provider"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"

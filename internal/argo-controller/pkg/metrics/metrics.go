@@ -1,10 +1,11 @@
 package metrics
 
 import (
-	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"

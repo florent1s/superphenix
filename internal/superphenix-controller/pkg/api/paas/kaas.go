@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kaas"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
-	"time"
 	"github.com/super-phenix/superphenix/pkg/utils/decoder"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/alerting"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/k8s/namespace"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/k8s/netpol"
@@ -20,7 +22,6 @@ import (
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
 	apiUtils "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
-	"time"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	gcLog "github.com/super-phenix/superphenix/pkg/utils/log"
 

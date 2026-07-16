@@ -2,6 +2,7 @@ package tracing
 
 import (
 	"context"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	"github.com/rs/zerolog/log"

@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
-	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 )

@@ -3,6 +3,7 @@ package permission
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 	"github.com/super-phenix/superphenix/pkg/utils/decoder"

@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"time"
+
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"

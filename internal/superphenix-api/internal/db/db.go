@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/migration"
 
 	"github.com/rs/zerolog/log"

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"

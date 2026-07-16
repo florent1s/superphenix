@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"

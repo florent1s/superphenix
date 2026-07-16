@@ -3,8 +3,9 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	"time"
+
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 )
 
 // ParseTimestamp fetch deletion timestamp in labels and check if it's before time.Now()

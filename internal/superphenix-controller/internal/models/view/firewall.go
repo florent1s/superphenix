@@ -3,6 +3,7 @@ package view
 import (
 	"fmt"
 	"strings"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 
 	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"

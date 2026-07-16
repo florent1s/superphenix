@@ -1,9 +1,10 @@
 package authentication
 
 import (
-	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"net/http"
 	"strings"
+
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
 

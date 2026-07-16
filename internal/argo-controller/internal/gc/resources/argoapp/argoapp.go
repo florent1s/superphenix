@@ -1,10 +1,11 @@
 package argoapp
 
 import (
-	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/utils"
-	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"fmt"
+
+	"github.com/super-phenix/superphenix/internal/argo-controller/internal/gc/utils"
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -1,11 +1,12 @@
 package utils
 
 import (
-	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
 	"fmt"
 	"net/http"
 	"slices"
+
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 

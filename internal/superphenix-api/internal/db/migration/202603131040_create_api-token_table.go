@@ -1,8 +1,9 @@
 package migration
 
 import (
-	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 	"time"
+
+	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 
 	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/google/uuid"

@@ -59,7 +59,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/argo-controller_internal_v1_models_view.Application"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.Application"
                             }
                         }
                     },
@@ -109,7 +109,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/argo-controller_internal_v1_argo_app.CreateAppInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_argo_app.CreateAppInfo"
                         }
                     }
                 ],
@@ -171,7 +171,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Application",
                         "schema": {
-                            "$ref": "#/definitions/argo-controller_internal_v1_models_view.Application"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.Application"
                         }
                     },
                     "400": {
@@ -228,7 +228,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Application",
                         "schema": {
-                            "$ref": "#/definitions/argo-controller_internal_v1_models_view.Application"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.Application"
                         }
                     },
                     "400": {
@@ -284,7 +284,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/argo-controller_internal_v1_argo_app.UpdateAppInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_argo_app.UpdateAppInfo"
                         }
                     }
                 ],
@@ -402,7 +402,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "argo-controller_internal_v1_argo_app.AppSource": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_argo_app.AppSource": {
             "type": "object",
             "properties": {
                 "chart": {
@@ -425,7 +425,7 @@ const docTemplate = `{
                 }
             }
         },
-        "argo-controller_internal_v1_argo_app.CreateAppInfo": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_argo_app.CreateAppInfo": {
             "type": "object",
             "properties": {
                 "general": {
@@ -461,13 +461,13 @@ const docTemplate = `{
                             }
                         },
                         "source": {
-                            "$ref": "#/definitions/argo-controller_internal_v1_argo_app.AppSource"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_argo_app.AppSource"
                         }
                     }
                 }
             }
         },
-        "argo-controller_internal_v1_argo_app.UpdateAppInfo": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_argo_app.UpdateAppInfo": {
             "type": "object",
             "properties": {
                 "ignoreDifferences": {
@@ -477,11 +477,11 @@ const docTemplate = `{
                     }
                 },
                 "source": {
-                    "$ref": "#/definitions/argo-controller_internal_v1_argo_app.AppSource"
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_argo_app.AppSource"
                 }
             }
         },
-        "argo-controller_internal_v1_models_view.AppView": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.AppView": {
             "type": "object",
             "properties": {
                 "apiVersion": {
@@ -493,24 +493,24 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "metadata": {
-                    "$ref": "#/definitions/argo-controller_internal_v1_models_view.ObjectMeta"
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ObjectMeta"
                 },
                 "operation": {
                     "$ref": "#/definitions/v1.Operation"
                 },
                 "spec": {
-                    "$ref": "#/definitions/argo-controller_internal_v1_models_view.ApplicationSpec"
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ApplicationSpec"
                 },
                 "status": {
-                    "$ref": "#/definitions/argo-controller_internal_v1_models_view.ApplicationStatus"
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ApplicationStatus"
                 }
             }
         },
-        "argo-controller_internal_v1_models_view.Application": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.Application": {
             "type": "object",
             "properties": {
                 "app": {
-                    "$ref": "#/definitions/argo-controller_internal_v1_models_view.AppView"
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.AppView"
                 },
                 "codeAZ": {
                     "type": "string"
@@ -535,7 +535,7 @@ const docTemplate = `{
                 }
             }
         },
-        "argo-controller_internal_v1_models_view.ApplicationSource": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ApplicationSource": {
             "type": "object",
             "properties": {
                 "chart": {
@@ -580,20 +580,20 @@ const docTemplate = `{
                 }
             }
         },
-        "argo-controller_internal_v1_models_view.ApplicationSpec": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ApplicationSpec": {
             "type": "object",
             "properties": {
                 "source": {
                     "description": "Source is a reference to the location of the application's manifests or chart",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/argo-controller_internal_v1_models_view.ApplicationSource"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ApplicationSource"
                         }
                     ]
                 }
             }
         },
-        "argo-controller_internal_v1_models_view.ApplicationStatus": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ApplicationStatus": {
             "type": "object",
             "properties": {
                 "conditions": {
@@ -628,7 +628,7 @@ const docTemplate = `{
                 }
             }
         },
-        "argo-controller_internal_v1_models_view.ObjectMeta": {
+        "github_com_super-phenix_superphenix_internal_argo-controller_internal_v1_models_view.ObjectMeta": {
             "type": "object",
             "properties": {
                 "creationTimestamp": {

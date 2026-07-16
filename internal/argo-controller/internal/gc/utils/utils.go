@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"fmt"
 	"time"
+
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 )
 
 // ParseTimestamp fetch deletion timestamp in labels and check if it's before time.Now()

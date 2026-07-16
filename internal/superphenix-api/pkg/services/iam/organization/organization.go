@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/group"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/user"

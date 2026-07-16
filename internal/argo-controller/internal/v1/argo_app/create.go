@@ -1,8 +1,9 @@
 package argoApp
 
 import (
-	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	"context"
+
+	"github.com/super-phenix/superphenix/internal/argo-controller/pkg/config"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 
 	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"

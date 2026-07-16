@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"
 	apiToken "github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/api-token"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 	httpModel "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/api/publicHttp/model"
-	"time"
 	"github.com/super-phenix/superphenix/pkg/utils/decoder"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"

@@ -52,7 +52,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.BaaS"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BaaS"
                             }
                         }
                     },
@@ -140,7 +140,7 @@ const docTemplate = `{
                     "200": {
                         "description": "BaaS",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.BaaS"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BaaS"
                         }
                     },
                     "400": {
@@ -190,7 +190,7 @@ const docTemplate = `{
                     "200": {
                         "description": "BaaS",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.BaaS"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BaaS"
                         }
                     },
                     "400": {
@@ -331,7 +331,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.Disk"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Disk"
                             }
                         }
                     },
@@ -374,7 +374,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_datavolume.CreateDiskInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_datavolume.CreateDiskInfo"
                         }
                     }
                 ],
@@ -426,7 +426,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Disk",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Disk"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Disk"
                         }
                     },
                     "400": {
@@ -476,7 +476,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Disk",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Disk"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Disk"
                         }
                     },
                     "400": {
@@ -528,7 +528,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_k8s_pvc.UpdateDiskInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_pvc.UpdateDiskInfo"
                         }
                     }
                 ],
@@ -667,7 +667,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.EIP"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.EIP"
                             }
                         }
                     },
@@ -710,7 +710,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubeovn_eip.UpdateEIPInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_eip.UpdateEIPInfo"
                         }
                     }
                 ],
@@ -813,7 +813,7 @@ const docTemplate = `{
                     "200": {
                         "description": "EIP",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.EIP"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.EIP"
                         }
                     },
                     "400": {
@@ -866,7 +866,7 @@ const docTemplate = `{
                     "200": {
                         "description": "EIP",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.EIP"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.EIP"
                         }
                     },
                     "400": {
@@ -914,7 +914,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.Firewall"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Firewall"
                             }
                         }
                     },
@@ -957,7 +957,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.CreateNetPolInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.CreateNetPolInfo"
                         }
                     }
                 ],
@@ -1060,7 +1060,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Network Policy",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Firewall"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Firewall"
                         }
                     },
                     "400": {
@@ -1113,7 +1113,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Network Policy",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Firewall"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Firewall"
                         }
                     },
                     "400": {
@@ -1161,7 +1161,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.UpdateNetPolInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.UpdateNetPolInfo"
                         }
                     }
                 ],
@@ -1211,7 +1211,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.Instance"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Instance"
                             }
                         }
                     },
@@ -1254,7 +1254,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.CreateVMInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.CreateVMInfo"
                         }
                     }
                 ],
@@ -1304,7 +1304,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.VmSnapshot"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshot"
                             }
                         }
                     },
@@ -1347,7 +1347,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vmSnapshot.CreateVmSnapshotInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CreateVmSnapshotInfo"
                         }
                     }
                 ],
@@ -1402,7 +1402,7 @@ const docTemplate = `{
                     "200": {
                         "description": "VmSnapshot",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VmSnapshot"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshot"
                         }
                     },
                     "400": {
@@ -1455,7 +1455,7 @@ const docTemplate = `{
                     "200": {
                         "description": "VmSnapshot",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VmSnapshot"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshot"
                         }
                     },
                     "400": {
@@ -1563,7 +1563,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotInfo"
                         }
                     }
                 ],
@@ -1571,7 +1571,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotResponse"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotResponse"
                         }
                     },
                     "400": {
@@ -1664,7 +1664,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Instance",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Instance"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Instance"
                         }
                     },
                     "400": {
@@ -1714,7 +1714,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Instance",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Instance"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Instance"
                         }
                     },
                     "400": {
@@ -1769,7 +1769,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.UpdateVMInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.UpdateVMInfo"
                         }
                     }
                 ],
@@ -1872,7 +1872,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Advanced options",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.AdvancedOptions"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.AdvancedOptions"
                         }
                     },
                     "400": {
@@ -1926,7 +1926,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.ContainerDiskBatch"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.ContainerDiskBatch"
                         }
                     }
                 ],
@@ -1985,7 +1985,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.ContainerDiskBatch"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.ContainerDiskBatch"
                         }
                     }
                 ],
@@ -2326,7 +2326,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.KaaS"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.KaaS"
                             }
                         }
                     },
@@ -2419,7 +2419,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Cluster",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.KaaS"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.KaaS"
                         }
                     },
                     "400": {
@@ -2469,7 +2469,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Cluster",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.KaaS"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.KaaS"
                         }
                     },
                     "400": {
@@ -2583,7 +2583,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.Instance"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Instance"
                             }
                         }
                     },
@@ -2686,7 +2686,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.Firewall"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Firewall"
                             }
                         }
                     },
@@ -2732,7 +2732,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.LoadBalancer"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LoadBalancer"
                             }
                         }
                     },
@@ -2775,7 +2775,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubeovn_load_balancer.CreateLoadBalancerInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_load_balancer.CreateLoadBalancerInfo"
                         }
                     }
                 ],
@@ -2881,7 +2881,7 @@ const docTemplate = `{
                     "200": {
                         "description": "LoadBalancer",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.LoadBalancer"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LoadBalancer"
                         }
                     },
                     "400": {
@@ -2934,7 +2934,7 @@ const docTemplate = `{
                     "200": {
                         "description": "LoadBalancer",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.LoadBalancer"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LoadBalancer"
                         }
                     },
                     "400": {
@@ -2982,7 +2982,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubeovn_load_balancer.CreateLoadBalancerInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_load_balancer.CreateLoadBalancerInfo"
                         }
                     }
                 ],
@@ -3076,7 +3076,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.Snapshot"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Snapshot"
                             }
                         }
                     },
@@ -3119,7 +3119,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_volumeSnapshot.CreateSnapshotInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_volumeSnapshot.CreateSnapshotInfo"
                         }
                     }
                 ],
@@ -3174,7 +3174,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Snapshot",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Snapshot"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Snapshot"
                         }
                     },
                     "400": {
@@ -3227,7 +3227,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Snapshot",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Snapshot"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Snapshot"
                         }
                     },
                     "400": {
@@ -3282,7 +3282,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_volumeSnapshot.UpdateSnapshotInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_volumeSnapshot.UpdateSnapshotInfo"
                         }
                     }
                 ],
@@ -3383,7 +3383,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.SSH"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SSH"
                             }
                         }
                     },
@@ -3426,7 +3426,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_k8s_ssh.CreateSSHInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_ssh.CreateSSHInfo"
                         }
                     }
                 ],
@@ -3529,7 +3529,7 @@ const docTemplate = `{
                     "200": {
                         "description": "SSH",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.SSH"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SSH"
                         }
                     },
                     "400": {
@@ -3582,7 +3582,7 @@ const docTemplate = `{
                     "200": {
                         "description": "SSH",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.SSH"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SSH"
                         }
                     },
                     "400": {
@@ -3678,7 +3678,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.Subnet"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Subnet"
                             }
                         }
                     },
@@ -3721,7 +3721,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubeovn_subnet.CreateSubnetInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_subnet.CreateSubnetInfo"
                         }
                     }
                 ],
@@ -3824,7 +3824,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Subnet",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Subnet"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Subnet"
                         }
                     },
                     "400": {
@@ -3874,7 +3874,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Subnet",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.Subnet"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Subnet"
                         }
                     },
                     "400": {
@@ -3922,7 +3922,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubeovn_subnet.CreateSubnetInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_subnet.CreateSubnetInfo"
                         }
                     }
                 ],
@@ -4080,7 +4080,7 @@ const docTemplate = `{
                     "200": {
                         "description": "VM Cluster Preference",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachinePreferenceView"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachinePreferenceView"
                         }
                     },
                     "404": {
@@ -4135,7 +4135,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Advanced options",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.AdvancedOptions"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.AdvancedOptions"
                         }
                     },
                     "404": {
@@ -4180,7 +4180,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_models_view.VPC"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPC"
                             }
                         }
                     },
@@ -4223,7 +4223,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubeovn_vpc.UpdateVPCInfo"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_vpc.UpdateVPCInfo"
                         }
                     }
                 ],
@@ -4326,7 +4326,7 @@ const docTemplate = `{
                     "200": {
                         "description": "VPC",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VPC"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPC"
                         }
                     },
                     "400": {
@@ -4376,7 +4376,7 @@ const docTemplate = `{
                     "200": {
                         "description": "VPC",
                         "schema": {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VPC"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPC"
                         }
                     },
                     "400": {
@@ -4570,6 +4570,2951 @@ const docTemplate = `{
                 "ConditionDegraded",
                 "ConditionUpgradeable"
             ]
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.CreateNetPolInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "egress": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.EgressRule"
+                    }
+                },
+                "ingress": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.IngressRule"
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                },
+                "target": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.LabelSelector"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.EgressRule": {
+            "type": "object",
+            "properties": {
+                "allowAll": {
+                    "type": "boolean"
+                },
+                "denyAll": {
+                    "type": "boolean"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.FwPort"
+                    }
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.Peer"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.FwPort": {
+            "type": "object",
+            "properties": {
+                "endPort": {
+                    "type": "integer"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.IPBlock": {
+            "type": "object",
+            "properties": {
+                "CIDR": {
+                    "type": "string"
+                },
+                "Except": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.IngressRule": {
+            "type": "object",
+            "properties": {
+                "allowAll": {
+                    "type": "boolean"
+                },
+                "denyAll": {
+                    "type": "boolean"
+                },
+                "from": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.Peer"
+                    }
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.FwPort"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.LabelSelector": {
+            "type": "object",
+            "properties": {
+                "matchExpressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.MatchExpression"
+                    }
+                },
+                "matchLabels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.MatchLabel"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.MatchExpression": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.MatchLabel": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.Peer": {
+            "type": "object",
+            "properties": {
+                "IPBlock": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.IPBlock"
+                },
+                "podSelector": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.LabelSelector"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.UpdateNetPolInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "egress": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.EgressRule"
+                    }
+                },
+                "ingress": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.IngressRule"
+                    }
+                },
+                "target": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_netpol.LabelSelector"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_pvc.UpdateDiskInfo": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "labels": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "storage": {
+                            "description": "Storage Size",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_k8s_ssh.CreateSSHInfo": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "publicKey": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_eip.CreateEIPInfo": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "subnetEid": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                },
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "dnat": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "externalPort": {
+                                        "type": "string"
+                                    },
+                                    "internalIP": {
+                                        "type": "string"
+                                    },
+                                    "internalPort": {
+                                        "type": "string"
+                                    },
+                                    "protocol": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "internalIP": {
+                            "type": "string"
+                        },
+                        "snat": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_eip.UpdateEIPInfo": {
+            "type": "object",
+            "properties": {
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                },
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "dnat": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_eip_dnat.InfoDNAT"
+                            }
+                        },
+                        "internalIP": {
+                            "type": "string"
+                        },
+                        "snat": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_eip_dnat.InfoDNAT": {
+            "type": "object",
+            "properties": {
+                "externalPort": {
+                    "type": "string"
+                },
+                "internalIP": {
+                    "type": "string"
+                },
+                "internalPort": {
+                    "type": "string"
+                },
+                "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_load_balancer.CreateLoadBalancerInfo": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "description": "ip list",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "port": {
+                                "description": "Name generated from other fields",
+                                "type": "integer"
+                            },
+                            "protocol": {
+                                "type": "string"
+                            },
+                            "targetPort": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                },
+                "selectors": {
+                    "description": "Selectors and Endpoints are mutually exclusives",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "vip": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_subnet.CreateSubnetInfo": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "vpcEId": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "natGateway": {
+                    "type": "object",
+                    "properties": {
+                        "enable": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "network": {
+                    "type": "object",
+                    "properties": {
+                        "dnsV4": {
+                            "type": "string"
+                        },
+                        "dnsV6": {
+                            "type": "string"
+                        },
+                        "ipv4": {
+                            "type": "string"
+                        },
+                        "ipv6": {
+                            "type": "string"
+                        },
+                        "private": {
+                            "type": "boolean"
+                        },
+                        "protocol": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_vpc.CreateVPCInfo": {
+            "type": "object",
+            "properties": {
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubeovn_vpc.UpdateVPCInfo": {
+            "type": "object",
+            "properties": {
+                "staticRoutes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.StaticRoute"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_datavolume.CreateDiskInfo": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "labels": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "source": {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_datavolume.Source"
+                        },
+                        "storage": {
+                            "description": "Storage Size",
+                            "type": "string"
+                        },
+                        "storageClass": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_datavolume.Source": {
+            "type": "object",
+            "properties": {
+                "clone": {
+                    "type": "string"
+                },
+                "snapshot": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedBootloader": {
+            "type": "object",
+            "properties": {
+                "efi": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.EFIOptions"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedDevices": {
+            "type": "object",
+            "properties": {
+                "tpm": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.TPMOptions"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedFirmware": {
+            "type": "object",
+            "properties": {
+                "bootloader": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedBootloader"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedOptionsInput": {
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedDevices"
+                },
+                "firmware": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedFirmware"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.CloudInit": {
+            "type": "object",
+            "properties": {
+                "bus": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "string"
+                },
+                "custom": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.ContainerDiskBatch": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.CreateVMInfo": {
+            "type": "object",
+            "properties": {
+                "advanced": {
+                    "description": "Advanced is optional: nil pushes no device/firmware override.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedOptionsInput"
+                        }
+                    ]
+                },
+                "cloudInit": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.CloudInit"
+                },
+                "compute": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "type": "integer"
+                        },
+                        "memory": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "containerDisks": {
+                    "description": "ContainerDisks holds catalog IDs. Nil falls back to the recommended\ncatalog set for the VM preference; a non-nil slice (including empty) is\nhonoured verbatim. IDs are resolved against this AZ's config catalog.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "disks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.Disk"
+                    }
+                },
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "labels": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "runStrategy": {
+                            "type": "string"
+                        },
+                        "vmType": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "network": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.Network"
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                },
+                "sshKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.Disk": {
+            "type": "object",
+            "properties": {
+                "bus": {
+                    "type": "string"
+                },
+                "cdrom": {
+                    "type": "boolean"
+                },
+                "disk": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_datavolume.CreateDiskInfo"
+                },
+                "eid": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.EFIOptions": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "persistent": {
+                    "description": "persist EFI NVRAM across reboots",
+                    "type": "boolean"
+                },
+                "secureBoot": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.Network": {
+            "type": "object",
+            "properties": {
+                "ipv4": {
+                    "type": "string"
+                },
+                "ipv6": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "subnetEId": {
+                    "description": "Subnet Effective ID",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.TPMOptions": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "persistent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.UpdateVMInfo": {
+            "type": "object",
+            "properties": {
+                "advanced": {
+                    "description": "Advanced is optional: nil leaves existing device/firmware overrides untouched.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.AdvancedOptionsInput"
+                        }
+                    ]
+                },
+                "cloudInit": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.CloudInit"
+                },
+                "compute": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "type": "integer"
+                        },
+                        "memory": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "containerDisks": {
+                    "description": "ContainerDisks is the desired mount state as catalog IDs. Nil preserves\nwhatever is currently attached; non-nil sets it explicitly (empty\ndetaches all). IDs are resolved against this AZ's config catalog.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "disks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.Disk"
+                    }
+                },
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "labels": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "runStrategy": {
+                            "type": "string"
+                        },
+                        "vmType": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "network": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vm.Network"
+                    }
+                },
+                "sshKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotDisk": {
+            "type": "object",
+            "properties": {
+                "eid": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotResponse": {
+            "type": "object",
+            "properties": {
+                "disks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotDisk"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_vmSnapshot.CreateVmSnapshotInfo": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "source": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_volumeSnapshot.CreateSnapshotInfo": {
+            "type": "object",
+            "properties": {
+                "orgID": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "string"
+                },
+                "resourceEffectiveID": {
+                    "type": "string"
+                },
+                "resourceLocalID": {
+                    "type": "string"
+                },
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "labelSelector": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "paused": {
+                            "type": "boolean"
+                        },
+                        "retention": {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_volumeSnapshot.RetentionPolicy"
+                        },
+                        "schedule": {
+                            "type": "integer"
+                        },
+                        "scheduled": {
+                            "type": "boolean"
+                        },
+                        "source": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_volumeSnapshot.RetentionPolicy": {
+            "type": "object",
+            "properties": {
+                "expiryTime": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_volumeSnapshot.UpdateSnapshotInfo": {
+            "type": "object",
+            "properties": {
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "labelSelector": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "paused": {
+                            "type": "boolean"
+                        },
+                        "retention": {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_kubevirt_volumeSnapshot.RetentionPolicy"
+                        },
+                        "schedule": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.AccessCredential": {
+            "type": "object",
+            "properties": {
+                "sshPublicKey": {
+                    "description": "SSHPublicKey represents the source and method of applying a ssh public\nkey into a guest virtual machine.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.SSHPublicKeyAccessCredential"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.AdvancedOptions": {
+            "type": "object",
+            "properties": {
+                "blocks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ResolvedBlock"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BaaS": {
+            "type": "object",
+            "properties": {
+                "backup": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BaasObject"
+                },
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BaasObject": {
+            "type": "object",
+            "properties": {
+                "backup": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Backup"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "orphan": {
+                    "type": "boolean"
+                },
+                "schedule": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Schedule"
+                },
+                "standalone": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Backup": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "description": "+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BackupSpec"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BackupStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BackupProgress": {
+            "type": "object",
+            "properties": {
+                "itemsBackedUp": {
+                    "description": "ItemsBackedUp is the number of items that have actually been written to the\nbackup tarball so far.\n+optional",
+                    "type": "integer"
+                },
+                "totalItems": {
+                    "description": "TotalItems is the total number of items to be backed up. This number may change\nthroughout the execution of the backup due to plugins that return additional related\nitems to back up, the velero.io/exclude-from-backup label, and various other\nfilters that happen as items are processed.\n+optional",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BackupSpec": {
+            "type": "object",
+            "properties": {
+                "labelSelector": {
+                    "description": "LabelSelector is a metav1.LabelSelector to filter with\nwhen adding individual objects to the backup. If empty\nor nil, all objects are included. Optional.\n+optional\n+nullable",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.LabelSelector"
+                        }
+                    ]
+                },
+                "ttl": {
+                    "description": "TTL is a time.Duration-parseable string describing how long\nthe Backup should be retained for.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/k8s_io_apimachinery_pkg_apis_meta_v1.Duration"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BackupStatus": {
+            "type": "object",
+            "properties": {
+                "completionTimestamp": {
+                    "type": "string"
+                },
+                "errors": {
+                    "description": "Errors is a count of all error messages that were generated during\nexecution of the backup.  The actual errors are in the backup's log\nfile in object storage.\n+optional",
+                    "type": "integer"
+                },
+                "failureReason": {
+                    "description": "FailureReason is an error that caused the entire backup to fail.\n+optional",
+                    "type": "string"
+                },
+                "phase": {
+                    "description": "Phase is the current state of the Backup.\n+optional",
+                    "type": "string"
+                },
+                "progress": {
+                    "description": "Progress contains information about the backup's execution progress. Note\nthat this information is best-effort only -- if Velero fails to update it\nduring a backup for any reason, it may be inaccurate/stale.\n+optional\n+nullable",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.BackupProgress"
+                        }
+                    ]
+                },
+                "warnings": {
+                    "description": "Warnings is a count of all warning messages that were generated during\nexecution of the backup. The actual warnings are in the backup's log\nfile in object storage.\n+optional",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Cluster": {
+            "type": "object",
+            "properties": {
+                "cluster": {
+                    "$ref": "#/definitions/v1beta2.Cluster"
+                },
+                "machineDeployments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineDeployment"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DNATView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/v1.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/v1.IptablesDnatRuleSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/v1.IptablesDnatRuleStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DataVolumeSpec": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "description": "Source is the src of the data for the requested DataVolume\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.DataVolumeSource"
+                        }
+                    ]
+                },
+                "storage": {
+                    "description": "Storage is the requested storage specification",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.StorageSpec"
+                        }
+                    ]
+                },
+                "storageClassName": {
+                    "description": "StorageClassName is the name of the StorageClass required by the DataVolume.",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DataVolumeStatus": {
+            "type": "object",
+            "properties": {
+                "claimName": {
+                    "description": "ClaimName is the name of the underlying PVC used by the DataVolume.",
+                    "type": "string"
+                },
+                "conditions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1beta1.DataVolumeCondition"
+                    }
+                },
+                "phase": {
+                    "description": "Phase is the current phase of the data volume",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.DataVolumePhase"
+                        }
+                    ]
+                },
+                "progress": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DataVolumeTemplate": {
+            "type": "object",
+            "properties": {
+                "registryUrl": {
+                    "type": "string"
+                },
+                "storageSize": {
+                    "type": "string"
+                },
+                "volumeMode": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Disk": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "disk": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DiskView"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "mountStatus": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MountStatus"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "pvc": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PVCView"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DiskView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DataVolumeSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DataVolumeStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DomainSpec": {
+            "type": "object",
+            "properties": {
+                "cpu": {
+                    "description": "CPU allow specified the detailed CPU topology inside the vmi.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.CPU"
+                        }
+                    ]
+                },
+                "devices": {
+                    "description": "Devices allows adding disks, network interfaces, and others",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Devices"
+                        }
+                    ]
+                },
+                "machine": {
+                    "description": "Machine type.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Machine"
+                        }
+                    ]
+                },
+                "memory": {
+                    "description": "Memory allow specifying the VMI memory features.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.Memory"
+                        }
+                    ]
+                },
+                "resources": {
+                    "description": "Resources describes the Compute Resources required by this vmi.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/kubevirt_io_api_core_v1.ResourceRequirements"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.EIP": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "dnat": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DNATView"
+                    }
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "eip": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.EIPView"
+                },
+                "fip": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.FIPView"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "snat": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SNATView"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.EIPView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/v1.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/v1.IptablesEIPSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/v1.IptablesEIPStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.FIPView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/v1.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/v1.IptablesFIPRuleSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/v1.IptablesFIPRuleStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Firewall": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "firewall": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.NetPolView"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Instance": {
+            "type": "object",
+            "properties": {
+                "cloudInit": {
+                    "type": "string"
+                },
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "vm": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineView"
+                },
+                "vmi": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceView"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.KaaS": {
+            "type": "object",
+            "properties": {
+                "cluster": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Cluster"
+                },
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.KubevirtMachineTemplateSimplified": {
+            "type": "object",
+            "properties": {
+                "dataVolumeTemplates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DataVolumeTemplate"
+                    }
+                },
+                "machineTemplate": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplate"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBRulePort": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
+                },
+                "targetPort": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBSpec": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBRulePort"
+                    }
+                },
+                "selector": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sessionAffinity": {
+                    "type": "string"
+                },
+                "vip": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBStatus": {
+            "type": "object",
+            "properties": {
+                "conditions": {
+                    "description": "Conditions represents the latest state of the object\n+optional\n+patchMergeKey=type\n+patchStrategy=merge",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kubeovn_kube-ovn_pkg_apis_kubeovn_v1.Condition"
+                    }
+                },
+                "ports": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LoadBalancer": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "loadBalancer": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.LBView"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineDeployment": {
+            "type": "object",
+            "properties": {
+                "machineDeployment": {
+                    "$ref": "#/definitions/v1beta2.MachineDeployment"
+                },
+                "machineTemplate": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.KubevirtMachineTemplateSimplified"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplate": {
+            "type": "object",
+            "properties": {
+                "cpu": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplateCPU"
+                },
+                "memory": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplateMemory"
+                },
+                "preference": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplatePreference"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplateCPU": {
+            "type": "object",
+            "properties": {
+                "cores": {
+                    "type": "integer"
+                },
+                "sockets": {
+                    "type": "integer"
+                },
+                "threads": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplateMemory": {
+            "type": "object",
+            "properties": {
+                "guest": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MachineTemplatePreference": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.MountStatus": {
+            "type": "object",
+            "properties": {
+                "by": {
+                    "type": "string"
+                },
+                "isMounted": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.NatGwView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VpcNatSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VpcNatStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.NetPolView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/v1.NetworkPolicySpec"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta": {
+            "type": "object",
+            "properties": {
+                "annotations": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "creationTimestamp": {
+                    "type": "string"
+                },
+                "generateName": {
+                    "type": "string"
+                },
+                "labels": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "ownerReferences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.OwnerReference"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PVCSpec": {
+            "type": "object",
+            "properties": {
+                "accessModes": {
+                    "description": "accessModes contains the desired access modes the volume should have.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1\n+optional\n+listType=atomic",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.PersistentVolumeAccessMode"
+                    }
+                },
+                "dataSource": {
+                    "description": "dataSource field can be used to specify either:\n* An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)\n* An existing PVC (PersistentVolumeClaim)\nIf the provisioner or an external controller can support the specified data source,\nit will create a new volume based on the contents of the specified data source.\nWhen the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,\nand dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.\nIf the namespace is specified, then dataSourceRef will not be copied to dataSource.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.TypedLocalObjectReference"
+                        }
+                    ]
+                },
+                "resources": {
+                    "description": "resources represents the minimum resources the volume should have.\nIf RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements\nthat are lower than previous value but must still be higher than capacity recorded in the\nstatus field of the claim.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.VolumeResourceRequirements"
+                        }
+                    ]
+                },
+                "storageClassName": {
+                    "description": "storageClassName is the name of the StorageClass required by the claim.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1\n+optional",
+                    "type": "string"
+                },
+                "volumeMode": {
+                    "description": "volumeMode defines what type of volume is required by the claim.\nValue of Filesystem is implied when not included in claim spec.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.PersistentVolumeMode"
+                        }
+                    ]
+                },
+                "volumeName": {
+                    "description": "volumeName is the binding reference to the PersistentVolume backing this claim.\n+optional",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PVCStatus": {
+            "type": "object",
+            "properties": {
+                "accessModes": {
+                    "description": "accessModes contains the actual access modes the volume backing the PVC has.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1\n+optional\n+listType=atomic",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.PersistentVolumeAccessMode"
+                    }
+                },
+                "capacity": {
+                    "description": "capacity represents the actual resources of the underlying volume.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.ResourceList"
+                        }
+                    ]
+                },
+                "phase": {
+                    "description": "phase represents the current phase of PersistentVolumeClaim.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.PersistentVolumeClaimPhase"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PVCView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PVCSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PVCStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PreferenceMatcher": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name is the name of the VirtualMachinePreference or VirtualMachineClusterPreference\n\n+optional",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ResolvedBlock": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ResolvedBool"
+                },
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ResolvedField"
+                    }
+                },
+                "key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "offLabel": {
+                    "type": "string"
+                },
+                "onLabel": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ResolvedBool": {
+            "type": "object",
+            "properties": {
+                "default": {
+                    "description": "kubevirt default this field takes when its block is active (e.g. Secure Boot is true once EFI is on)",
+                    "type": "boolean"
+                },
+                "live": {
+                    "description": "value on the running VMI, nil if stopped",
+                    "type": "boolean"
+                },
+                "source": {
+                    "description": "\"vm\", \"preference\" or \"default\"",
+                    "type": "string"
+                },
+                "stale": {
+                    "description": "Live differs from Value (restart required)",
+                    "type": "boolean"
+                },
+                "value": {
+                    "description": "effective value, nil if not set anywhere",
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ResolvedField": {
+            "type": "object",
+            "properties": {
+                "default": {
+                    "description": "kubevirt default this field takes when its block is active (e.g. Secure Boot is true once EFI is on)",
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "live": {
+                    "description": "value on the running VMI, nil if stopped",
+                    "type": "boolean"
+                },
+                "source": {
+                    "description": "\"vm\", \"preference\" or \"default\"",
+                    "type": "string"
+                },
+                "stale": {
+                    "description": "Live differs from Value (restart required)",
+                    "type": "boolean"
+                },
+                "value": {
+                    "description": "effective value, nil if not set anywhere",
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SNATView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "legacy": {
+                    "description": "Property use to detect legacy SNAT - meant to be deleted",
+                    "type": "boolean"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/v1.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/v1.IptablesSnatRuleSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/v1.IptablesSnatRuleStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SSH": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "ssh": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SSHView"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SSHView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "data": {
+                    "description": "Data contains the secret data. Each key must consist of alphanumeric\ncharacters, '-', '_' or '.'. The serialized form of the secret data is a\nbase64 encoded string, representing the arbitrary (possibly non-string)\ndata value here. Described in https://tools.ietf.org/html/rfc4648#section-4\n+optional",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                },
+                "immutable": {
+                    "description": "Immutable, if set to true, ensures that data stored in the Secret cannot\nbe updated (only object metadata can be modified).\nIf not set to true, the field can be modified at any time.\nDefaulted to nil.\n+optional",
+                    "type": "boolean"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "stringData": {
+                    "description": "stringData allows specifying non-binary secret data in string form.\nIt is provided as a write-only input field for convenience.\nAll keys and values are merged into the data field on write, overwriting any existing values.\nThe stringData field is never output when reading from the API.\n+k8s:conversion-gen=false\n+optional",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "description": "Used to facilitate programmatic handling of secret data.\nMore info: https://kubernetes.io/docs/concepts/configuration/secret/#secret-types\n+optional",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Schedule": {
+            "type": "object",
+            "properties": {
+                "backups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Backup"
+                    }
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "description": "+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ScheduleSpec"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ScheduleStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ScheduleSpec": {
+            "type": "object",
+            "properties": {
+                "labelSelector": {
+                    "description": "LabelSelector is a metav1.LabelSelector to filter with\nwhen adding individual objects to the backup. If empty\nor nil, all objects are included. Optional.\n+optional\n+nullable",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.LabelSelector"
+                        }
+                    ]
+                },
+                "paused": {
+                    "description": "Paused specifies whether the schedule is paused or not\n+optional",
+                    "type": "boolean"
+                },
+                "schedule": {
+                    "description": "Schedule is a Cron expression defining when to run\nthe Backup.",
+                    "type": "string"
+                },
+                "ttl": {
+                    "description": "TTL is a time.Duration-parseable string describing how long\nthe Backup should be retained for.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/k8s_io_apimachinery_pkg_apis_meta_v1.Duration"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ScheduleStatus": {
+            "type": "object",
+            "properties": {
+                "lastBackup": {
+                    "description": "LastBackup is the last time a Backup was run for this\nSchedule schedule\n+optional\n+nullable",
+                    "type": "string"
+                },
+                "phase": {
+                    "description": "Phase is the current phase of the Schedule\n+optional",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Snapshot": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "snapshot": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SnapshotView"
+                },
+                "snapshotSchedule": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SnapshotScheduleView"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SnapshotScheduleView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SnapshotView"
+                    }
+                },
+                "childrenCount": {
+                    "type": "integer"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/v1.SnapshotScheduleSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/v1.SnapshotScheduleStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SnapshotView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VolumeSnapshotSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_kubernetes-csi_external-snapshotter_client_v4_apis_volumesnapshot_v1.VolumeSnapshotStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.StaticRoute": {
+            "type": "object",
+            "properties": {
+                "autoGenerated": {
+                    "type": "boolean"
+                },
+                "cidr": {
+                    "type": "string"
+                },
+                "isOverriden": {
+                    "type": "boolean"
+                },
+                "nextHopIP": {
+                    "type": "string"
+                },
+                "policy": {
+                    "$ref": "#/definitions/v1.RoutePolicy"
+                },
+                "routeTable": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.StorageSpec": {
+            "type": "object",
+            "properties": {
+                "accessModes": {
+                    "description": "AccessModes contains the desired access modes the volume should have.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1\n+optional",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.PersistentVolumeAccessMode"
+                    }
+                },
+                "resources": {
+                    "description": "Resources represents the minimum resources the volume should have.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.VolumeResourceRequirements"
+                        }
+                    ]
+                },
+                "volumeMode": {
+                    "description": "volumeMode defines what type of volume is required by the claim.\nValue of Filesystem is implied when not included in claim spec.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.PersistentVolumeMode"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.Subnet": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "natGateway": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.NatGwView"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "subnet": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SubnetView"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SubnetSpec": {
+            "type": "object",
+            "properties": {
+                "cidrBlock": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": "boolean"
+                },
+                "dhcpV4Options": {
+                    "type": "string"
+                },
+                "dhcpV6Options": {
+                    "type": "string"
+                },
+                "excludeIps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "gateway": {
+                    "type": "string"
+                },
+                "gatewayNode": {
+                    "type": "string"
+                },
+                "gatewayType": {
+                    "type": "string"
+                },
+                "namespaces": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "natOutgoing": {
+                    "type": "boolean"
+                },
+                "natOutgoingPolicyRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.NatOutgoingPolicyRule"
+                    }
+                },
+                "private": {
+                    "type": "boolean"
+                },
+                "protocol": {
+                    "type": "string"
+                },
+                "vpc": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SubnetStatus": {
+            "type": "object",
+            "properties": {
+                "activateGateway": {
+                    "type": "string"
+                },
+                "conditions": {
+                    "description": "Conditions represents the latest state of the object\n+optional\n+patchMergeKey=type\n+patchStrategy=merge",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kubeovn_kube-ovn_pkg_apis_kubeovn_v1.Condition"
+                    }
+                },
+                "natOutgoingPolicyRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.NatOutgoingPolicyRuleStatus"
+                    }
+                },
+                "v4availableIPrange": {
+                    "type": "string"
+                },
+                "v4availableIPs": {
+                    "type": "number"
+                },
+                "v4usingIPrange": {
+                    "type": "string"
+                },
+                "v4usingIPs": {
+                    "type": "number"
+                },
+                "v6availableIPrange": {
+                    "type": "string"
+                },
+                "v6availableIPs": {
+                    "type": "number"
+                },
+                "v6usingIPrange": {
+                    "type": "string"
+                },
+                "v6usingIPs": {
+                    "type": "number"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SubnetView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "isShared": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SubnetSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.SubnetStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPC": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "vpc": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPCView"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPCSpec": {
+            "type": "object",
+            "properties": {
+                "staticRoutes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.StaticRoute"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPCStatus": {
+            "type": "object",
+            "properties": {
+                "conditions": {
+                    "description": "Conditions represents the latest state of the object\n+optional\n+patchMergeKey=type\n+patchStrategy=merge",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kubeovn_kube-ovn_pkg_apis_kubeovn_v1.Condition"
+                    }
+                },
+                "subnets": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPCView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPCSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VPCStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceNetworkInterface": {
+            "type": "object",
+            "properties": {
+                "ipAddresses": {
+                    "description": "List of all IP addresses of a Virtual Machine interface",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "mac": {
+                    "description": "Hardware address of a Virtual Machine interface",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name of the interface, corresponds to name of the network assigned to the interface",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceSpec": {
+            "type": "object",
+            "properties": {
+                "accessCredentials": {
+                    "description": "Specifies a set of public keys to inject into the vm guest\n+listType=atomic\n+optional\n+kubebuilder:validation:MaxItems:=256",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.AccessCredential"
+                    }
+                },
+                "architecture": {
+                    "description": "AccessCredentials []AccessCredential ` + "`" + `json:\"accessCredentials,omitempty\"` + "`" + `\nSpecifies the architecture of the vm guest you are attempting to run. Defaults to the compiled architecture of the KubeVirt components",
+                    "type": "string"
+                },
+                "domain": {
+                    "description": "Specification of the desired behavior of the VirtualMachineInstance on the host.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.DomainSpec"
+                        }
+                    ]
+                },
+                "hostname": {
+                    "description": "Specifies the hostname of the vmi\nIf not specified, the hostname will be set to the name of the vmi, if dhcp or cloud-init is configured properly.\n+optional",
+                    "type": "string"
+                },
+                "networks": {
+                    "description": "List of networks that can be attached to a vm's virtual interface.\n+kubebuilder:validation:MaxItems:=256",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.Network"
+                    }
+                },
+                "volumes": {
+                    "description": "List of volumes that can be mounted by disks belonging to the vmi.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/kubevirt_io_api_core_v1.Volume"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceStatus": {
+            "type": "object",
+            "properties": {
+                "conditions": {
+                    "description": "Conditions are specific points in VirtualMachineInstance's pod runtime.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.VirtualMachineInstanceCondition"
+                    }
+                },
+                "currentCPUTopology": {
+                    "description": "CurrentCPUTopology specifies the current CPU topology used by the VM workload.\nCurrent topology may differ from the desired topology in the spec while CPU hotplug\ntakes place.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.CPUTopology"
+                        }
+                    ]
+                },
+                "interfaces": {
+                    "description": "Interfaces represent the details of available network interfaces.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceNetworkInterface"
+                    }
+                },
+                "memory": {
+                    "description": "Memory shows various information about the VirtualMachine memory.\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.MemoryStatus"
+                        }
+                    ]
+                },
+                "nodeName": {
+                    "description": "NodeName is the name where the VirtualMachineInstance is currently running.",
+                    "type": "string"
+                },
+                "phase": {
+                    "description": "Phase is the status of the VirtualMachineInstance in kubernetes world. It is not the VirtualMachineInstance status, but partially correlates to it.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.VirtualMachineInstancePhase"
+                        }
+                    ]
+                },
+                "phaseTransitionTimestamps": {
+                    "description": "PhaseTransitionTimestamp is the timestamp of when the last phase change occurred\n+listType=atomic\n+optional",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.VirtualMachineInstancePhaseTransitionTimestamp"
+                    }
+                },
+                "volumeStatus": {
+                    "description": "VolumeStatus contains the statuses of all the volumes\n+optional\n+listType=atomic",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.VolumeStatus"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "description": "VirtualMachineInstance Spec contains the VirtualMachineInstance specification.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceSpec"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "Status is the high level overview of how the VirtualMachineInstance is doing. It contains information available to controllers and users.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineInstanceStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachinePreferenceView": {
+            "type": "object",
+            "properties": {
+                "clock": {
+                    "description": "Clock optionally defines preferences associated with the Clock attribute\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.ClockPreferences"
+                        }
+                    ]
+                },
+                "cpu": {
+                    "description": "CPU optionally defines preferences associated with the CPU attribute\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.CPUPreferences"
+                        }
+                    ]
+                },
+                "devices": {
+                    "description": "Devices optionally defines preferences associated with the Devices attribute\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.DevicePreferences"
+                        }
+                    ]
+                },
+                "features": {
+                    "description": "Features optionally defines preferences associated with the Features attribute\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.FeaturePreferences"
+                        }
+                    ]
+                },
+                "firmware": {
+                    "description": "Firmware optionally defines preferences associated with the Firmware attribute\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.FirmwarePreferences"
+                        }
+                    ]
+                },
+                "machine": {
+                    "description": "Machine optionally defines preferences associated with the Machine attribute\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.MachinePreferences"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name is the name of the VirtualMachineClusterPreference",
+                    "type": "string"
+                },
+                "volumes": {
+                    "description": "Volumes optionally defines preferences associated with the Volumes attribute\n+optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1beta1.VolumePreferences"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineSpec": {
+            "type": "object",
+            "properties": {
+                "preference": {
+                    "description": "PreferenceMatcher references a set of preference that is used to fill fields in Template",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.PreferenceMatcher"
+                        }
+                    ]
+                },
+                "runStrategy": {
+                    "description": "Running state indicates the requested running state of the VirtualMachineInstance\nmutually exclusive with Running",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.VirtualMachineRunStrategy"
+                        }
+                    ]
+                },
+                "running": {
+                    "description": "Running controls whether the associated VirtualMachineInstance is created or not\nMutually exclusive with RunStrategy",
+                    "type": "boolean"
+                },
+                "template": {
+                    "description": "Template is the direct specification of VirtualMachineInstance",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.VirtualMachineInstanceTemplateSpec"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineStatus": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "description": "RestoreInProgress *string ` + "`" + `json:\"restoreInProgress,omitempty\"` + "`" + `\nCreated indicates if the virtual machine is created in the cluster",
+                    "type": "boolean"
+                },
+                "printableStatus": {
+                    "description": "PrintableStatus is a human-readable, high-level representation of the status of the virtual machine\n+kubebuilder:default=Stopped",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.VirtualMachinePrintableStatus"
+                        }
+                    ]
+                },
+                "ready": {
+                    "description": "Ready indicates if the virtual machine is running and ready",
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "description": "Spec contains the specification of VirtualMachineInstance created",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineSpec"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "Status holds the current state of the controller and brief information\nabout its associated VirtualMachineInstance",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VirtualMachineStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshot": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "vmSnapshot": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshotView"
+                },
+                "vmSnapshotContent": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshotContentView"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshotContentView": {
+            "type": "object",
+            "properties": {
+                "vm": {
+                    "type": "object",
+                    "properties": {
+                        "effectiveId": {
+                            "type": "string"
+                        },
+                        "localId": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "volumesSnapshot": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VmSnapshotView": {
+            "type": "object",
+            "properties": {
+                "apiVersion": {
+                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
+                    "type": "string"
+                },
+                "kind": {
+                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.ObjectMeta"
+                },
+                "spec": {
+                    "$ref": "#/definitions/v1beta1.VirtualMachineSnapshotSpec"
+                },
+                "status": {
+                    "$ref": "#/definitions/v1beta1.VirtualMachineSnapshotStatus"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VolumeSnapshotSpec": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "description": "source specifies where a snapshot will be created from.\nThis field is immutable after creation.\nRequired.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/v1.VolumeSnapshotSource"
+                        }
+                    ]
+                },
+                "volumeSnapshotClassName": {
+                    "description": "VolumeSnapshotClassName is the name of the VolumeSnapshotClass\nrequested by the VolumeSnapshot.\nVolumeSnapshotClassName may be left nil to indicate that the default\nSnapshotClass should be used.\nA given cluster may have multiple default Volume SnapshotClasses: one\ndefault per CSI Driver. If a VolumeSnapshot does not specify a SnapshotClass,\nVolumeSnapshotSource will be checked to figure out what the associated\nCSI Driver is, and the default VolumeSnapshotClass associated with that\nCSI Driver will be used. If more than one VolumeSnapshotClass exist for\na given CSI Driver and more than one have been marked as default,\nCreateSnapshot will fail and generate an event.\nEmpty string is not allowed for this field.\n+optional",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VpcNatSpec": {
+            "type": "object",
+            "properties": {
+                "externalSubnets": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "lanIp": {
+                    "type": "string"
+                },
+                "qosPolicy": {
+                    "type": "string"
+                },
+                "subnet": {
+                    "type": "string"
+                },
+                "vpc": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-controller_internal_models_view.VpcNatStatus": {
+            "type": "object",
+            "properties": {
+                "externalSubnets": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "qosPolicy": {
+                    "type": "string"
+                }
+            }
         },
         "intstr.IntOrString": {
             "type": "object",
@@ -5291,2951 +8236,6 @@ const docTemplate = `{
                         "BinarySI",
                         "DecimalSI"
                     ]
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.CreateNetPolInfo": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "egress": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.EgressRule"
-                    }
-                },
-                "ingress": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.IngressRule"
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                },
-                "target": {
-                    "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.LabelSelector"
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.EgressRule": {
-            "type": "object",
-            "properties": {
-                "allowAll": {
-                    "type": "boolean"
-                },
-                "denyAll": {
-                    "type": "boolean"
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.FwPort"
-                    }
-                },
-                "to": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.Peer"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.FwPort": {
-            "type": "object",
-            "properties": {
-                "endPort": {
-                    "type": "integer"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "protocol": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.IPBlock": {
-            "type": "object",
-            "properties": {
-                "CIDR": {
-                    "type": "string"
-                },
-                "Except": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.IngressRule": {
-            "type": "object",
-            "properties": {
-                "allowAll": {
-                    "type": "boolean"
-                },
-                "denyAll": {
-                    "type": "boolean"
-                },
-                "from": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.Peer"
-                    }
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.FwPort"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.LabelSelector": {
-            "type": "object",
-            "properties": {
-                "matchExpressions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.MatchExpression"
-                    }
-                },
-                "matchLabels": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.MatchLabel"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.MatchExpression": {
-            "type": "object",
-            "properties": {
-                "key": {
-                    "type": "string"
-                },
-                "operator": {
-                    "type": "string"
-                },
-                "values": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.MatchLabel": {
-            "type": "object",
-            "properties": {
-                "key": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.Peer": {
-            "type": "object",
-            "properties": {
-                "IPBlock": {
-                    "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.IPBlock"
-                },
-                "podSelector": {
-                    "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.LabelSelector"
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_netpol.UpdateNetPolInfo": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "egress": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.EgressRule"
-                    }
-                },
-                "ingress": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.IngressRule"
-                    }
-                },
-                "target": {
-                    "$ref": "#/definitions/superphenix-controller_internal_k8s_netpol.LabelSelector"
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_pvc.UpdateDiskInfo": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "labels": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "storage": {
-                            "description": "Storage Size",
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_k8s_ssh.CreateSSHInfo": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "publicKey": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubeovn_eip.CreateEIPInfo": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "subnetEid": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "dnat": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "externalPort": {
-                                        "type": "string"
-                                    },
-                                    "internalIP": {
-                                        "type": "string"
-                                    },
-                                    "internalPort": {
-                                        "type": "string"
-                                    },
-                                    "protocol": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
-                        },
-                        "internalIP": {
-                            "type": "string"
-                        },
-                        "snat": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubeovn_eip.UpdateEIPInfo": {
-            "type": "object",
-            "properties": {
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "dnat": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/superphenix-controller_internal_kubeovn_eip_dnat.InfoDNAT"
-                            }
-                        },
-                        "internalIP": {
-                            "type": "string"
-                        },
-                        "snat": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubeovn_eip_dnat.InfoDNAT": {
-            "type": "object",
-            "properties": {
-                "externalPort": {
-                    "type": "string"
-                },
-                "internalIP": {
-                    "type": "string"
-                },
-                "internalPort": {
-                    "type": "string"
-                },
-                "protocol": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubeovn_load_balancer.CreateLoadBalancerInfo": {
-            "type": "object",
-            "properties": {
-                "endpoints": {
-                    "description": "ip list",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "port": {
-                                "description": "Name generated from other fields",
-                                "type": "integer"
-                            },
-                            "protocol": {
-                                "type": "string"
-                            },
-                            "targetPort": {
-                                "type": "integer"
-                            }
-                        }
-                    }
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                },
-                "selectors": {
-                    "description": "Selectors and Endpoints are mutually exclusives",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "vip": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubeovn_subnet.CreateSubnetInfo": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "vpcEId": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "natGateway": {
-                    "type": "object",
-                    "properties": {
-                        "enable": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "network": {
-                    "type": "object",
-                    "properties": {
-                        "dnsV4": {
-                            "type": "string"
-                        },
-                        "dnsV6": {
-                            "type": "string"
-                        },
-                        "ipv4": {
-                            "type": "string"
-                        },
-                        "ipv6": {
-                            "type": "string"
-                        },
-                        "private": {
-                            "type": "boolean"
-                        },
-                        "protocol": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubeovn_vpc.CreateVPCInfo": {
-            "type": "object",
-            "properties": {
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubeovn_vpc.UpdateVPCInfo": {
-            "type": "object",
-            "properties": {
-                "staticRoutes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.StaticRoute"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_datavolume.CreateDiskInfo": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "labels": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "source": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_datavolume.Source"
-                        },
-                        "storage": {
-                            "description": "Storage Size",
-                            "type": "string"
-                        },
-                        "storageClass": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_datavolume.Source": {
-            "type": "object",
-            "properties": {
-                "clone": {
-                    "type": "string"
-                },
-                "snapshot": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.AdvancedBootloader": {
-            "type": "object",
-            "properties": {
-                "efi": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.EFIOptions"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.AdvancedDevices": {
-            "type": "object",
-            "properties": {
-                "tpm": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.TPMOptions"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.AdvancedFirmware": {
-            "type": "object",
-            "properties": {
-                "bootloader": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.AdvancedBootloader"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.AdvancedOptionsInput": {
-            "type": "object",
-            "properties": {
-                "devices": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.AdvancedDevices"
-                },
-                "firmware": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.AdvancedFirmware"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.CloudInit": {
-            "type": "object",
-            "properties": {
-                "bus": {
-                    "type": "string"
-                },
-                "config": {
-                    "type": "string"
-                },
-                "custom": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.ContainerDiskBatch": {
-            "type": "object",
-            "properties": {
-                "ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.CreateVMInfo": {
-            "type": "object",
-            "properties": {
-                "advanced": {
-                    "description": "Advanced is optional: nil pushes no device/firmware override.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.AdvancedOptionsInput"
-                        }
-                    ]
-                },
-                "cloudInit": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.CloudInit"
-                },
-                "compute": {
-                    "type": "object",
-                    "properties": {
-                        "cpu": {
-                            "type": "integer"
-                        },
-                        "memory": {
-                            "type": "integer"
-                        }
-                    }
-                },
-                "containerDisks": {
-                    "description": "ContainerDisks holds catalog IDs. Nil falls back to the recommended\ncatalog set for the VM preference; a non-nil slice (including empty) is\nhonoured verbatim. IDs are resolved against this AZ's config catalog.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "disks": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.Disk"
-                    }
-                },
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "labels": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "runStrategy": {
-                            "type": "string"
-                        },
-                        "vmType": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "network": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.Network"
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                },
-                "sshKeys": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.Disk": {
-            "type": "object",
-            "properties": {
-                "bus": {
-                    "type": "string"
-                },
-                "cdrom": {
-                    "type": "boolean"
-                },
-                "disk": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_datavolume.CreateDiskInfo"
-                },
-                "eid": {
-                    "type": "string"
-                },
-                "order": {
-                    "type": "integer"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.EFIOptions": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "persistent": {
-                    "description": "persist EFI NVRAM across reboots",
-                    "type": "boolean"
-                },
-                "secureBoot": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.Network": {
-            "type": "object",
-            "properties": {
-                "ipv4": {
-                    "type": "string"
-                },
-                "ipv6": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "order": {
-                    "type": "integer"
-                },
-                "subnetEId": {
-                    "description": "Subnet Effective ID",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.TPMOptions": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "persistent": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vm.UpdateVMInfo": {
-            "type": "object",
-            "properties": {
-                "advanced": {
-                    "description": "Advanced is optional: nil leaves existing device/firmware overrides untouched.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.AdvancedOptionsInput"
-                        }
-                    ]
-                },
-                "cloudInit": {
-                    "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.CloudInit"
-                },
-                "compute": {
-                    "type": "object",
-                    "properties": {
-                        "cpu": {
-                            "type": "integer"
-                        },
-                        "memory": {
-                            "type": "integer"
-                        }
-                    }
-                },
-                "containerDisks": {
-                    "description": "ContainerDisks is the desired mount state as catalog IDs. Nil preserves\nwhatever is currently attached; non-nil sets it explicitly (empty\ndetaches all). IDs are resolved against this AZ's config catalog.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "disks": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.Disk"
-                    }
-                },
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "labels": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "runStrategy": {
-                            "type": "string"
-                        },
-                        "vmType": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "network": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vm.Network"
-                    }
-                },
-                "sshKeys": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotDisk": {
-            "type": "object",
-            "properties": {
-                "eid": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotInfo": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotResponse": {
-            "type": "object",
-            "properties": {
-                "disks": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_kubevirt_vmSnapshot.CloneVmSnapshotDisk"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_vmSnapshot.CreateVmSnapshotInfo": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "source": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_volumeSnapshot.CreateSnapshotInfo": {
-            "type": "object",
-            "properties": {
-                "orgID": {
-                    "type": "string"
-                },
-                "projectID": {
-                    "type": "string"
-                },
-                "resourceEffectiveID": {
-                    "type": "string"
-                },
-                "resourceLocalID": {
-                    "type": "string"
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "labelSelector": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "paused": {
-                            "type": "boolean"
-                        },
-                        "retention": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_volumeSnapshot.RetentionPolicy"
-                        },
-                        "schedule": {
-                            "type": "integer"
-                        },
-                        "scheduled": {
-                            "type": "boolean"
-                        },
-                        "source": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_volumeSnapshot.RetentionPolicy": {
-            "type": "object",
-            "properties": {
-                "expiryTime": {
-                    "type": "integer"
-                }
-            }
-        },
-        "superphenix-controller_internal_kubevirt_volumeSnapshot.UpdateSnapshotInfo": {
-            "type": "object",
-            "properties": {
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "labelSelector": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "paused": {
-                            "type": "boolean"
-                        },
-                        "retention": {
-                            "$ref": "#/definitions/superphenix-controller_internal_kubevirt_volumeSnapshot.RetentionPolicy"
-                        },
-                        "schedule": {
-                            "type": "integer"
-                        }
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.AccessCredential": {
-            "type": "object",
-            "properties": {
-                "sshPublicKey": {
-                    "description": "SSHPublicKey represents the source and method of applying a ssh public\nkey into a guest virtual machine.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.SSHPublicKeyAccessCredential"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.AdvancedOptions": {
-            "type": "object",
-            "properties": {
-                "blocks": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.ResolvedBlock"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.BaaS": {
-            "type": "object",
-            "properties": {
-                "backup": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.BaasObject"
-                },
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.BaasObject": {
-            "type": "object",
-            "properties": {
-                "backup": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.Backup"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "orphan": {
-                    "type": "boolean"
-                },
-                "schedule": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.Schedule"
-                },
-                "standalone": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Backup": {
-            "type": "object",
-            "properties": {
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "description": "+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.BackupSpec"
-                        }
-                    ]
-                },
-                "status": {
-                    "description": "+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.BackupStatus"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.BackupProgress": {
-            "type": "object",
-            "properties": {
-                "itemsBackedUp": {
-                    "description": "ItemsBackedUp is the number of items that have actually been written to the\nbackup tarball so far.\n+optional",
-                    "type": "integer"
-                },
-                "totalItems": {
-                    "description": "TotalItems is the total number of items to be backed up. This number may change\nthroughout the execution of the backup due to plugins that return additional related\nitems to back up, the velero.io/exclude-from-backup label, and various other\nfilters that happen as items are processed.\n+optional",
-                    "type": "integer"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.BackupSpec": {
-            "type": "object",
-            "properties": {
-                "labelSelector": {
-                    "description": "LabelSelector is a metav1.LabelSelector to filter with\nwhen adding individual objects to the backup. If empty\nor nil, all objects are included. Optional.\n+optional\n+nullable",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.LabelSelector"
-                        }
-                    ]
-                },
-                "ttl": {
-                    "description": "TTL is a time.Duration-parseable string describing how long\nthe Backup should be retained for.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/k8s_io_apimachinery_pkg_apis_meta_v1.Duration"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.BackupStatus": {
-            "type": "object",
-            "properties": {
-                "completionTimestamp": {
-                    "type": "string"
-                },
-                "errors": {
-                    "description": "Errors is a count of all error messages that were generated during\nexecution of the backup.  The actual errors are in the backup's log\nfile in object storage.\n+optional",
-                    "type": "integer"
-                },
-                "failureReason": {
-                    "description": "FailureReason is an error that caused the entire backup to fail.\n+optional",
-                    "type": "string"
-                },
-                "phase": {
-                    "description": "Phase is the current state of the Backup.\n+optional",
-                    "type": "string"
-                },
-                "progress": {
-                    "description": "Progress contains information about the backup's execution progress. Note\nthat this information is best-effort only -- if Velero fails to update it\nduring a backup for any reason, it may be inaccurate/stale.\n+optional\n+nullable",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.BackupProgress"
-                        }
-                    ]
-                },
-                "warnings": {
-                    "description": "Warnings is a count of all warning messages that were generated during\nexecution of the backup. The actual warnings are in the backup's log\nfile in object storage.\n+optional",
-                    "type": "integer"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Cluster": {
-            "type": "object",
-            "properties": {
-                "cluster": {
-                    "$ref": "#/definitions/v1beta2.Cluster"
-                },
-                "machineDeployments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.MachineDeployment"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.DNATView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/v1.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/v1.IptablesDnatRuleSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/v1.IptablesDnatRuleStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.DataVolumeSpec": {
-            "type": "object",
-            "properties": {
-                "source": {
-                    "description": "Source is the src of the data for the requested DataVolume\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.DataVolumeSource"
-                        }
-                    ]
-                },
-                "storage": {
-                    "description": "Storage is the requested storage specification",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.StorageSpec"
-                        }
-                    ]
-                },
-                "storageClassName": {
-                    "description": "StorageClassName is the name of the StorageClass required by the DataVolume.",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.DataVolumeStatus": {
-            "type": "object",
-            "properties": {
-                "claimName": {
-                    "description": "ClaimName is the name of the underlying PVC used by the DataVolume.",
-                    "type": "string"
-                },
-                "conditions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1beta1.DataVolumeCondition"
-                    }
-                },
-                "phase": {
-                    "description": "Phase is the current phase of the data volume",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.DataVolumePhase"
-                        }
-                    ]
-                },
-                "progress": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.DataVolumeTemplate": {
-            "type": "object",
-            "properties": {
-                "registryUrl": {
-                    "type": "string"
-                },
-                "storageSize": {
-                    "type": "string"
-                },
-                "volumeMode": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Disk": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "disk": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.DiskView"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "mountStatus": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.MountStatus"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "pvc": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.PVCView"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.DiskView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.DataVolumeSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.DataVolumeStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.DomainSpec": {
-            "type": "object",
-            "properties": {
-                "cpu": {
-                    "description": "CPU allow specified the detailed CPU topology inside the vmi.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.CPU"
-                        }
-                    ]
-                },
-                "devices": {
-                    "description": "Devices allows adding disks, network interfaces, and others",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.Devices"
-                        }
-                    ]
-                },
-                "machine": {
-                    "description": "Machine type.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.Machine"
-                        }
-                    ]
-                },
-                "memory": {
-                    "description": "Memory allow specifying the VMI memory features.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.Memory"
-                        }
-                    ]
-                },
-                "resources": {
-                    "description": "Resources describes the Compute Resources required by this vmi.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/kubevirt_io_api_core_v1.ResourceRequirements"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.EIP": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "dnat": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.DNATView"
-                    }
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "eip": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.EIPView"
-                },
-                "fip": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.FIPView"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                },
-                "snat": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.SNATView"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.EIPView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/v1.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/v1.IptablesEIPSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/v1.IptablesEIPStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.FIPView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/v1.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/v1.IptablesFIPRuleSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/v1.IptablesFIPRuleStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Firewall": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "firewall": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.NetPolView"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Instance": {
-            "type": "object",
-            "properties": {
-                "cloudInit": {
-                    "type": "string"
-                },
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                },
-                "vm": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachineView"
-                },
-                "vmi": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachineInstanceView"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.KaaS": {
-            "type": "object",
-            "properties": {
-                "cluster": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.Cluster"
-                },
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.KubevirtMachineTemplateSimplified": {
-            "type": "object",
-            "properties": {
-                "dataVolumeTemplates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.DataVolumeTemplate"
-                    }
-                },
-                "machineTemplate": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.MachineTemplate"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.LBRulePort": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "protocol": {
-                    "type": "string"
-                },
-                "targetPort": {
-                    "type": "integer"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.LBSpec": {
-            "type": "object",
-            "properties": {
-                "endpoints": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "namespace": {
-                    "type": "string"
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.LBRulePort"
-                    }
-                },
-                "selector": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "sessionAffinity": {
-                    "type": "string"
-                },
-                "vip": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.LBStatus": {
-            "type": "object",
-            "properties": {
-                "conditions": {
-                    "description": "Conditions represents the latest state of the object\n+optional\n+patchMergeKey=type\n+patchStrategy=merge",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_kubeovn_kube-ovn_pkg_apis_kubeovn_v1.Condition"
-                    }
-                },
-                "ports": {
-                    "type": "string"
-                },
-                "service": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.LBView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.LBSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.LBStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.LoadBalancer": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "loadBalancer": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.LBView"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.MachineDeployment": {
-            "type": "object",
-            "properties": {
-                "machineDeployment": {
-                    "$ref": "#/definitions/v1beta2.MachineDeployment"
-                },
-                "machineTemplate": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.KubevirtMachineTemplateSimplified"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.MachineTemplate": {
-            "type": "object",
-            "properties": {
-                "cpu": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.MachineTemplateCPU"
-                },
-                "memory": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.MachineTemplateMemory"
-                },
-                "preference": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.MachineTemplatePreference"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.MachineTemplateCPU": {
-            "type": "object",
-            "properties": {
-                "cores": {
-                    "type": "integer"
-                },
-                "sockets": {
-                    "type": "integer"
-                },
-                "threads": {
-                    "type": "integer"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.MachineTemplateMemory": {
-            "type": "object",
-            "properties": {
-                "guest": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.MachineTemplatePreference": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.MountStatus": {
-            "type": "object",
-            "properties": {
-                "by": {
-                    "type": "string"
-                },
-                "isMounted": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.NatGwView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VpcNatSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VpcNatStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.NetPolView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/v1.NetworkPolicySpec"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.ObjectMeta": {
-            "type": "object",
-            "properties": {
-                "annotations": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "creationTimestamp": {
-                    "type": "string"
-                },
-                "generateName": {
-                    "type": "string"
-                },
-                "labels": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "namespace": {
-                    "type": "string"
-                },
-                "ownerReferences": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.OwnerReference"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.PVCSpec": {
-            "type": "object",
-            "properties": {
-                "accessModes": {
-                    "description": "accessModes contains the desired access modes the volume should have.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1\n+optional\n+listType=atomic",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.PersistentVolumeAccessMode"
-                    }
-                },
-                "dataSource": {
-                    "description": "dataSource field can be used to specify either:\n* An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)\n* An existing PVC (PersistentVolumeClaim)\nIf the provisioner or an external controller can support the specified data source,\nit will create a new volume based on the contents of the specified data source.\nWhen the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,\nand dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.\nIf the namespace is specified, then dataSourceRef will not be copied to dataSource.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.TypedLocalObjectReference"
-                        }
-                    ]
-                },
-                "resources": {
-                    "description": "resources represents the minimum resources the volume should have.\nIf RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements\nthat are lower than previous value but must still be higher than capacity recorded in the\nstatus field of the claim.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.VolumeResourceRequirements"
-                        }
-                    ]
-                },
-                "storageClassName": {
-                    "description": "storageClassName is the name of the StorageClass required by the claim.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1\n+optional",
-                    "type": "string"
-                },
-                "volumeMode": {
-                    "description": "volumeMode defines what type of volume is required by the claim.\nValue of Filesystem is implied when not included in claim spec.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.PersistentVolumeMode"
-                        }
-                    ]
-                },
-                "volumeName": {
-                    "description": "volumeName is the binding reference to the PersistentVolume backing this claim.\n+optional",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.PVCStatus": {
-            "type": "object",
-            "properties": {
-                "accessModes": {
-                    "description": "accessModes contains the actual access modes the volume backing the PVC has.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1\n+optional\n+listType=atomic",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.PersistentVolumeAccessMode"
-                    }
-                },
-                "capacity": {
-                    "description": "capacity represents the actual resources of the underlying volume.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.ResourceList"
-                        }
-                    ]
-                },
-                "phase": {
-                    "description": "phase represents the current phase of PersistentVolumeClaim.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.PersistentVolumeClaimPhase"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.PVCView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.PVCSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.PVCStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.PreferenceMatcher": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "Name is the name of the VirtualMachinePreference or VirtualMachineClusterPreference\n\n+optional",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.ResolvedBlock": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "enabled": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ResolvedBool"
-                },
-                "fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.ResolvedField"
-                    }
-                },
-                "key": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string"
-                },
-                "offLabel": {
-                    "type": "string"
-                },
-                "onLabel": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.ResolvedBool": {
-            "type": "object",
-            "properties": {
-                "default": {
-                    "description": "kubevirt default this field takes when its block is active (e.g. Secure Boot is true once EFI is on)",
-                    "type": "boolean"
-                },
-                "live": {
-                    "description": "value on the running VMI, nil if stopped",
-                    "type": "boolean"
-                },
-                "source": {
-                    "description": "\"vm\", \"preference\" or \"default\"",
-                    "type": "string"
-                },
-                "stale": {
-                    "description": "Live differs from Value (restart required)",
-                    "type": "boolean"
-                },
-                "value": {
-                    "description": "effective value, nil if not set anywhere",
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.ResolvedField": {
-            "type": "object",
-            "properties": {
-                "default": {
-                    "description": "kubevirt default this field takes when its block is active (e.g. Secure Boot is true once EFI is on)",
-                    "type": "boolean"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string"
-                },
-                "live": {
-                    "description": "value on the running VMI, nil if stopped",
-                    "type": "boolean"
-                },
-                "source": {
-                    "description": "\"vm\", \"preference\" or \"default\"",
-                    "type": "string"
-                },
-                "stale": {
-                    "description": "Live differs from Value (restart required)",
-                    "type": "boolean"
-                },
-                "value": {
-                    "description": "effective value, nil if not set anywhere",
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SNATView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "legacy": {
-                    "description": "Property use to detect legacy SNAT - meant to be deleted",
-                    "type": "boolean"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/v1.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/v1.IptablesSnatRuleSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/v1.IptablesSnatRuleStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SSH": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                },
-                "ssh": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.SSHView"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SSHView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "data": {
-                    "description": "Data contains the secret data. Each key must consist of alphanumeric\ncharacters, '-', '_' or '.'. The serialized form of the secret data is a\nbase64 encoded string, representing the arbitrary (possibly non-string)\ndata value here. Described in https://tools.ietf.org/html/rfc4648#section-4\n+optional",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "format": "int32"
-                        }
-                    }
-                },
-                "immutable": {
-                    "description": "Immutable, if set to true, ensures that data stored in the Secret cannot\nbe updated (only object metadata can be modified).\nIf not set to true, the field can be modified at any time.\nDefaulted to nil.\n+optional",
-                    "type": "boolean"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "stringData": {
-                    "description": "stringData allows specifying non-binary secret data in string form.\nIt is provided as a write-only input field for convenience.\nAll keys and values are merged into the data field on write, overwriting any existing values.\nThe stringData field is never output when reading from the API.\n+k8s:conversion-gen=false\n+optional",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "type": {
-                    "description": "Used to facilitate programmatic handling of secret data.\nMore info: https://kubernetes.io/docs/concepts/configuration/secret/#secret-types\n+optional",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Schedule": {
-            "type": "object",
-            "properties": {
-                "backups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.Backup"
-                    }
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "description": "+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.ScheduleSpec"
-                        }
-                    ]
-                },
-                "status": {
-                    "description": "+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.ScheduleStatus"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.ScheduleSpec": {
-            "type": "object",
-            "properties": {
-                "labelSelector": {
-                    "description": "LabelSelector is a metav1.LabelSelector to filter with\nwhen adding individual objects to the backup. If empty\nor nil, all objects are included. Optional.\n+optional\n+nullable",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.LabelSelector"
-                        }
-                    ]
-                },
-                "paused": {
-                    "description": "Paused specifies whether the schedule is paused or not\n+optional",
-                    "type": "boolean"
-                },
-                "schedule": {
-                    "description": "Schedule is a Cron expression defining when to run\nthe Backup.",
-                    "type": "string"
-                },
-                "ttl": {
-                    "description": "TTL is a time.Duration-parseable string describing how long\nthe Backup should be retained for.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/k8s_io_apimachinery_pkg_apis_meta_v1.Duration"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.ScheduleStatus": {
-            "type": "object",
-            "properties": {
-                "lastBackup": {
-                    "description": "LastBackup is the last time a Backup was run for this\nSchedule schedule\n+optional\n+nullable",
-                    "type": "string"
-                },
-                "phase": {
-                    "description": "Phase is the current phase of the Schedule\n+optional",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Snapshot": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                },
-                "snapshot": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.SnapshotView"
-                },
-                "snapshotSchedule": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.SnapshotScheduleView"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SnapshotScheduleView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "children": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.SnapshotView"
-                    }
-                },
-                "childrenCount": {
-                    "type": "integer"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/v1.SnapshotScheduleSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/v1.SnapshotScheduleStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SnapshotView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VolumeSnapshotSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/github_com_kubernetes-csi_external-snapshotter_client_v4_apis_volumesnapshot_v1.VolumeSnapshotStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.StaticRoute": {
-            "type": "object",
-            "properties": {
-                "autoGenerated": {
-                    "type": "boolean"
-                },
-                "cidr": {
-                    "type": "string"
-                },
-                "isOverriden": {
-                    "type": "boolean"
-                },
-                "nextHopIP": {
-                    "type": "string"
-                },
-                "policy": {
-                    "$ref": "#/definitions/v1.RoutePolicy"
-                },
-                "routeTable": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.StorageSpec": {
-            "type": "object",
-            "properties": {
-                "accessModes": {
-                    "description": "AccessModes contains the desired access modes the volume should have.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1\n+optional",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.PersistentVolumeAccessMode"
-                    }
-                },
-                "resources": {
-                    "description": "Resources represents the minimum resources the volume should have.\nMore info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.VolumeResourceRequirements"
-                        }
-                    ]
-                },
-                "volumeMode": {
-                    "description": "volumeMode defines what type of volume is required by the claim.\nValue of Filesystem is implied when not included in claim spec.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.PersistentVolumeMode"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.Subnet": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "natGateway": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.NatGwView"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                },
-                "subnet": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.SubnetView"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SubnetSpec": {
-            "type": "object",
-            "properties": {
-                "cidrBlock": {
-                    "type": "string"
-                },
-                "default": {
-                    "type": "boolean"
-                },
-                "dhcpV4Options": {
-                    "type": "string"
-                },
-                "dhcpV6Options": {
-                    "type": "string"
-                },
-                "excludeIps": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "gateway": {
-                    "type": "string"
-                },
-                "gatewayNode": {
-                    "type": "string"
-                },
-                "gatewayType": {
-                    "type": "string"
-                },
-                "namespaces": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "natOutgoing": {
-                    "type": "boolean"
-                },
-                "natOutgoingPolicyRules": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.NatOutgoingPolicyRule"
-                    }
-                },
-                "private": {
-                    "type": "boolean"
-                },
-                "protocol": {
-                    "type": "string"
-                },
-                "vpc": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SubnetStatus": {
-            "type": "object",
-            "properties": {
-                "activateGateway": {
-                    "type": "string"
-                },
-                "conditions": {
-                    "description": "Conditions represents the latest state of the object\n+optional\n+patchMergeKey=type\n+patchStrategy=merge",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_kubeovn_kube-ovn_pkg_apis_kubeovn_v1.Condition"
-                    }
-                },
-                "natOutgoingPolicyRules": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.NatOutgoingPolicyRuleStatus"
-                    }
-                },
-                "v4availableIPrange": {
-                    "type": "string"
-                },
-                "v4availableIPs": {
-                    "type": "number"
-                },
-                "v4usingIPrange": {
-                    "type": "string"
-                },
-                "v4usingIPs": {
-                    "type": "number"
-                },
-                "v6availableIPrange": {
-                    "type": "string"
-                },
-                "v6availableIPs": {
-                    "type": "number"
-                },
-                "v6usingIPrange": {
-                    "type": "string"
-                },
-                "v6usingIPs": {
-                    "type": "number"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.SubnetView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "isShared": {
-                    "type": "boolean"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.SubnetSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.SubnetStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VPC": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                },
-                "vpc": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VPCView"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VPCSpec": {
-            "type": "object",
-            "properties": {
-                "staticRoutes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.StaticRoute"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VPCStatus": {
-            "type": "object",
-            "properties": {
-                "conditions": {
-                    "description": "Conditions represents the latest state of the object\n+optional\n+patchMergeKey=type\n+patchStrategy=merge",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_kubeovn_kube-ovn_pkg_apis_kubeovn_v1.Condition"
-                    }
-                },
-                "subnets": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VPCView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VPCSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VPCStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachineInstanceNetworkInterface": {
-            "type": "object",
-            "properties": {
-                "ipAddresses": {
-                    "description": "List of all IP addresses of a Virtual Machine interface",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "mac": {
-                    "description": "Hardware address of a Virtual Machine interface",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Name of the interface, corresponds to name of the network assigned to the interface",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachineInstanceSpec": {
-            "type": "object",
-            "properties": {
-                "accessCredentials": {
-                    "description": "Specifies a set of public keys to inject into the vm guest\n+listType=atomic\n+optional\n+kubebuilder:validation:MaxItems:=256",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.AccessCredential"
-                    }
-                },
-                "architecture": {
-                    "description": "AccessCredentials []AccessCredential ` + "`" + `json:\"accessCredentials,omitempty\"` + "`" + `\nSpecifies the architecture of the vm guest you are attempting to run. Defaults to the compiled architecture of the KubeVirt components",
-                    "type": "string"
-                },
-                "domain": {
-                    "description": "Specification of the desired behavior of the VirtualMachineInstance on the host.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.DomainSpec"
-                        }
-                    ]
-                },
-                "hostname": {
-                    "description": "Specifies the hostname of the vmi\nIf not specified, the hostname will be set to the name of the vmi, if dhcp or cloud-init is configured properly.\n+optional",
-                    "type": "string"
-                },
-                "networks": {
-                    "description": "List of networks that can be attached to a vm's virtual interface.\n+kubebuilder:validation:MaxItems:=256",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.Network"
-                    }
-                },
-                "volumes": {
-                    "description": "List of volumes that can be mounted by disks belonging to the vmi.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/kubevirt_io_api_core_v1.Volume"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachineInstanceStatus": {
-            "type": "object",
-            "properties": {
-                "conditions": {
-                    "description": "Conditions are specific points in VirtualMachineInstance's pod runtime.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.VirtualMachineInstanceCondition"
-                    }
-                },
-                "currentCPUTopology": {
-                    "description": "CurrentCPUTopology specifies the current CPU topology used by the VM workload.\nCurrent topology may differ from the desired topology in the spec while CPU hotplug\ntakes place.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.CPUTopology"
-                        }
-                    ]
-                },
-                "interfaces": {
-                    "description": "Interfaces represent the details of available network interfaces.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachineInstanceNetworkInterface"
-                    }
-                },
-                "memory": {
-                    "description": "Memory shows various information about the VirtualMachine memory.\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.MemoryStatus"
-                        }
-                    ]
-                },
-                "nodeName": {
-                    "description": "NodeName is the name where the VirtualMachineInstance is currently running.",
-                    "type": "string"
-                },
-                "phase": {
-                    "description": "Phase is the status of the VirtualMachineInstance in kubernetes world. It is not the VirtualMachineInstance status, but partially correlates to it.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.VirtualMachineInstancePhase"
-                        }
-                    ]
-                },
-                "phaseTransitionTimestamps": {
-                    "description": "PhaseTransitionTimestamp is the timestamp of when the last phase change occurred\n+listType=atomic\n+optional",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.VirtualMachineInstancePhaseTransitionTimestamp"
-                    }
-                },
-                "volumeStatus": {
-                    "description": "VolumeStatus contains the statuses of all the volumes\n+optional\n+listType=atomic",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/v1.VolumeStatus"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachineInstanceView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "description": "VirtualMachineInstance Spec contains the VirtualMachineInstance specification.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachineInstanceSpec"
-                        }
-                    ]
-                },
-                "status": {
-                    "description": "Status is the high level overview of how the VirtualMachineInstance is doing. It contains information available to controllers and users.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachineInstanceStatus"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachinePreferenceView": {
-            "type": "object",
-            "properties": {
-                "clock": {
-                    "description": "Clock optionally defines preferences associated with the Clock attribute\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.ClockPreferences"
-                        }
-                    ]
-                },
-                "cpu": {
-                    "description": "CPU optionally defines preferences associated with the CPU attribute\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.CPUPreferences"
-                        }
-                    ]
-                },
-                "devices": {
-                    "description": "Devices optionally defines preferences associated with the Devices attribute\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.DevicePreferences"
-                        }
-                    ]
-                },
-                "features": {
-                    "description": "Features optionally defines preferences associated with the Features attribute\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.FeaturePreferences"
-                        }
-                    ]
-                },
-                "firmware": {
-                    "description": "Firmware optionally defines preferences associated with the Firmware attribute\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.FirmwarePreferences"
-                        }
-                    ]
-                },
-                "machine": {
-                    "description": "Machine optionally defines preferences associated with the Machine attribute\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.MachinePreferences"
-                        }
-                    ]
-                },
-                "name": {
-                    "description": "Name is the name of the VirtualMachineClusterPreference",
-                    "type": "string"
-                },
-                "volumes": {
-                    "description": "Volumes optionally defines preferences associated with the Volumes attribute\n+optional",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1beta1.VolumePreferences"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachineSpec": {
-            "type": "object",
-            "properties": {
-                "preference": {
-                    "description": "PreferenceMatcher references a set of preference that is used to fill fields in Template",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.PreferenceMatcher"
-                        }
-                    ]
-                },
-                "runStrategy": {
-                    "description": "Running state indicates the requested running state of the VirtualMachineInstance\nmutually exclusive with Running",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.VirtualMachineRunStrategy"
-                        }
-                    ]
-                },
-                "running": {
-                    "description": "Running controls whether the associated VirtualMachineInstance is created or not\nMutually exclusive with RunStrategy",
-                    "type": "boolean"
-                },
-                "template": {
-                    "description": "Template is the direct specification of VirtualMachineInstance",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.VirtualMachineInstanceTemplateSpec"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachineStatus": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "description": "RestoreInProgress *string ` + "`" + `json:\"restoreInProgress,omitempty\"` + "`" + `\nCreated indicates if the virtual machine is created in the cluster",
-                    "type": "boolean"
-                },
-                "printableStatus": {
-                    "description": "PrintableStatus is a human-readable, high-level representation of the status of the virtual machine\n+kubebuilder:default=Stopped",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.VirtualMachinePrintableStatus"
-                        }
-                    ]
-                },
-                "ready": {
-                    "description": "Ready indicates if the virtual machine is running and ready",
-                    "type": "boolean"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VirtualMachineView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "description": "Spec contains the specification of VirtualMachineInstance created",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachineSpec"
-                        }
-                    ]
-                },
-                "status": {
-                    "description": "Status holds the current state of the controller and brief information\nabout its associated VirtualMachineInstance",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/superphenix-controller_internal_models_view.VirtualMachineStatus"
-                        }
-                    ]
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VmSnapshot": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                },
-                "vmSnapshot": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VmSnapshotView"
-                },
-                "vmSnapshotContent": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.VmSnapshotContentView"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VmSnapshotContentView": {
-            "type": "object",
-            "properties": {
-                "vm": {
-                    "type": "object",
-                    "properties": {
-                        "effectiveId": {
-                            "type": "string"
-                        },
-                        "localId": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "volumesSnapshot": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VmSnapshotView": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources\n+optional",
-                    "type": "string"
-                },
-                "kind": {
-                    "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds\n+optional",
-                    "type": "string"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/superphenix-controller_internal_models_view.ObjectMeta"
-                },
-                "spec": {
-                    "$ref": "#/definitions/v1beta1.VirtualMachineSnapshotSpec"
-                },
-                "status": {
-                    "$ref": "#/definitions/v1beta1.VirtualMachineSnapshotStatus"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VolumeSnapshotSpec": {
-            "type": "object",
-            "properties": {
-                "source": {
-                    "description": "source specifies where a snapshot will be created from.\nThis field is immutable after creation.\nRequired.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/v1.VolumeSnapshotSource"
-                        }
-                    ]
-                },
-                "volumeSnapshotClassName": {
-                    "description": "VolumeSnapshotClassName is the name of the VolumeSnapshotClass\nrequested by the VolumeSnapshot.\nVolumeSnapshotClassName may be left nil to indicate that the default\nSnapshotClass should be used.\nA given cluster may have multiple default Volume SnapshotClasses: one\ndefault per CSI Driver. If a VolumeSnapshot does not specify a SnapshotClass,\nVolumeSnapshotSource will be checked to figure out what the associated\nCSI Driver is, and the default VolumeSnapshotClass associated with that\nCSI Driver will be used. If more than one VolumeSnapshotClass exist for\na given CSI Driver and more than one have been marked as default,\nCreateSnapshot will fail and generate an event.\nEmpty string is not allowed for this field.\n+optional",
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VpcNatSpec": {
-            "type": "object",
-            "properties": {
-                "externalSubnets": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "lanIp": {
-                    "type": "string"
-                },
-                "qosPolicy": {
-                    "type": "string"
-                },
-                "subnet": {
-                    "type": "string"
-                },
-                "vpc": {
-                    "type": "string"
-                }
-            }
-        },
-        "superphenix-controller_internal_models_view.VpcNatStatus": {
-            "type": "object",
-            "properties": {
-                "externalSubnets": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "qosPolicy": {
-                    "type": "string"
                 }
             }
         },

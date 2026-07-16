@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"slices"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/iam/group"

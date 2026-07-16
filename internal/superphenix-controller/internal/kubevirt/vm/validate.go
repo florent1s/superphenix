@@ -2,6 +2,7 @@ package vm
 
 import (
 	"fmt"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 )
 

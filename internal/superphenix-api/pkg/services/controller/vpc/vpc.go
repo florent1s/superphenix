@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"slices"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/authorization"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/az"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/consts"

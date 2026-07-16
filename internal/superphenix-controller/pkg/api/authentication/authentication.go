@@ -3,6 +3,7 @@ package authentication
 import (
 	"net/http"
 	"strings"
+
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
 )
