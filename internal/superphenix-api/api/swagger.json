@@ -1,12 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Superphenix API HTTP API",
+        "description": "Superphenix HTTP API",
         "title": "Superphenix API",
         "contact": {
             "name": "API Support",
             "url": "https://superphenix.net",
-            "email": "contact@rayshift.net"
+            "email": "contact@superphenix.net"
         },
         "version": "0.1"
     },

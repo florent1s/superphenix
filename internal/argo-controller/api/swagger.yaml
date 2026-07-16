@@ -858,11 +858,11 @@ definitions:
     - SyncStatusCodeOutOfSync
 info:
   contact:
-    email: contact@rayshift.net
+    email: contact@superphenix.net
     name: API Support
     url: https://superphenix.net
-  description: SPX Argo Ctrl HTTP API
-  title: SPX Argo Ctrl
+  description: SPX Argo Controller HTTP API
+  title: SPX Argo Controller
   version: "0.1"
 paths:
   /v1/{orgId}/{projectId}/argo:

@@ -1,12 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "SPX Argo Ctrl HTTP API",
-        "title": "SPX Argo Ctrl",
+        "description": "SPX Argo Controller HTTP API",
+        "title": "SPX Argo Controller",
         "contact": {
             "name": "API Support",
             "url": "https://superphenix.net",
-            "email": "contact@rayshift.net"
+            "email": "contact@superphenix.net"
         },
         "version": "0.1"
     },

@@ -2,6 +2,7 @@ apiVersion: v2
 name: superphenix-management
 description: A Helm chart for Superphenix management components
 type: application
+# This chart inherits the tag of the Git repository
 version: 0.0.0
 appVersion: "0.0.0"
 # Removed to temporarily satisfy CICD

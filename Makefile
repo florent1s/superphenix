@@ -246,6 +246,15 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 		mv -f $(LOCALBIN)/golangci-lint-custom $(GOLANGCI_LINT); \
 	} || true
 
+INTERNAL_PROJECTS := internal/superphenix-api internal/superphenix-controller internal/argo-controller
+# You need swag installed: go install github.com/swaggo/swag/cmd/swag
+.PHONY: swagger
+swagger:
+	@for dir in $(INTERNAL_PROJECTS); do \
+		echo "Updating swagger for $$dir..."; \
+		cd $(CURDIR)/$$dir && swag fmt -d . && swag init --pd --pdl 1 --parseInternal -d ./pkg/api,./internal -g ./api.go -o api; \
+	done
+
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
 # $2 - package url which can be installed

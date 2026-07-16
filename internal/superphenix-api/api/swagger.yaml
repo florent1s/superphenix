@@ -1,10 +1,10 @@
 basePath: /api
 info:
   contact:
-    email: contact@rayshift.net
+    email: contact@superphenix.net
     name: API Support
     url: https://superphenix.net
-  description: Superphenix API HTTP API
+  description: Superphenix HTTP API
   title: Superphenix API
   version: "0.1"
 paths: {}

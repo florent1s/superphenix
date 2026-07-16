@@ -18,13 +18,13 @@ import (
 
 // StartAPI
 //
-//	@title									SPX Argo Ctrl
+//	@title									SPX Argo Controller
 //	@version								0.1
-//	@description							SPX Argo Ctrl HTTP API
+//	@description							SPX Argo Controller HTTP API
 //
 //	@contact.name							API Support
 //	@contact.url							https://superphenix.net
-//	@contact.email							contact@rayshift.net
+//	@contact.email							contact@superphenix.net
 //
 //	@BasePath								/
 //

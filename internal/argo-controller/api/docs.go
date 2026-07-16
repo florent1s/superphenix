@@ -12,7 +12,7 @@ const docTemplate = `{
         "contact": {
             "name": "API Support",
             "url": "https://superphenix.net",
-            "email": "contact@rayshift.net"
+            "email": "contact@superphenix.net"
         },
         "version": "{{.Version}}"
     },
@@ -1527,8 +1527,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "SPX Argo Ctrl",
-	Description:      "SPX Argo Ctrl HTTP API",
+	Title:            "SPX Argo Controller",
+	Description:      "SPX Argo Controller HTTP API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

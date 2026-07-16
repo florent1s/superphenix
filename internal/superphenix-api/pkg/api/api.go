@@ -11,11 +11,11 @@ import (
 //
 //	@title									Superphenix API
 //	@version								0.1
-//	@description							Superphenix API HTTP API
+//	@description							Superphenix HTTP API
 //
 //	@contact.name							API Support
 //	@contact.url							https://superphenix.net
-//	@contact.email							contact@rayshift.net
+//	@contact.email							contact@superphenix.net
 //
 //	@BasePath								/api
 //
