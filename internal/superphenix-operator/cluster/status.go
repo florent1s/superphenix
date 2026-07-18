@@ -101,6 +101,9 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 		}
 	}
 
+	// Refresh the per-app status map from the ArgoCD Applications handled by the root app.
+	r.updateAppsStatus(ctx, cluster)
+
 	// 2. Determine Conditions
 	// Check version compatibility with management
 	r.updateCompatibilityCondition(ctx, cluster)
@@ -429,4 +432,82 @@ func (r *Reconciler) updateCompatibilityCondition(ctx context.Context, cluster *
 		Reason:  reason,
 		Message: message,
 	})
+}
+
+// updateAppsStatus refreshes cluster.Status.Apps with one entry per ArgoCD Application handled
+// by the cluster's root app-of-apps. The root Application itself is excluded so the map reflects
+// only the components it manages. Listing errors are non-fatal: the previous map is preserved so
+// a transient failure does not blank out the reported state.
+func (r *Reconciler) updateAppsStatus(ctx context.Context, cluster *operatorv1alpha1.Cluster) {
+	log := logf.FromContext(ctx)
+
+	subApps, err := r.listSubApplications(ctx, cluster)
+	if err != nil {
+		log.Error(err, "Failed to list sub-applications, preserving existing Apps status")
+		return
+	}
+
+	apps := make(map[string]operatorv1alpha1.ClusterApp, len(subApps))
+	for i := range subApps {
+		app := &subApps[i]
+		name := app.GetName()
+		if name == "" || name == cluster.Name {
+			continue
+		}
+		apps[name] = buildClusterApp(app)
+	}
+
+	if len(apps) == 0 {
+		cluster.Status.Apps = nil
+		return
+	}
+	cluster.Status.Apps = apps
+}
+
+// buildClusterApp extracts the observable fields the operator reports for a single ArgoCD
+// Application. Missing or unparseable fields are left at their zero value rather than causing
+// the whole entry to be dropped.
+func buildClusterApp(app *unstructured.Unstructured) operatorv1alpha1.ClusterApp {
+	entry := operatorv1alpha1.ClusterApp{Name: app.GetName()}
+
+	if healthStatus, _, _ := unstructured.NestedString(app.Object, "status", "health", "status"); healthStatus != "" {
+		entry.Status = healthStatus
+	}
+
+	entry.Version = applicationTargetRevision(app)
+
+	if reconciledAt, _, _ := unstructured.NestedString(app.Object, "status", "reconciledAt"); reconciledAt != "" {
+		if t, err := time.Parse(time.RFC3339, reconciledAt); err == nil {
+			mt := metav1.NewTime(t)
+			entry.LastRefresh = &mt
+		}
+	}
+
+	if finishedAt, _, _ := unstructured.NestedString(app.Object, "status", "operationState", "finishedAt"); finishedAt != "" {
+		if t, err := time.Parse(time.RFC3339, finishedAt); err == nil {
+			mt := metav1.NewTime(t)
+			entry.LastSync = &mt
+		}
+	}
+
+	return entry
+}
+
+// applicationTargetRevision returns the target revision of the Application, handling both the
+// single-source (spec.source.targetRevision) and multi-source (spec.sources[0].targetRevision)
+// layouts. Returns an empty string when neither is set.
+func applicationTargetRevision(app *unstructured.Unstructured) string {
+	if rev, found, _ := unstructured.NestedString(app.Object, "spec", "source", "targetRevision"); found && rev != "" {
+		return rev
+	}
+	sources, found, _ := unstructured.NestedSlice(app.Object, "spec", "sources")
+	if !found || len(sources) == 0 {
+		return ""
+	}
+	first, ok := sources[0].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+	rev, _, _ := unstructured.NestedString(first, "targetRevision")
+	return rev
 }
