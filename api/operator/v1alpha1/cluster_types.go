@@ -209,9 +209,9 @@ type ClusterStatus struct {
 	// +optional
 	Phase string `json:"phase,omitempty"`
 
-	// CurrentVersion is the actual Superphenix version currently running on the cluster.
+	// SuperphenixVersion is the actual Superphenix version currently running on the cluster.
 	// +optional
-	CurrentVersion string `json:"currentVersion,omitempty"`
+	SuperphenixVersion string `json:"superphenixVersion,omitempty"`
 
 	// KubernetesVersion is the version of the Kubernetes cluster.
 	// +optional
@@ -238,6 +238,34 @@ type ClusterStatus struct {
 	// LastSync is the last time a sync was performed on the cluster.
 	// +optional
 	LastSync *metav1.Time `json:"lastSync,omitempty"`
+
+	// Apps reports the state of each application deployed by the cluster's root
+	// app-of-apps, keyed by application name.
+	// +optional
+	Apps map[string]ClusterApp `json:"apps,omitempty"`
+}
+
+// ClusterApp reports the observed state of a single application belonging to the
+// cluster's app-of-apps tree.
+type ClusterApp struct {
+	// Name is the application name.
+	Name string `json:"name"`
+
+	// Status is the health status of the Application (e.g. Healthy, Degraded, Progressing).
+	// +optional
+	Status string `json:"status,omitempty"`
+
+	// LastRefresh is the last time ArgoCD reconciled the Application against its source.
+	// +optional
+	LastRefresh *metav1.Time `json:"lastRefresh,omitempty"`
+
+	// LastSync is the last time a sync operation on the Application completed.
+	// +optional
+	LastSync *metav1.Time `json:"lastSync,omitempty"`
+
+	// Version is the target revision of the Application source.
+	// +optional
+	Version string `json:"version,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -247,7 +275,7 @@ type ClusterStatus struct {
 // +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.type`
 // +kubebuilder:printcolumn:name="Region",type=string,JSONPath=`.spec.region`
 // +kubebuilder:printcolumn:name="AZ",type=string,JSONPath=`.spec.availabilityZone`
-// +kubebuilder:printcolumn:name="SPX version",type=string,JSONPath=`.status.currentVersion`
+// +kubebuilder:printcolumn:name="SPX version",type=string,JSONPath=`.status.superphenixVersion`
 // +kubebuilder:printcolumn:name="K8S version",type=string,JSONPath=`.status.kubernetesVersion`
 // +kubebuilder:printcolumn:name="Nodes",type=integer,JSONPath=`.status.nodeCount`
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`

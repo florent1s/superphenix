@@ -32,9 +32,9 @@ Phases:
 Transitions:
 1. Any -> Deploying:
    - When Status.Phase is empty.
-   - When a version update is triggered (CurrentVersion != Spec.Version).
+   - When a version update is triggered (SuperphenixVersion != Spec.Version).
 2. Deploying -> Deployed:
-   - When Spec.Version == CurrentVersion AND ArgoCD sync status is "Synced".
+   - When Spec.Version == SuperphenixVersion AND ArgoCD sync status is "Synced".
 3. Any -> Paused:
    - When Spec.PauseSync is true.
 4. Paused -> Any:
@@ -88,15 +88,15 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 		cluster.Status.NodeCount = nodeCount
 	}
 
-	// Update CurrentVersion based on the currently deployed superphenix-system chart
+	// Update SuperphenixVersion based on the currently deployed superphenix-system chart
 	if reconcileErr == nil {
 		currentVersion, err := version.GetCurrentClusterVersion(ctx, r, cluster.Name, r.OperatorNamespace)
 		if err != nil {
 			log.Error(err, "Failed to get current cluster version")
 		} else if currentVersion != "" {
-			if cluster.Status.CurrentVersion != currentVersion {
-				log.Info("Updating current version from deployed chart", "oldVersion", cluster.Status.CurrentVersion, "newVersion", currentVersion)
-				cluster.Status.CurrentVersion = currentVersion
+			if cluster.Status.SuperphenixVersion != currentVersion {
+				log.Info("Updating superphenix version from deployed chart", "oldVersion", cluster.Status.SuperphenixVersion, "newVersion", currentVersion)
+				cluster.Status.SuperphenixVersion = currentVersion
 			}
 		}
 	}
@@ -184,7 +184,7 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	}
 
 	// If we are "Deployed" but version mismatch, we should be "Deploying"
-	if phase == "Deployed" && cluster.Status.CurrentVersion != cluster.Spec.Version && cluster.Status.CurrentVersion != "" {
+	if phase == "Deployed" && cluster.Status.SuperphenixVersion != cluster.Spec.Version && cluster.Status.SuperphenixVersion != "" {
 		phase = "Deploying"
 	}
 

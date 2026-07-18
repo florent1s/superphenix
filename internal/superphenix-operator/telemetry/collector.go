@@ -123,7 +123,7 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 				"az":       anon.Hash(cl.Spec.AvailabilityZone),
 				"topology": topologyLabel(cl.Spec.DeploymentTopology),
 				"type":     typeLabel(cl.Spec.DeploymentTopology, cl.Spec.Type),
-				"version":  sanitizeVersion(cl.Status.CurrentVersion),
+				"version":  sanitizeVersion(cl.Status.SuperphenixVersion),
 			},
 		})
 
@@ -134,7 +134,7 @@ func (c *Collector) Collect(ctx context.Context) (Report, error) {
 			Labels: map[string]string{
 				"cluster": anon.Hash(string(cl.UID)),
 				"name":    "superphenix-system",
-				"version": sanitizeVersion(cl.Status.CurrentVersion),
+				"version": sanitizeVersion(cl.Status.SuperphenixVersion),
 			},
 		})
 

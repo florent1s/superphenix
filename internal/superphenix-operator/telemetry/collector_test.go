@@ -35,7 +35,7 @@ func TestCollector_Collect(t *testing.T) {
 			DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
 		},
 		Status: operatorv1alpha1.ClusterStatus{
-			CurrentVersion: "v1.2.3",
+			SuperphenixVersion: "v1.2.3",
 			NodeCount:      3,
 		},
 	}
@@ -48,7 +48,7 @@ func TestCollector_Collect(t *testing.T) {
 			Type:               ptr(operatorv1alpha1.ClusterTypeStorage),
 		},
 		Status: operatorv1alpha1.ClusterStatus{
-			CurrentVersion: "v1.2.4",
+			SuperphenixVersion: "v1.2.4",
 			NodeCount:      5,
 		},
 	}
@@ -60,7 +60,7 @@ func TestCollector_Collect(t *testing.T) {
 			DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
 		},
 		Status: operatorv1alpha1.ClusterStatus{
-			CurrentVersion: "v1.2.3",
+			SuperphenixVersion: "v1.2.3",
 		},
 	}
 	cluster4 := &operatorv1alpha1.Cluster{
