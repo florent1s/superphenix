@@ -35,7 +35,7 @@ function usage() {
 function namespace_secret() {
 	SOURCE_CLUSTER=$1
 
-        # Mapping contains "clusterSource:clusterDestination" or "clusterDestination:clusterSource" to map the source and destination storage clusters
+  # Mapping contains "clusterSource:clusterDestination" or "clusterDestination:clusterSource" to map the source and destination storage clusters
 	# We need to check both syntaxes
 	MAPPING=$(kubectl get --context=admin@${CLUSTER} -n ${ROOK_NAMESPACE} configmap rook-ceph-csi-mapping-config -o json | jq -r '.data."csi-mapping-config-json"')
 

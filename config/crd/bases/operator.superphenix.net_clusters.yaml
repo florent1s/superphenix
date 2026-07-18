@@ -185,7 +185,7 @@ spec:
               apps:
                 additionalProperties:
                   description: |-
-                    ClusterApp reports the observed state of a single ArgoCD Application belonging to the
+                    ClusterApp reports the observed state of a single application belonging to the
                     cluster's app-of-apps tree.
                   properties:
                     lastRefresh:
@@ -199,10 +199,10 @@ spec:
                       format: date-time
                       type: string
                     name:
-                      description: Name is the ArgoCD Application name.
+                      description: Name is the application name.
                       type: string
                     status:
-                      description: Status is the ArgoCD health status of the Application
+                      description: Status is the health status of the Application
                         (e.g. Healthy, Degraded, Progressing).
                       type: string
                     version:
@@ -213,7 +213,7 @@ spec:
                   - name
                   type: object
                 description: |-
-                  Apps reports the state of each ArgoCD Application deployed by the cluster's root
+                  Apps reports the state of each application deployed by the cluster's root
                   app-of-apps, keyed by application name.
                 type: object
               conditions:
