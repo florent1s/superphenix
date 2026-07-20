@@ -308,15 +308,15 @@ read
 # Verify the user agreed to proceed
 if [[ $REPLY != "yes" ]]; then msg_warn "Aborting...\n"; exit 1; fi
 
-# Apply Velero restore
-echo -e "\n\n"
-msg_action "Proceeding with restore $BWhite$PROJECT$RST\n"
-apply_restore $PROJECT
-
 # Start restoring the volumes
 echo -e "\n\n"
 msg_action "Resources restored, proceeding with PVs/PVCs...\n"
 handle_volumes
+
+# Apply Velero restore
+echo -e "\n\n"
+msg_action "Proceeding with restore $BWhite$PROJECT$RST\n"
+apply_restore $PROJECT
 
 if [[ $REPLICATION == "false" ]]; then
 	RECLAIM_PVCS=$(kubectl get pvc -n $PROJECT --context=admin@${CLUSTER} -l velero.io/backup-name=$BACKUP -o jsonpath='{.items[*].metadata.name}')
