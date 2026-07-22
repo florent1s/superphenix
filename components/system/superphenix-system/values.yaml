@@ -1326,6 +1326,24 @@ apps:
       chart: "tuned"
       releaseName: "tuned"
 
+  # Gateway-API -- Gateway API CRDs
+  gateway-api:
+    enabled: true
+    wave: "0"
+    modes: [Hyperconverged, DecoupledVirtualization]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      cleanupOnDeletion: false
+      syncOptions: {}
+    namespace: "kube-system"
+    repoURL: "https://github.com/kubernetes-sigs/gateway-api.git"
+    targetRevision: "v1.6.1"
+    path: "config/crd/standard"
+    directory:
+      recurse: true
+
   # Traefik -- Gateway API & ingress controller
   traefik:
     enabled: true
@@ -1355,7 +1373,7 @@ apps:
           enabled: true
           kind: DaemonSet
 
-        # -- Use a ClusterIP instead of a loadbalancer, as we're deploying on baremetal
+        # -- Use a ClusterIP instead of a LoadBalancer, as we're deploying on baremetal
         service:
           type: ClusterIP
 
@@ -1388,8 +1406,10 @@ apps:
 
         # -- Ports on which Traefik listens
         ports:
+          # -- HTTP
           web:
             port: 80
+          # -- HTTPS
           websecure:
             port: 443
           # -- KaaS HTTPS API server
@@ -1448,5 +1468,3 @@ apps:
             watchIngressWithoutClass: true
           kubernetesGateway:
             enabled: true
-            # -- Enable TLSRoute
-            experimentalChannel: true
