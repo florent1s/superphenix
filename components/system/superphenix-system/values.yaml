@@ -940,7 +940,7 @@ apps:
       syncOptions: {}
     namespace: "volume-replicator"
     repoURL: "ghcr.io/super-phenix/helm-charts"
-    targetRevision: "0.4.0"
+    targetRevision: "0.5.1"
     helm:
       chart: "volume-replicator"
       releaseName: "volume-replicator"
