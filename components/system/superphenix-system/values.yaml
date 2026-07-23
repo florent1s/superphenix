@@ -1134,6 +1134,10 @@ apps:
     helm:
       chart: "kyverno"
       releaseName: "kyverno"
+      values:
+        # Unnecessary controller doing high CPU usage under unknown circumstances
+        reportsController:
+          enabled: false
 
   # Snapscheduler -- Used to schedule snapshots of volumes
   snapscheduler:
