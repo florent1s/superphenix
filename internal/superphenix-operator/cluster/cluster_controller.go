@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -57,6 +58,10 @@ type Reconciler struct {
 
 	// ArgoCDWatcher handles dynamic watching of ArgoCD Applications.
 	ArgoCDWatcher *argocd.Watcher
+
+	// talos-bootstrap chart configuration.
+	TalosBootstrapChartURL     string
+	TalosBootstrapChartVersion string
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -264,6 +269,43 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 				if _, err := r.syncStatus(ctx, cluster, app, k8sVersion, nodeCount, reconcileErr, &now); err != nil {
 					log.Error(err, "Failed to update LastSync in status")
 				}
+			}
+		}
+	}
+
+	// "Unmanaged" mode disables talos-bootstrap entirely:
+	if cluster.Spec.TalosManagementMode != operatorv1alpha1.TalosManagementUnmanaged {
+		// Reconcile talos-bootstrap application:
+		if err := r.reconcileTalosBootstrap(ctx, cluster); err != nil {
+			log.Error(err, "talos-bootstrap reconciliation failed")
+			reconcileErr = err
+		}
+	} else {
+		// We have to check if there is an existing talos-bootstrap Application, because in that case, it should be deleted:
+		name := fmt.Sprintf("%s-%s", TalosBootstrapApp, cluster.Name)
+		exists := true
+
+		existing := &unstructured.Unstructured{}
+		existing.SetGroupVersionKind(schema.GroupVersionKind{
+			Group:   "argoproj.io",
+			Version: "v1alpha1",
+			Kind:    "Application",
+		})
+
+		if err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: r.OperatorNamespace}, existing); err != nil {
+			if !apierrors.IsNotFound(err) {
+				log.Error(err, "failed to get ArgoCD Application %s", name)
+				reconcileErr = err
+			} else {
+				exists = false
+			}
+		}
+
+		if exists && reconcileErr == nil {
+			// Application exists, deleting it:
+			if err := r.Delete(ctx, existing); err != nil {
+				log.Error(err, "failed to delete ArgoCD Application %s", name)
+				reconcileErr = err
 			}
 		}
 	}

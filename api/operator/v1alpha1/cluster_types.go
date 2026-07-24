@@ -93,6 +93,21 @@ const (
 	ClusterTypeVirtualization ClusterType = "Virtualization"
 )
 
+// TalosManagementMode defines the management mode for the Talos cluster.
+// +kubebuilder:validation:Enum=Unmanaged;Import;Full
+type TalosManagementMode string
+
+const (
+	// TalosManagementUnmanaged - The Talos cluster is not managed by the operator. This requires an externally managed installation and configuration of Talos.
+	TalosManagementUnmanaged TalosManagementMode = "Unmanaged"
+
+	// TalosManagementImport - The operator imports an already installed Talos cluster and manages its configuration.
+	TalosManagementImport TalosManagementMode = "Import"
+
+	// TalosManagementFull - The Talos cluster is fully installed and configured by the operator.
+	TalosManagementFull TalosManagementMode = "Full"
+)
+
 // ClusterSpec defines the desired state of Cluster.
 type ClusterSpec struct {
 	// DeploymentTopology defines whether the cluster is hyperconverged or decoupled.
@@ -104,6 +119,16 @@ type ClusterSpec struct {
 	// This field can only be set when DeploymentTopology is Decoupled and is ignored otherwise.
 	// +optional
 	Type *ClusterType `json:"type,omitempty"`
+
+	// TalosManagementMode specifies how Talos configuration should be managed.
+	// +optional
+	// +kubebuilder:default=Unmanaged
+	// +kubebuilder:validation:Enum=Unmanaged;Import;Full
+	TalosManagementMode TalosManagementMode `json:"talosManagementMode,omitempty"`
+
+	// TalosBootstrapConfiguration is a YAML dict of unknown values that will be passed to the talos-bootstrap chart.
+	// +optional
+	TalosBootstrapConfiguration *apiextensionsv1.JSON `json:"talosBootstrapConfiguration,omitempty"`
 
 	// Region is the geographic region where this cluster is located.
 	// +kubebuilder:validation:Required
