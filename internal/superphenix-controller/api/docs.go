@@ -13321,6 +13321,9 @@ const docTemplate = `{
                 "pvc": {
                     "$ref": "#/definitions/view.PVCView"
                 },
+                "replication": {
+                    "$ref": "#/definitions/view.ReplicationView"
+                },
                 "resourceTypeId": {
                     "type": "string"
                 }
@@ -13953,6 +13956,55 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "description": "Name is the name of the VirtualMachinePreference or VirtualMachineClusterPreference\n\n+optional",
+                    "type": "string"
+                }
+            }
+        },
+        "view.ReplicationClassView": {
+            "type": "object",
+            "properties": {
+                "mirroringMode": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provisioner": {
+                    "type": "string"
+                },
+                "schedulingInterval": {
+                    "type": "string"
+                },
+                "schedulingStartTime": {
+                    "type": "string"
+                }
+            }
+        },
+        "view.ReplicationView": {
+            "type": "object",
+            "properties": {
+                "class": {
+                    "$ref": "#/definitions/view.ReplicationClassView"
+                },
+                "lastCompletionTime": {
+                    "type": "string"
+                },
+                "lastSyncBytes": {
+                    "type": "integer"
+                },
+                "lastSyncDuration": {
+                    "type": "string"
+                },
+                "lastSyncTime": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "state": {
                     "type": "string"
                 }
             }

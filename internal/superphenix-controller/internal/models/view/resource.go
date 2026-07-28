@@ -37,9 +37,10 @@ type EIP struct {
 
 type Disk struct {
 	Resource    `json:",inline"`
-	Disk        DiskView    `json:"disk,omitempty"`
-	PVC         PVCView     `json:"pvc"`
-	MountStatus MountStatus `json:"mountStatus"`
+	Disk        DiskView         `json:"disk,omitempty"`
+	PVC         PVCView          `json:"pvc"`
+	MountStatus MountStatus      `json:"mountStatus"`
+	Replication *ReplicationView `json:"replication,omitempty"`
 }
 
 type Snapshot struct {

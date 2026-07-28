@@ -1,8 +1,8 @@
 package user
 
 import (
-	"regexp"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db"
+	"regexp"
 	"testing"
 	"time"
 
@@ -76,7 +76,7 @@ func TestFindWithOrganization(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows(orgColumns))
 
 				// DISTINCT query on organizations — deduplicates at DB level
- 			mock.ExpectQuery(`SELECT DISTINCT`).
+				mock.ExpectQuery(`SELECT DISTINCT`).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "owner_id"}).
 						AddRow(orgID1, "Org1", ownerID).
 						AddRow(orgID2, "Org2", ownerID))
@@ -97,7 +97,7 @@ func TestFindWithOrganization(t *testing.T) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "organizations"`)).
 					WillReturnRows(sqlmock.NewRows(orgColumns))
 
- 			mock.ExpectQuery(`SELECT DISTINCT`).
+				mock.ExpectQuery(`SELECT DISTINCT`).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "owner_id"}).
 						AddRow(orgID1, "Org1", ownerID))
 			},
@@ -118,7 +118,7 @@ func TestFindWithOrganization(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows(orgColumns))
 
 				// DISTINCT query should return only 2 unique orgs, not 3
- 			mock.ExpectQuery(`SELECT DISTINCT`).
+				mock.ExpectQuery(`SELECT DISTINCT`).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "owner_id"}).
 						AddRow(orgID1, "Org1", ownerID).
 						AddRow(orgID2, "Org2", ownerID))
@@ -140,7 +140,7 @@ func TestFindWithOrganization(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows(orgColumns))
 
 				// No guest orgs
- 			mock.ExpectQuery(`SELECT DISTINCT`).
+				mock.ExpectQuery(`SELECT DISTINCT`).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "owner_id"}))
 			},
 			expectError:   false,
@@ -220,7 +220,7 @@ func TestFindWithOrganizationByProvider(t *testing.T) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "organizations"`)).
 					WillReturnRows(sqlmock.NewRows(orgColumns))
 
- 			mock.ExpectQuery(`SELECT DISTINCT`).
+				mock.ExpectQuery(`SELECT DISTINCT`).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "owner_id"}).
 						AddRow(orgID, "Org1", ownerID))
 			},

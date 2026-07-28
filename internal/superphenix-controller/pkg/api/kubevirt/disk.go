@@ -10,6 +10,7 @@ import (
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/datavolume"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/vm"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/replication"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
 	"github.com/super-phenix/superphenix/pkg/utils/decoder"
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
@@ -180,6 +181,16 @@ func getDisk(w http.ResponseWriter, r *http.Request, effectiveId string) {
 	if isMount {
 		diskResource.MountStatus.IsMounted = isMount
 		diskResource.MountStatus.By = vmName
+	}
+
+	// replication info is best effort, the disk must render without it
+	if vrName := pvcView.Annotations[replication.VolumeReplicationNameAnnotation]; vrName != "" {
+		repView, repErr := replication.GetReplication(r.Context(), namespace, vrName)
+		if repErr != nil {
+			log.Warn().Err(repErr).Str("vr", vrName).Msg("failed to fetch volume replication")
+		} else {
+			diskResource.Replication = repView
+		}
 	}
 
 	b, _ := json.Marshal(diskResource)

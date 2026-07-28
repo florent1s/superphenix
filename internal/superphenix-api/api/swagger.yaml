@@ -243,6 +243,7 @@ definitions:
       productTypeId:
         type: string
       pvc: {}
+      replication: {}
     type: object
   disk.UpdateDiskBody:
     properties:
