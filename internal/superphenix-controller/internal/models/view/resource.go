@@ -64,9 +64,9 @@ type LoadBalancer struct {
 	LoadBalancer LBView `json:"loadBalancer"`
 }
 
-type Firewall struct {
-	Resource `json:",inline"`
-	Firewall NetPolView `json:"firewall"`
+type SecurityGroup struct {
+	Resource      `json:",inline"`
+	SecurityGroup NetPolView `json:"securityGroup"`
 }
 
 type KaaS struct {

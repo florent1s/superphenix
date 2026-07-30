@@ -1,6 +1,6 @@
 package netpol
 
-type FwPort struct {
+type SgPort struct {
 	Port     int32  `json:"port"`
 	EndPort  int32  `json:"endPort"`
 	Protocol string `json:"protocol"`
@@ -33,13 +33,13 @@ type Peer struct {
 }
 
 type IngressRule struct {
-	Ports    []FwPort `json:"ports"`
+	Ports    []SgPort `json:"ports"`
 	From     []Peer   `json:"from"`
 	AllowAll bool     `json:"allowAll"`
 	DenyAll  bool     `json:"denyAll"`
 }
 type EgressRule struct {
-	Ports    []FwPort `json:"ports"`
+	Ports    []SgPort `json:"ports"`
 	To       []Peer   `json:"to"`
 	AllowAll bool     `json:"allowAll"`
 	DenyAll  bool     `json:"denyAll"`

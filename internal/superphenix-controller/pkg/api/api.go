@@ -93,7 +93,7 @@ func LaunchEndpoint(address string) {
 		kubeovn.SubnetEndpoint(r)
 		kubeovn.EipEndpoint(r)
 		kubeovn.LoadBalancerEndpoint(r)
-		k8s.NetPolEndpoint(r)
+		k8s.SecurityGroupEndpoint(r)
 
 		//// PaaS ////
 		paas.KaaSEndpoint(r)

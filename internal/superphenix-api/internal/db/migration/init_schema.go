@@ -53,7 +53,7 @@ func initSchema(tx *gorm.DB) error {
 		{ID: "ssh", Name: "SSH"},
 		{ID: "vmSnapshot", Name: "Instance Snapshot"},
 		{ID: "loadBalancer", Name: "Load Balancer"},
-		{ID: "firewall", Name: "Firewall"},
+		{ID: "securityGroup", Name: "Security Group"},
 		{ID: "kaas", Name: "KaaS"},
 		{ID: "baas", Name: "BaaS"},
 	}

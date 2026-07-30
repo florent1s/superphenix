@@ -10,11 +10,11 @@ import (
 	bucketctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/bucket"
 	diskctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/disk"
 	eipctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/eip"
-	firewallctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/firewall"
 	instancectrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/instance"
 	kaasctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/kaas"
 	loadbalancerctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/loadbalancer"
 	metadatactrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/metadata"
+	securitygroupctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/securitygroup"
 	snapshotctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/snapshot"
 	sshctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/ssh"
 	subnetctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/subnet"
@@ -91,7 +91,7 @@ func wirePublicRoutes() chi.Router {
 	subnetctrl.ProvideService(&config.Global, reg)
 	eipctrl.ProvideService(&config.Global, reg)
 	loadbalancerctrl.ProvideService(&config.Global, reg)
-	firewallctrl.ProvideService(&config.Global, reg)
+	securitygroupctrl.ProvideService(&config.Global, reg)
 	sshctrl.ProvideService(&config.Global, reg)
 	kaasctrl.ProvideService(&config.Global, reg)
 	metadatactrl.ProvideService(&config.Global, reg)

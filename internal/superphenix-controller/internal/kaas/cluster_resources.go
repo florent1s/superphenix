@@ -54,23 +54,23 @@ func GetClusterMachines(ctx context.Context, namespace, clusterEid string) ([]vi
 	return instances, nil
 }
 
-func GetNetPols(ctx context.Context, namespace, clusterEid string) ([]view.Firewall, error) {
+func GetNetPols(ctx context.Context, namespace, clusterEid string) ([]view.SecurityGroup, error) {
 	log := logger.GetLogger(ctx)
 	if namespace == "" {
 		log.Error().Msg("No namespace provided")
-		return make([]view.Firewall, 0), fmt.Errorf("no namespace provided")
+		return make([]view.SecurityGroup, 0), fmt.Errorf("no namespace provided")
 	}
 
 	listNetPol := informers.WatcherSet[informers.NetworkPolicy].List()
-	firewalls := make([]view.Firewall, 0)
+	securityGroups := make([]view.SecurityGroup, 0)
 	for _, item := range listNetPol {
 		netpol := item.(*unstructured.Unstructured)
 		// Filtering netpol on label referring to cluster name
 		if netpol.GetLabels()[spxId.SpxLabelProjectID] == namespace && netpol.GetLabels()[ClusterAppNameLabelKey] == fmt.Sprintf("%s%s", KaaSPrefix, clusterEid) {
 			netPolView := view.UnstructuredNetPolToView(netpol)
-			firewalls = append(firewalls, netPolView.ToResource())
+			securityGroups = append(securityGroups, netPolView.ToResource())
 		}
 	}
 
-	return firewalls, nil
+	return securityGroups, nil
 }

@@ -22,10 +22,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
-const baseNetPolEndpoint = "/firewall"
+const baseSecurityGroupEndpoint = "/security-group"
 
-func NetPolEndpoint(router chi.Router) {
-	router.Route(baseNetPolEndpoint, func(r chi.Router) {
+func SecurityGroupEndpoint(router chi.Router) {
+	router.Route(baseSecurityGroupEndpoint, func(r chi.Router) {
 		r.Get("/", listNetPols)
 		r.Post("/", createNetPol)
 
@@ -45,11 +45,11 @@ func NetPolEndpoint(router chi.Router) {
 //	@Description	Retrieve all Network Policies for a project
 //	@Tags			v1, NetworkPolicy
 //	@Produce		json
-//	@Param			orgId		path	string			true	"Organization ID"
-//	@Param			projectId	path	string			true	"Project ID"
-//	@Success		200			{array}	view.Firewall	"Network Policies"
+//	@Param			orgId		path	string				true	"Organization ID"
+//	@Param			projectId	path	string				true	"Project ID"
+//	@Success		200			{array}	view.SecurityGroup	"Network Policies"
 //	@Failure		500
-//	@Router			/{orgId}/{projectId}/firewall [get]
+//	@Router			/{orgId}/{projectId}/security-group [get]
 func listNetPols(w http.ResponseWriter, r *http.Request) {
 	log := logger.GetLogger(r.Context())
 	namespaceParam := utils.GetRequestNamespace(r)
@@ -61,7 +61,7 @@ func listNetPols(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var netPols []view.Firewall
+	var netPols []view.SecurityGroup
 	for _, netPolItem := range netPolList {
 		netPolR := netPolItem.ToResource()
 		netPols = append(netPols, netPolR)
@@ -77,14 +77,14 @@ func listNetPols(w http.ResponseWriter, r *http.Request) {
 //	@Description	Get Network Policy by local ID
 //	@Tags			v1, NetworkPolicy
 //	@Produce		json
-//	@Param			orgId		path		string			true	"Organization ID"
-//	@Param			projectId	path		string			true	"Project ID"
-//	@Param			localId		path		string			true	"Network Policy Local ID"
-//	@Success		200			{object}	view.Firewall	"Network Policy"
+//	@Param			orgId		path		string				true	"Organization ID"
+//	@Param			projectId	path		string				true	"Project ID"
+//	@Param			localId		path		string				true	"Network Policy Local ID"
+//	@Success		200			{object}	view.SecurityGroup	"Network Policy"
 //	@Failure		400
 //	@Failure		404
 //	@Failure		500
-//	@Router			/{orgId}/{projectId}/firewall/localId/{localId} [get]
+//	@Router			/{orgId}/{projectId}/security-group/localId/{localId} [get]
 func getNetPolByLocalId(w http.ResponseWriter, r *http.Request) {
 	log := logger.GetLogger(r.Context())
 	effectiveId := r.Context().Value(spxId.EffectiveIdContext())
@@ -103,14 +103,14 @@ func getNetPolByLocalId(w http.ResponseWriter, r *http.Request) {
 //	@Description	Get Network Policy by effective ID
 //	@Tags			v1, NetworkPolicy
 //	@Produce		json
-//	@Param			orgId		path		string			true	"Organization ID"
-//	@Param			projectId	path		string			true	"Project ID"
-//	@Param			effectiveId	path		string			true	"Network Policy Effective ID"
-//	@Success		200			{object}	view.Firewall	"Network Policy"
+//	@Param			orgId		path		string				true	"Organization ID"
+//	@Param			projectId	path		string				true	"Project ID"
+//	@Param			effectiveId	path		string				true	"Network Policy Effective ID"
+//	@Success		200			{object}	view.SecurityGroup	"Network Policy"
 //	@Failure		400
 //	@Failure		404
 //	@Failure		500
-//	@Router			/{orgId}/{projectId}/firewall/{effectiveId} [get]
+//	@Router			/{orgId}/{projectId}/security-group/{effectiveId} [get]
 func getNetPolByEffectiveId(w http.ResponseWriter, r *http.Request) {
 	effectiveId := chi.URLParam(r, "effectiveId")
 
@@ -163,7 +163,7 @@ func getNetPol(w http.ResponseWriter, r *http.Request, effectiveId string) {
 //	@Success		200
 //	@Failure		400
 //	@Failure		500
-//	@Router			/{orgId}/{projectId}/firewall [post]
+//	@Router			/{orgId}/{projectId}/security-group [post]
 func createNetPol(w http.ResponseWriter, r *http.Request) {
 	log := logger.GetLogger(r.Context())
 	orgId := chi.URLParam(r, "orgId")
@@ -207,7 +207,7 @@ func createNetPol(w http.ResponseWriter, r *http.Request) {
 //	@Success		200
 //	@Failure		400
 //	@Failure		500
-//	@Router			/{orgId}/{projectId}/firewall/{effectiveId} [post]
+//	@Router			/{orgId}/{projectId}/security-group/{effectiveId} [post]
 func updateNetPol(w http.ResponseWriter, r *http.Request) {
 	log := logger.GetLogger(r.Context())
 	projectId := chi.URLParam(r, "projectId")
@@ -254,7 +254,7 @@ func updateNetPol(w http.ResponseWriter, r *http.Request) {
 //	@Failure		400
 //	@Failure		404
 //	@Failure		500
-//	@Router			/{orgId}/{projectId}/firewall [delete]
+//	@Router			/{orgId}/{projectId}/security-group [delete]
 func deleteNetPol(w http.ResponseWriter, r *http.Request) {
 	log := logger.GetLogger(r.Context())
 	namespaceParam := utils.GetRequestNamespace(r)

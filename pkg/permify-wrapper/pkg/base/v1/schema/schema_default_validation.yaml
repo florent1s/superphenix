@@ -36,7 +36,7 @@ relationships:
   - "project:1#ProjectBaaSFullAccess@group:2#assignee"
   - "project:1#ProjectBucketFullAccess@group:2#assignee"
   - "project:1#ProjectLoadBalancerFullAccess@group:2#assignee"
-  - "project:1#ProjectFirewallFullAccess@group:2#assignee"
+  - "project:1#ProjectSecurityGroupFullAccess@group:2#assignee"
   - "project:1#ProjectArgoCdAccess@group:2#assignee"
   - "project:1#ProjectInstanceFullAccess@group:4#assignee"
   - "project:1#ProjectDiskFullAccess@group:4#assignee"
@@ -49,7 +49,7 @@ relationships:
   - "project:1#ProjectBaaSFullAccess@group:4#assignee"
   - "project:1#ProjectBucketFullAccess@group:4#assignee"
   - "project:1#ProjectLoadBalancerFullAccess@group:4#assignee"
-  - "project:1#ProjectFirewallFullAccess@group:4#assignee"
+  - "project:1#ProjectSecurityGroupFullAccess@group:4#assignee"
   - "project:1#ProjectArgoCdAccess@group:4#assignee"
   - "project:1#ProjectInstanceFullAccess@group:5#assignee"
   - "project:1#ProjectDiskFullAccess@group:5#assignee"
@@ -62,7 +62,7 @@ relationships:
   - "project:1#ProjectBaaSFullAccess@group:5#assignee"
   - "project:1#ProjectBucketFullAccess@group:5#assignee"
   - "project:1#ProjectLoadBalancerFullAccess@group:5#assignee"
-  - "project:1#ProjectFirewallFullAccess@group:5#assignee"
+  - "project:1#ProjectSecurityGroupFullAccess@group:5#assignee"
   - "project:1#ProjectArgoCdAccess@group:5#assignee"
   - "project:1#ProjectInstanceTerminalAccess@group:7#assignee"
   - "project:1#ProjectDiskReadOnly@group:7#assignee"
@@ -71,7 +71,7 @@ relationships:
   - "project:1#ProjectSubnetReadOnly@group:7#assignee"
   - "project:1#ProjectEipReadOnly@group:7#assignee"
   - "project:1#ProjectLoadBalancerReadOnly@group:7#assignee"
-  - "project:1#ProjectFirewallReadOnly@group:7#assignee"
+  - "project:1#ProjectSecurityGroupReadOnly@group:7#assignee"
   - "project:1#ProjectSSHReadOnly@group:7#assignee"
   - "project:1#ProjectKaaSReadOnly@group:7#assignee"
   - "project:1#ProjectBaaSReadOnly@group:7#assignee"
@@ -90,7 +90,7 @@ relationships:
   - "project:2#ProjectBaaSFullAccess@group:2#assignee"
   - "project:2#ProjectBucketFullAccess@group:2#assignee"
   - "project:2#ProjectLoadBalancerFullAccess@group:2#assignee"
-  - "project:2#ProjectFirewallFullAccess@group:2#assignee"
+  - "project:2#ProjectSecurityGroupFullAccess@group:2#assignee"
   - "project:2#ProjectArgoCdAccess@group:2#assignee"
   - "project:2#ProjectInstanceFullAccess@group:4#assignee"
   - "project:2#ProjectDiskFullAccess@group:4#assignee"
@@ -103,7 +103,7 @@ relationships:
   - "project:2#ProjectBaaSFullAccess@group:4#assignee"
   - "project:2#ProjectBucketFullAccess@group:4#assignee"
   - "project:2#ProjectLoadBalancerFullAccess@group:4#assignee"
-  - "project:2#ProjectFirewallFullAccess@group:4#assignee"
+  - "project:2#ProjectSecurityGroupFullAccess@group:4#assignee"
   - "project:2#ProjectArgoCdAccess@group:4#assignee"
   - "project:2#ProjectInstanceFullAccess@group:6#assignee"
   - "project:2#ProjectDiskFullAccess@group:6#assignee"
@@ -116,7 +116,7 @@ relationships:
   - "project:2#ProjectBaaSFullAccess@group:6#assignee"
   - "project:2#ProjectBucketFullAccess@group:6#assignee"
   - "project:2#ProjectLoadBalancerFullAccess@group:6#assignee"
-  - "project:2#ProjectFirewallFullAccess@group:6#assignee"
+  - "project:2#ProjectSecurityGroupFullAccess@group:6#assignee"
   - "project:2#ProjectArgoCdAccess@group:6#assignee"
   - "project:2#ProjectInstanceTerminalAccess@group:7#assignee"
   - "project:2#ProjectDiskReadOnly@group:7#assignee"
@@ -125,7 +125,7 @@ relationships:
   - "project:2#ProjectSubnetReadOnly@group:7#assignee"
   - "project:2#ProjectEipReadOnly@group:7#assignee"
   - "project:2#ProjectLoadBalancerReadOnly@group:7#assignee"
-  - "project:2#ProjectFirewallReadOnly@group:7#assignee"
+  - "project:2#ProjectSecurityGroupReadOnly@group:7#assignee"
   - "project:2#ProjectSSHReadOnly@group:7#assignee"
   - "project:2#ProjectKaaSReadOnly@group:7#assignee"
   - "project:2#ProjectBaaSReadOnly@group:7#assignee"
@@ -188,8 +188,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -222,8 +222,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -270,8 +270,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -304,8 +304,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -350,8 +350,8 @@ scenarios:
           ProjectEipWrite: false
           ProjectLoadBalancerRead: false
           ProjectLoadBalancerWrite: false
-          ProjectFirewallRead: false
-          ProjectFirewallWrite: false
+          ProjectSecurityGroupRead: false
+          ProjectSecurityGroupWrite: false
           ProjectSSHRead: false
           ProjectSSHWrite: false
           ProjectKaaSRead: false
@@ -382,8 +382,8 @@ scenarios:
           ProjectEipWrite: false
           ProjectLoadBalancerRead: false
           ProjectLoadBalancerWrite: false
-          ProjectFirewallRead: false
-          ProjectFirewallWrite: false
+          ProjectSecurityGroupRead: false
+          ProjectSecurityGroupWrite: false
           ProjectSSHRead: false
           ProjectSSHWrite: false
           ProjectKaaSRead: false
@@ -430,8 +430,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -464,8 +464,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -512,8 +512,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -544,8 +544,8 @@ scenarios:
           ProjectEipWrite: false
           ProjectLoadBalancerRead: false
           ProjectLoadBalancerWrite: false
-          ProjectFirewallRead: false
-          ProjectFirewallWrite: false
+          ProjectSecurityGroupRead: false
+          ProjectSecurityGroupWrite: false
           ProjectSSHRead: false
           ProjectSSHWrite: false
           ProjectKaaSRead: false
@@ -590,8 +590,8 @@ scenarios:
           ProjectEipWrite: false
           ProjectLoadBalancerRead: false
           ProjectLoadBalancerWrite: false
-          ProjectFirewallRead: false
-          ProjectFirewallWrite: false
+          ProjectSecurityGroupRead: false
+          ProjectSecurityGroupWrite: false
           ProjectSSHRead: false
           ProjectSSHWrite: false
           ProjectKaaSRead: false
@@ -624,8 +624,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -670,8 +670,8 @@ scenarios:
           ProjectEipWrite: false
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: false
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: false
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: false
           ProjectSSHRead: true
           ProjectSSHWrite: false
           ProjectKaaSRead: true
@@ -702,8 +702,8 @@ scenarios:
           ProjectEipWrite: false
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: false
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: false
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: false
           ProjectSSHRead: true
           ProjectSSHWrite: false
           ProjectKaaSRead: true
@@ -750,8 +750,8 @@ scenarios:
           ProjectEipWrite: true
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: true
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: true
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: true
           ProjectSSHRead: true
           ProjectSSHWrite: true
           ProjectKaaSRead: true
@@ -782,8 +782,8 @@ scenarios:
           ProjectEipWrite: false
           ProjectLoadBalancerRead: true
           ProjectLoadBalancerWrite: false
-          ProjectFirewallRead: true
-          ProjectFirewallWrite: false
+          ProjectSecurityGroupRead: true
+          ProjectSecurityGroupWrite: false
           ProjectSSHRead: true
           ProjectSSHWrite: false
           ProjectKaaSRead: true

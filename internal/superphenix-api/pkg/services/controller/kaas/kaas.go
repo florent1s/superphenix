@@ -820,7 +820,7 @@ func (h *Service) Instances(w http.ResponseWriter, r *http.Request) {
 //	@Success		200
 //	@Failure		500
 //	@Router			/{orgaId}/api/spx-ctrl/{az}/{projectId}/kaas/{effectiveId}/netpols [get]
-//	@Security		Bearer[OrganizationRead, ProjectKaaSRead, ProjectFirewallRead]
+//	@Security		Bearer[OrganizationRead, ProjectKaaSRead, ProjectSecurityGroupRead]
 func (h *Service) Netpols(w http.ResponseWriter, r *http.Request) {
 	ctrlutils.SimpleRedirect()(w, r)
 }

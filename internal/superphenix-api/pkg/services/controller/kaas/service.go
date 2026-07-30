@@ -48,12 +48,12 @@ func New(cfg *config.Config, argoClient argoApp.Client) *Service {
 // per-route method, path and permission chain of the original controller.
 func Module(cfg *config.Config, s API) router.Module {
 	var (
-		kaasRead       = controller.Perm(pwPermission.ProjectKaaSRead)
-		kaasWrite      = controller.Perm(pwPermission.ProjectKaaSWrite)
-		kaasKubeConfig = controller.Perm(pwPermission.ProjectKaaSKubeConfig)
-		instanceRead   = controller.Perm(pwPermission.ProjectInstanceRead)
-		firewallRead   = controller.Perm(pwPermission.ProjectFirewallRead)
-		quota          = controller.CheckCreationQuota
+		kaasRead          = controller.Perm(pwPermission.ProjectKaaSRead)
+		kaasWrite         = controller.Perm(pwPermission.ProjectKaaSWrite)
+		kaasKubeConfig    = controller.Perm(pwPermission.ProjectKaaSKubeConfig)
+		instanceRead      = controller.Perm(pwPermission.ProjectInstanceRead)
+		securityGroupRead = controller.Perm(pwPermission.ProjectSecurityGroupRead)
+		quota             = controller.CheckCreationQuota
 	)
 	return controller.NewControllerModule(moduleName, nil, router.Group{
 		Middlewares: []router.Middleware{kaasRead},
@@ -62,7 +62,7 @@ func Module(cfg *config.Config, s API) router.Module {
 			router.Get("/{projectId}/kaas/kube-versions", s.GetKubeVersion),
 			router.Get("/{az}/{projectId}/kaas/{effectiveId}", s.GetKaaS),
 			router.Get("/{az}/{projectId}/kaas/{effectiveId}/instances", s.Instances, instanceRead),
-			router.Get("/{az}/{projectId}/kaas/{effectiveId}/netpols", s.Netpols, firewallRead),
+			router.Get("/{az}/{projectId}/kaas/{effectiveId}/netpols", s.Netpols, securityGroupRead),
 			router.Get("/{az}/{projectId}/kaas/{effectiveId}/kubeconfig", s.GetKaaSKubeConfig, kaasKubeConfig),
 		},
 		Groups: []router.Group{{

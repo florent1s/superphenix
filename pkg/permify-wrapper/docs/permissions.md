@@ -84,8 +84,8 @@ Every live organization picks the change up on the next API start.
 | ProjectSSHWrite          | Create, modify, and delete SSH keys                                          |
 | ProjectLoadBalancerRead  | View the list and details of the project's Load Balancers                    |
 | ProjectLoadBalancerWrite | Create, modify, and delete a Load Balancer                                   |
-| ProjectFirewallRead      | View the list and details of the project's Firewalls                         |
-| ProjectFirewallWrite     | Create, modify, and delete a Firewall                                        |
+| ProjectSecurityGroupRead      | View the list and details of the project's Security Groups                         |
+| ProjectSecurityGroupWrite     | Create, modify, and delete a Security Group                                        |
 | ProjectKaaSRead          | View the list and details of the project's KaaS clusters                     |
 | ProjectKaaSKubeConfig    | Retrieve the KubeConfig configuration file of a cluster                      |
 | ProjectKaaSWrite         | Create, modify, and delete a KaaS cluster                                    |
@@ -127,8 +127,8 @@ Every live organization picks the change up on the next API start.
 | ProjectSSHReadOnly            | `ProjectSSHRead`                                                                                   |
 | ProjectLoadBalancerFullAccess | `ProjectLoadBalancerRead`, `ProjectLoadBalancerWrite`                                              |
 | ProjectLoadBalancerReadOnly   | `ProjectLoadBalancerRead`                                                                          |
-| ProjectFirewallFullAccess     | `ProjectFirewallRead`, `ProjectFirewallWrite`                                                      |
-| ProjectFirewallReadOnly       | `ProjectFirewallRead`                                                                              |
+| ProjectSecurityGroupFullAccess     | `ProjectSecurityGroupRead`, `ProjectSecurityGroupWrite`                                                      |
+| ProjectSecurityGroupReadOnly       | `ProjectSecurityGroupRead`                                                                              |
 | ProjectKaaSFullAccess         | `ProjectKaaSRead`, `ProjectKaaSKubeConfig`, `ProjectKaaSWrite`                                     |
 | ProjectKaaSClusterAccess      | `ProjectKaaSRead`, `ProjectKaaSKubeConfig`                                                         |
 | ProjectKaaSReadOnly           | `ProjectKaaSRead`                                                                                  |

@@ -184,10 +184,10 @@ func listClusterInstances(w http.ResponseWriter, r *http.Request) {
 //	@Description	List cluster network policies
 //	@Tags			v1, Cluster
 //	@Produce		json
-//	@Param			orgId		path	string			true	"Organization ID"
-//	@Param			projectId	path	string			true	"Project ID"
-//	@Param			effectiveId	path	string			true	"Cluster Effective ID"
-//	@Success		200			{array}	view.Firewall	"NetPols"
+//	@Param			orgId		path	string				true	"Organization ID"
+//	@Param			projectId	path	string				true	"Project ID"
+//	@Param			effectiveId	path	string				true	"Cluster Effective ID"
+//	@Success		200			{array}	view.SecurityGroup	"NetPols"
 //	@Failure		400
 //	@Failure		500
 //	@Router			/{orgId}/{projectId}/kaas/{effectiveId}/netpols [get]

@@ -12,11 +12,11 @@ import (
 	bucketctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/bucket"
 	diskctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/disk"
 	eipctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/eip"
-	firewallctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/firewall"
 	instancectrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/instance"
 	kaasctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/kaas"
 	loadbalancerctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/loadbalancer"
 	metadatactrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/metadata"
+	securitygroupctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/securitygroup"
 	snapshotctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/snapshot"
 	sshctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/ssh"
 	subnetctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/subnet"
@@ -44,31 +44,31 @@ type RegisterFunc func(cfg *config.Config, reg *router.Registry)
 // InitializeServerWith/InitializeAdminServerWith — the per-service equivalent of a DI bind.
 type Providers struct {
 	// public
-	Organization RegisterFunc
-	Session      RegisterFunc
-	APIToken     RegisterFunc
-	AZ           RegisterFunc
-	User         RegisterFunc
-	Group        RegisterFunc
-	IAM          RegisterFunc
-	Permission   RegisterFunc
-	Project      RegisterFunc
-	ProjectMgr   RegisterFunc
-	Instance     RegisterFunc
-	VmSnapshot   RegisterFunc
-	Disk         RegisterFunc
-	Bucket       RegisterFunc
-	Snapshot     RegisterFunc
-	BaaS         RegisterFunc
-	VPC          RegisterFunc
-	Subnet       RegisterFunc
-	Eip          RegisterFunc
-	LoadBalancer RegisterFunc
-	Firewall     RegisterFunc
-	SSH          RegisterFunc
-	KaaS         RegisterFunc
-	Metadata     RegisterFunc
-	Argo         RegisterFunc
+	Organization  RegisterFunc
+	Session       RegisterFunc
+	APIToken      RegisterFunc
+	AZ            RegisterFunc
+	User          RegisterFunc
+	Group         RegisterFunc
+	IAM           RegisterFunc
+	Permission    RegisterFunc
+	Project       RegisterFunc
+	ProjectMgr    RegisterFunc
+	Instance      RegisterFunc
+	VmSnapshot    RegisterFunc
+	Disk          RegisterFunc
+	Bucket        RegisterFunc
+	Snapshot      RegisterFunc
+	BaaS          RegisterFunc
+	VPC           RegisterFunc
+	Subnet        RegisterFunc
+	Eip           RegisterFunc
+	LoadBalancer  RegisterFunc
+	SecurityGroup RegisterFunc
+	SSH           RegisterFunc
+	KaaS          RegisterFunc
+	Metadata      RegisterFunc
+	Argo          RegisterFunc
 
 	// admin
 	AdminPermission RegisterFunc
@@ -81,31 +81,31 @@ type Providers struct {
 // DefaultProviders returns the default service set.
 func DefaultProviders() Providers {
 	return Providers{
-		Organization: organization.ProvideService,
-		Session:      session.ProvideService,
-		APIToken:     apiToken.ProvideService,
-		AZ:           az.ProvideService,
-		User:         user.ProvideService,
-		Group:        group.ProvideService,
-		IAM:          membership.ProvideService,
-		Permission:   permission.ProvideService,
-		Project:      project.ProvideService,
-		ProjectMgr:   manager.ProvideService,
-		Instance:     instancectrl.ProvideService,
-		VmSnapshot:   vmsnapshotctrl.ProvideService,
-		Disk:         diskctrl.ProvideService,
-		Bucket:       bucketctrl.ProvideService,
-		Snapshot:     snapshotctrl.ProvideService,
-		BaaS:         baasctrl.ProvideService,
-		VPC:          vpcctrl.ProvideService,
-		Subnet:       subnetctrl.ProvideService,
-		Eip:          eipctrl.ProvideService,
-		LoadBalancer: loadbalancerctrl.ProvideService,
-		Firewall:     firewallctrl.ProvideService,
-		SSH:          sshctrl.ProvideService,
-		KaaS:         kaasctrl.ProvideService,
-		Metadata:     metadatactrl.ProvideService,
-		Argo:         argoApp.ProvideService,
+		Organization:  organization.ProvideService,
+		Session:       session.ProvideService,
+		APIToken:      apiToken.ProvideService,
+		AZ:            az.ProvideService,
+		User:          user.ProvideService,
+		Group:         group.ProvideService,
+		IAM:           membership.ProvideService,
+		Permission:    permission.ProvideService,
+		Project:       project.ProvideService,
+		ProjectMgr:    manager.ProvideService,
+		Instance:      instancectrl.ProvideService,
+		VmSnapshot:    vmsnapshotctrl.ProvideService,
+		Disk:          diskctrl.ProvideService,
+		Bucket:        bucketctrl.ProvideService,
+		Snapshot:      snapshotctrl.ProvideService,
+		BaaS:          baasctrl.ProvideService,
+		VPC:           vpcctrl.ProvideService,
+		Subnet:        subnetctrl.ProvideService,
+		Eip:           eipctrl.ProvideService,
+		LoadBalancer:  loadbalancerctrl.ProvideService,
+		SecurityGroup: securitygroupctrl.ProvideService,
+		SSH:           sshctrl.ProvideService,
+		KaaS:          kaasctrl.ProvideService,
+		Metadata:      metadatactrl.ProvideService,
+		Argo:          argoApp.ProvideService,
 
 		AdminPermission: adminPermission.ProvideService,
 		AdminBilling:    adminBilling.ProvideService,
@@ -121,7 +121,7 @@ func (p Providers) registerPublic(cfg *config.Config, reg *router.Registry) {
 		p.Organization, p.Session, p.APIToken, p.AZ, p.User, p.Group, p.IAM,
 		p.Permission, p.Project, p.ProjectMgr,
 		p.Instance, p.VmSnapshot, p.Disk, p.Bucket, p.Snapshot, p.BaaS, p.VPC, p.Subnet,
-		p.Eip, p.LoadBalancer, p.Firewall, p.SSH, p.KaaS, p.Metadata, p.Argo,
+		p.Eip, p.LoadBalancer, p.SecurityGroup, p.SSH, p.KaaS, p.Metadata, p.Argo,
 	} {
 		if register == nil {
 			log.Debug().Msg("server: skipping nil public provider")

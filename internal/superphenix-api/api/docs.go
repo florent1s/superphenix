@@ -3064,331 +3064,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/{orgaId}/api/spx-ctrl/{az}/{projectId}/firewall": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": [
-                            "OrganizationRead",
-                            "ProjectFirewallRead"
-                        ]
-                    }
-                ],
-                "description": "Retrieve all firewalls for a specific AZ",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "Superphenix Controller"
-                ],
-                "summary": "Retrieve all AZ firewalls",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgaId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "AZ Code",
-                        "name": "az",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Firewalls",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/firewall.FirewallFullResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": [
-                            "OrganizationRead",
-                            "ProjectFirewallWrite"
-                        ]
-                    }
-                ],
-                "description": "Create a new firewall",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "Superphenix Controller"
-                ],
-                "summary": "Create firewall",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgaId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "AZ Code",
-                        "name": "az",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Firewall info",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/firewall.CreateFirewallBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.CreateResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/{orgaId}/api/spx-ctrl/{az}/{projectId}/firewall/{effectiveId}": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": [
-                            "OrganizationRead",
-                            "ProjectFirewallRead"
-                        ]
-                    }
-                ],
-                "description": "Get firewall by Effective ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "Superphenix Controller"
-                ],
-                "summary": "Get firewall",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgaId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "AZ Code",
-                        "name": "az",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Firewall EID",
-                        "name": "effectiveId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Firewall",
-                        "schema": {
-                            "$ref": "#/definitions/firewall.FirewallFullResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": [
-                            "OrganizationRead",
-                            "ProjectFirewallWrite"
-                        ]
-                    }
-                ],
-                "description": "Update a firewall",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "Superphenix Controller"
-                ],
-                "summary": "Update firewall",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgaId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "AZ Code",
-                        "name": "az",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Firewall info",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/firewall.UpdateFirewallBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": [
-                            "OrganizationRead",
-                            "ProjectFirewallWrite"
-                        ]
-                    }
-                ],
-                "description": "Delete firewall by effective ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "Superphenix Controller"
-                ],
-                "summary": "Delete firewall",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgaId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "AZ Code",
-                        "name": "az",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Firewall EID",
-                        "name": "effectiveId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
         "/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance": {
             "get": {
                 "security": [
@@ -5183,7 +4858,7 @@ const docTemplate = `{
                         "Bearer": [
                             "OrganizationRead",
                             "ProjectKaaSRead",
-                            "ProjectFirewallRead"
+                            "ProjectSecurityGroupRead"
                         ]
                     }
                 ],
@@ -5674,6 +5349,331 @@ const docTemplate = `{
                         "schema": {
                             "type": "object"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/{orgaId}/api/spx-ctrl/{az}/{projectId}/security-group": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "ProjectSecurityGroupRead"
+                        ]
+                    }
+                ],
+                "description": "Retrieve all security groups for a specific AZ",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "Superphenix Controller"
+                ],
+                "summary": "Retrieve all AZ security groups",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "AZ Code",
+                        "name": "az",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SecurityGroups",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/securitygroup.SecurityGroupFullResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "ProjectSecurityGroupWrite"
+                        ]
+                    }
+                ],
+                "description": "Create a new security group",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "Superphenix Controller"
+                ],
+                "summary": "Create security group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "AZ Code",
+                        "name": "az",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "SecurityGroup info",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/securitygroup.CreateSecurityGroupBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.CreateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/{orgaId}/api/spx-ctrl/{az}/{projectId}/security-group/{effectiveId}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "ProjectSecurityGroupRead"
+                        ]
+                    }
+                ],
+                "description": "Get security group by Effective ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "Superphenix Controller"
+                ],
+                "summary": "Get security group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "AZ Code",
+                        "name": "az",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "SecurityGroup EID",
+                        "name": "effectiveId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SecurityGroup",
+                        "schema": {
+                            "$ref": "#/definitions/securitygroup.SecurityGroupFullResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "ProjectSecurityGroupWrite"
+                        ]
+                    }
+                ],
+                "description": "Update a security group",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "Superphenix Controller"
+                ],
+                "summary": "Update security group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "AZ Code",
+                        "name": "az",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "SecurityGroup info",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/securitygroup.UpdateSecurityGroupBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "ProjectSecurityGroupWrite"
+                        ]
+                    }
+                ],
+                "description": "Delete security group by effective ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "Superphenix Controller"
+                ],
+                "summary": "Delete security group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "AZ Code",
+                        "name": "az",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "SecurityGroup EID",
+                        "name": "effectiveId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -7423,57 +7423,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/{orgaId}/api/spx-ctrl/{projectId}/firewall": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": [
-                            "OrganizationRead",
-                            "ProjectFirewallRead"
-                        ]
-                    }
-                ],
-                "description": "Retrieve all firewalls across AZ",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "Superphenix Controller"
-                ],
-                "summary": "Retrieve all firewalls",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgaId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Firewalls",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/firewall.FirewallFullResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
         "/{orgaId}/api/spx-ctrl/{projectId}/instance": {
             "get": {
                 "security": [
@@ -7726,6 +7675,57 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/loadbalancer.LBFullResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/{orgaId}/api/spx-ctrl/{projectId}/security-group": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "ProjectSecurityGroupRead"
+                        ]
+                    }
+                ],
+                "description": "Retrieve all security groups across AZ",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "Superphenix Controller"
+                ],
+                "summary": "Retrieve all security groups",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SecurityGroups",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/securitygroup.SecurityGroupFullResponse"
                             }
                         }
                     },
@@ -8445,237 +8445,6 @@ const docTemplate = `{
                             "items": {
                                 "type": "string"
                             }
-                        }
-                    }
-                }
-            }
-        },
-        "firewall.CreateFirewallBody": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "description": {
-                            "type": "string"
-                        },
-                        "productName": {
-                            "type": "string",
-                            "maxLength": 63
-                        }
-                    }
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "egress": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/firewall.EgressRule"
-                            }
-                        },
-                        "ingress": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/firewall.IngressRule"
-                            }
-                        },
-                        "target": {
-                            "$ref": "#/definitions/firewall.LabelSelector"
-                        }
-                    }
-                }
-            }
-        },
-        "firewall.EgressRule": {
-            "type": "object",
-            "properties": {
-                "allowAll": {
-                    "type": "boolean"
-                },
-                "denyAll": {
-                    "type": "boolean"
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/firewall.FwPort"
-                    }
-                },
-                "to": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/firewall.Peer"
-                    }
-                }
-            }
-        },
-        "firewall.FirewallFullResponse": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "firewall": {},
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "productTypeId": {
-                    "type": "string"
-                }
-            }
-        },
-        "firewall.FwPort": {
-            "type": "object",
-            "properties": {
-                "endPort": {
-                    "type": "integer"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "protocol": {
-                    "type": "string"
-                }
-            }
-        },
-        "firewall.IPBlock": {
-            "type": "object",
-            "properties": {
-                "CIDR": {
-                    "type": "string"
-                },
-                "Except": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "firewall.IngressRule": {
-            "type": "object",
-            "properties": {
-                "allowAll": {
-                    "type": "boolean"
-                },
-                "denyAll": {
-                    "type": "boolean"
-                },
-                "from": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/firewall.Peer"
-                    }
-                },
-                "ports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/firewall.FwPort"
-                    }
-                }
-            }
-        },
-        "firewall.LabelSelector": {
-            "type": "object",
-            "properties": {
-                "matchExpressions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/firewall.MatchExpression"
-                    }
-                },
-                "matchLabels": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/firewall.MatchLabel"
-                    }
-                }
-            }
-        },
-        "firewall.MatchExpression": {
-            "type": "object",
-            "properties": {
-                "key": {
-                    "type": "string"
-                },
-                "operator": {
-                    "type": "string"
-                },
-                "values": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "firewall.MatchLabel": {
-            "type": "object",
-            "properties": {
-                "key": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "firewall.Peer": {
-            "type": "object",
-            "properties": {
-                "IPBlock": {
-                    "$ref": "#/definitions/firewall.IPBlock"
-                },
-                "podSelector": {
-                    "$ref": "#/definitions/firewall.LabelSelector"
-                }
-            }
-        },
-        "firewall.UpdateFirewallBody": {
-            "type": "object",
-            "properties": {
-                "general": {
-                    "type": "object",
-                    "properties": {
-                        "description": {
-                            "type": "string"
-                        },
-                        "productName": {
-                            "type": "string",
-                            "maxLength": 63
-                        }
-                    }
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "egress": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/firewall.EgressRule"
-                            }
-                        },
-                        "ingress": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/firewall.IngressRule"
-                            }
-                        },
-                        "target": {
-                            "$ref": "#/definitions/firewall.LabelSelector"
                         }
                     }
                 }
@@ -9956,6 +9725,237 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "maxLength": 63
+                }
+            }
+        },
+        "securitygroup.CreateSecurityGroupBody": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "description": {
+                            "type": "string"
+                        },
+                        "productName": {
+                            "type": "string",
+                            "maxLength": 63
+                        }
+                    }
+                },
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "egress": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/securitygroup.EgressRule"
+                            }
+                        },
+                        "ingress": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/securitygroup.IngressRule"
+                            }
+                        },
+                        "target": {
+                            "$ref": "#/definitions/securitygroup.LabelSelector"
+                        }
+                    }
+                }
+            }
+        },
+        "securitygroup.EgressRule": {
+            "type": "object",
+            "properties": {
+                "allowAll": {
+                    "type": "boolean"
+                },
+                "denyAll": {
+                    "type": "boolean"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/securitygroup.SgPort"
+                    }
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/securitygroup.Peer"
+                    }
+                }
+            }
+        },
+        "securitygroup.IPBlock": {
+            "type": "object",
+            "properties": {
+                "CIDR": {
+                    "type": "string"
+                },
+                "Except": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "securitygroup.IngressRule": {
+            "type": "object",
+            "properties": {
+                "allowAll": {
+                    "type": "boolean"
+                },
+                "denyAll": {
+                    "type": "boolean"
+                },
+                "from": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/securitygroup.Peer"
+                    }
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/securitygroup.SgPort"
+                    }
+                }
+            }
+        },
+        "securitygroup.LabelSelector": {
+            "type": "object",
+            "properties": {
+                "matchExpressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/securitygroup.MatchExpression"
+                    }
+                },
+                "matchLabels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/securitygroup.MatchLabel"
+                    }
+                }
+            }
+        },
+        "securitygroup.MatchExpression": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "securitygroup.MatchLabel": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "securitygroup.Peer": {
+            "type": "object",
+            "properties": {
+                "IPBlock": {
+                    "$ref": "#/definitions/securitygroup.IPBlock"
+                },
+                "podSelector": {
+                    "$ref": "#/definitions/securitygroup.LabelSelector"
+                }
+            }
+        },
+        "securitygroup.SecurityGroupFullResponse": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "productTypeId": {
+                    "type": "string"
+                },
+                "securityGroup": {}
+            }
+        },
+        "securitygroup.SgPort": {
+            "type": "object",
+            "properties": {
+                "endPort": {
+                    "type": "integer"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "securitygroup.UpdateSecurityGroupBody": {
+            "type": "object",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "properties": {
+                        "description": {
+                            "type": "string"
+                        },
+                        "productName": {
+                            "type": "string",
+                            "maxLength": 63
+                        }
+                    }
+                },
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "egress": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/securitygroup.EgressRule"
+                            }
+                        },
+                        "ingress": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/securitygroup.IngressRule"
+                            }
+                        },
+                        "target": {
+                            "$ref": "#/definitions/securitygroup.LabelSelector"
+                        }
+                    }
                 }
             }
         },

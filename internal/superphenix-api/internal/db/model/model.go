@@ -9,19 +9,19 @@ import (
 )
 
 const (
-	ProductTypeInstance     = "instance"
-	ProductTypeVPC          = "vpc"
-	ProductTypeSubnet       = "subnet"
-	ProductTypeEIP          = "eip"
-	ProductTypeDisk         = "disk"
-	ProductTypeSnapshot     = "snapshot"
-	ProductTypeSSH          = "ssh"
-	ProductTypeVmSnapshot   = "vmSnapshot"
-	ProductTypeLoadBalancer = "loadBalancer"
-	ProductTypeFirewall     = "firewall"
-	ProductTypeKaaS         = "kaas"
-	ProductTypeBaaS         = "baas"
-	ProductTypeBucket       = "bucket"
+	ProductTypeInstance      = "instance"
+	ProductTypeVPC           = "vpc"
+	ProductTypeSubnet        = "subnet"
+	ProductTypeEIP           = "eip"
+	ProductTypeDisk          = "disk"
+	ProductTypeSnapshot      = "snapshot"
+	ProductTypeSSH           = "ssh"
+	ProductTypeVmSnapshot    = "vmSnapshot"
+	ProductTypeLoadBalancer  = "loadBalancer"
+	ProductTypeSecurityGroup = "securityGroup"
+	ProductTypeKaaS          = "kaas"
+	ProductTypeBaaS          = "baas"
+	ProductTypeBucket        = "bucket"
 )
 
 type Model struct {
