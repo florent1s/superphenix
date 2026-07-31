@@ -209,9 +209,8 @@ spec:
     {{- end }}
     kubelet:
       {{- if eq .Values.clusterType "virt" }}
-      # Enable MutatingAdmission and UserNamespacesSupport
       extraArgs:
-        feature-gates: "MutatingAdmissionPolicy=true,UserNamespacesSupport=true"
+          {{- include "talos-manager.featureGates" . | indent 8 }}
       {{- end }}
       nodeIP:
         validSubnets:
@@ -230,19 +229,12 @@ spec:
         - "{{ .Values.serviceSubnets.ipv4 }}/{{ .Values.serviceSubnets.cidrIpv4 }}"
     {{- if eq .Values.clusterType "virt" }}
     controllerManager:
-      # Enable MutatingAdmission and UserNamespacesSupport
       extraArgs:
-        feature-gates: "MutatingAdmissionPolicy=true,UserNamespacesSupport=true"
+        {{- include "talos-manager.featureGates" . | indent  8 }}
     apiServer:
-      # Enable MutatingAdmission and UserNamespacesSupport
       extraArgs:
-        feature-gates: "MutatingAdmissionPolicy=true,UserNamespacesSupport=true"
-        {{- $version := trimPrefix "v" .Values.k8sVersion }}
-        {{- if lt $version "1.34" }}
-        runtime-config: "admissionregistration.k8s.io/v1alpha1=true"
-        {{- else }}
-        runtime-config: "admissionregistration.k8s.io/v1beta1=true"
-        {{- end }}
+          {{- include "talos-manager.featureGates" . | indent  8 }}
+          {{- include "talos-manager.runtimeConfig" . | indent  8 }}
     {{- end }}
 {{- with .Values.machineGlobalOverrides }}
 {{ toYaml . }}
@@ -402,4 +394,20 @@ spec:
     {{- with $.machineOverrides }}
     {{ toYaml . | nindent 4 }}
     {{- end }}
+{{- end }}
+
+{{/* virtualization cluster feature-gates configuration*/}}
+{{- define "talos-manager.featureGates" -}}
+{{- $version := trimPrefix "v" .Values.k8sVersion}}
+feature-gates: "{{- if lt $version "1.36"}}MutatingAdmissionPolicy=true,{{- end }}UserNamespacesSupport=true"
+{{- end}}
+
+{{/* virtualization cluster runtime configuration*/}}
+{{- define "talos-manager.runtimeConfig" -}}
+{{- $version := trimPrefix "v" .Values.k8sVersion }}
+{{- if lt $version "1.34.0" }}
+runtime-config: "admissionregistration.k8s.io/v1alpha1=true"
+{{- else if lt $version "1.35.0" }}
+runtime-config: "admissionregistration.k8s.io/v1beta1=true"
+{{- end }}
 {{- end }}
