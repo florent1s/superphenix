@@ -175,66 +175,28 @@ func (h *Service) GetLoadBalancer(w http.ResponseWriter, r *http.Request) {
 	resp, err := proxy.SendProxy(r, azDb, config.ApiPrefix, http.NoBody)
 	if err != nil {
 		log.Error().Err(err).Str("az", azDb.Code).Msg(consts.SpxProxyToAZFailure)
-	} else if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
-		log.Error().Str("path", r.URL.Path).Str("status", resp.Status).Int("statusCode", resp.StatusCode).Str("az", azDb.Code).Str("az", azDb.Code).Msg("Request on superphenix-controller failed")
+	} else {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
+			log.Error().Str("path", r.URL.Path).Str("status", resp.Status).Int("statusCode", resp.StatusCode).Str("az", azDb.Code).Str("az", azDb.Code).Msg("Request on superphenix-controller failed")
+		}
 	}
-	defer resp.Body.Close()
 
 	resourceEId := chi.URLParam(r, "effectiveId")
 	dbProduct, err := product.FindByEId(resourceEId)
-	var result LBFullResponse
 
-	if (resp.StatusCode != http.StatusOK) && err == nil {
-		result = LBFullResponse{
-			ProductResponse: ProductResponse{
-				ID:            dbProduct.ID.String(),
-				EId:           dbProduct.EffectiveID,
-				ProductName:   dbProduct.ProductName,
-				CodeAZ:        azDb.Code,
-				ProductTypeId: dbProduct.ProductTypeId,
-				Gitops:        "false",
-			},
-		}
-	} else if resp.StatusCode == http.StatusOK {
-		mapResult := ctrlutils.ReadResponse(resp).(map[string]interface{})
-
-		// We only have spx-ctrl info
-		if err != nil {
-			log.Info().Ctx(r.Context()).Err(err).Str("resourceEId", resourceEId).Msg("Resource not found in DB")
-
-			result = LBFullResponse{
-				ProductResponse: ProductResponse{
-					ID:          mapResult["id"].(string),
-					EId:         mapResult["eid"].(string),
-					ProductName: mapResult["productName"].(string),
-					CodeAZ:      azDb.Code,
-					Gitops:      mapResult["gitops"].(string),
-				},
-				LoadBalancer: mapResult["loadBalancer"],
-			}
-		} else {
-			//	We got both db and spx-ctrl info
-			if dbProduct.ID.String() == mapResult["id"] {
-				result = LBFullResponse{
-					ProductResponse: ProductResponse{
-						ID:            dbProduct.ID.String(),
-						EId:           mapResult["eid"].(string),
-						ProductName:   dbProduct.ProductName,
-						CodeAZ:        azDb.Code,
-						ProductTypeId: dbProduct.ProductTypeId,
-						Gitops:        mapResult["gitops"].(string),
-					},
-					LoadBalancer: mapResult["loadBalancer"],
-				}
-			}
-		}
-	}
+	productResponse, azResult, outcome := controller.ResolveProductResponse(r.Context(), azDb.Code, resp, dbProduct, err)
 
 	// If we can't find either spx-ctrl or db info
-	if (resp.StatusCode == http.StatusNotFound) && err != nil {
+	if outcome == controller.MergeNotFound {
 		log.Error().Str("effectiveId", resourceEId).Msg(consts.SpxResourceNotFound)
 		httpError.Http(w, r, http.StatusNotFound).Str("eid", resourceEId).Msg(consts.SpxResourceNotFound)
 		return
+	}
+
+	result := LBFullResponse{ProductResponse: productResponse}
+	if azResult != nil {
+		result.LoadBalancer = azResult["loadBalancer"]
 	}
 
 	w.Header().Set("Content-Type", "application/json")
