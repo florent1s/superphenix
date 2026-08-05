@@ -24,6 +24,7 @@
     {{- end }}
   {{- end }}
 {{- end }}
+
 {{- if $shouldDeploy }}
 
 ---
@@ -32,7 +33,8 @@ kind: Application
 metadata:
   name: {{ $cluster.name }}-{{ $app | lower }}
   namespace: {{ $argocd.namespace }}
-  {{- if or $.Values.cleanupOnDeletion (default false $values.automation.cleanupOnDeletion) }}
+  {{- $cleanup := or $.Values.cleanupOnDeletion (default false $values.automation.cleanupOnDeletion) }}
+  {{- if $cleanup }}
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   {{- end }}
@@ -82,14 +84,15 @@ spec:
     {{- end }}
   destination:
     name: {{ $cluster.name | quote }}
-    namespace: {{ $values.namespace | quote }}
+    namespace: {{ $values.namespace | default $.Release.Namespace | quote }}
   {{- with $values.ignoreDifferences }}
   ignoreDifferences:
   {{- . | toYaml | nindent 4 }}
   {{- end }}
   syncPolicy:
     automated:
-      enabled: {{ and $values.automation.enabled (not $forceManual) | default false }}
+      {{- $syncEnabled := and $values.automation.enabled (not $forceManual) | default false }}
+      enabled: {{ $syncEnabled }}
       {{- if $values.automation.selfHeal }}
       selfHeal: true
       {{- end }}
@@ -109,7 +112,6 @@ spec:
         {{- with $values.nsLabels }}
         {{- . | toYaml | nindent 8 }}
         {{- end }}
-
 {{- end }}
 {{- end }}
 
