@@ -8,7 +8,7 @@ replicaCount: 1
 
 leaderElection:
   # -- Enable leader election for the operator, necessary if running multiple replicas.
-  enabled: false
+  enabled: true
 
 # -- Metrics and Health configuration.
 metrics:
@@ -113,10 +113,6 @@ config:
       # -- Enable HA mode for ArgoCD deployment.
       enabled: false
     # -- Arbitrary Helm values merged under the "argocd" ConfigMap key.
-    values: {}
-
-  management:
-    # -- Arbitrary Helm values merged under the "superphenix" ConfigMap key.
     values: {}
 
   # -- Default system chart deployed by the cluster controller on every managed cluster.

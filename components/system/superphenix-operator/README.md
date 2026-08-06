@@ -10,13 +10,11 @@ A Helm chart for the Superphenix Operator
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Affinity rules for pod assignment. |
 | clusters | object | `{}` | Superphenix clusters to be managed by this operator. You can either create the Cluster CRs by hand or use this field to define your clusters from the chart. |
-| config | object | `{"argocd":{"ha":{"enabled":false},"values":{}},"clustersConfigMap":{"name":"superphenix-clusters-config"},"enableHTTP2":false,"management":{"values":{}},"syncPeriod":"5m","syncTimeout":"15m","system":{"chartName":"superphenix-system","repoURL":"ghcr.io/super-phenix/charts","version":""},"talosManager":{"chart":{"url":"ghcr.io/super-phenix/charts","version":"0.1.0"}},"telemetry":{"disabled":false},"valuesConfigMap":{"name":"superphenix-mgmt-values"}}` | Superphenix operator configuration |
+| config | object | `{"argocd":{"ha":{"enabled":false}},"clustersConfigMap":{"name":"superphenix-clusters-config"},"enableHTTP2":false,"syncPeriod":"5m","syncTimeout":"15m","system":{"chartName":"superphenix-system","repoURL":"ghcr.io/super-phenix/charts","version":""},"talosManager":{"chart":{"url":"ghcr.io/super-phenix/charts","version":"0.1.0"}},"telemetry":{"disabled":false}}` | Superphenix operator configuration |
 | config.argocd.ha | object | `{"enabled":false}` | ArgoCD configuration. |
 | config.argocd.ha.enabled | bool | `false` | Enable HA mode for ArgoCD deployment. |
-| config.argocd.values | object | `{}` | Arbitrary Helm values merged under the "argocd" ConfigMap key. |
 | config.clustersConfigMap | object | `{"name":"superphenix-clusters-config"}` | ConfigMap where all clusters will append their configuration. |
 | config.enableHTTP2 | bool | `false` | Enable HTTP/2 for the metrics and webhook servers. |
-| config.management.values | object | `{}` | Arbitrary Helm values merged under the "superphenix" ConfigMap key. |
 | config.syncPeriod | string | `"5m"` | Interval at which to periodically resync sub-applications. |
 | config.syncTimeout | string | `"15m"` | Duration after which an in-progress sub-application sync is considered stuck. |
 | config.system | object | `{"chartName":"superphenix-system","repoURL":"ghcr.io/super-phenix/charts","version":""}` | Default system chart deployed by the cluster controller on every managed cluster. This can be overridden per cluster in the Cluster CR. |
@@ -28,14 +26,23 @@ A Helm chart for the Superphenix Operator
 | config.talosManager.chart.version | string | `"0.1.0"` | Version of the talos-manager chart. |
 | config.telemetry | object | `{"disabled":false}` | Telemetry settings. |
 | config.telemetry.disabled | bool | `false` | Disable sending anonymous telemetry. |
-| config.valuesConfigMap | object | `{"name":"superphenix-mgmt-values"}` | General ConfigMap holding Helm values overrides for all management components. |
 | fullnameOverride | string | `""` | String to fully override fullname template. |
 | health.probeBindAddress | string | `":8081"` | The address the health probe endpoint binds to. |
 | image.pullPolicy | string | `"IfNotPresent"` | Pull policy for the operator image. |
 | image.repository | string | `"ghcr.io/super-phenix/superphenix-operator"` | Repository for the operator image. |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | Secrets for pulling the operator image. |
-| leaderElection.enabled | bool | `false` | Enable leader election for the operator, necessary if running multiple replicas. |
+| leaderElection.enabled | bool | `true` | Enable leader election for the operator, necessary if running multiple replicas. |
+| management | object | `{"availabilityZone":"","chartName":"","cleanupOnDeletion":true,"manual":false,"pauseSync":false,"region":"","repoURL":"","systemConfiguration":{},"version":""}` | Superphenix management cluster configuration. This will create a Cluster resource for the management cluster, pointing to the Kubernetes cluster where the operator is installed. Only management configuration can be defined here. If you also want to install a Storage/Workload/Hyperconverged cluster on the Kubernetes cluster where the operator is installed, you need to create a separate Cluster CR manually or use the 'clusters' field below. |
+| management.availabilityZone | string | `""` | Availability zone where the management cluster is located. This is optional, as the cluster will not be visible to end users. Defaults to "management". |
+| management.chartName | string | `""` | Override the default Superphenix system chart name. This is useful if you want to use a custom chart. |
+| management.cleanupOnDeletion | bool | `true` | Whether to clean up resources deployed by the management stack applications when they get deleted. |
+| management.manual | bool | `false` | Whether to disable the autosync of all applications on the management cluster. |
+| management.pauseSync | bool | `false` | Whether to pause the synchronization of the Superphenix stack on the management cluster. |
+| management.region | string | `""` | Region where the management cluster is located. This is optional, as the cluster will not be visible to end users. Defaults to "management". |
+| management.repoURL | string | `""` | Override the default Superphenix system chart repository. This is useful if you want to use a custom chart. |
+| management.systemConfiguration | object | `{}` | System configuration for the management stack. This configuration is passed to the superphenix-system chart. |
+| management.version | string | `""` | Override the default Superphenix system chart version. This is useful if you want to use a custom chart. |
 | metrics | object | `{"bindAddress":"0","secure":true}` | Metrics and Health configuration. |
 | metrics.bindAddress | string | `"0"` | The address the metric endpoint binds to. Use "0" to disable. |
 | metrics.secure | bool | `true` | Whether to secure the metrics endpoint with TLS. |
