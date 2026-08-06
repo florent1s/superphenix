@@ -69,7 +69,7 @@ func CreateAppValues(ctx context.Context, localId, location string, spec BaaSSpe
 		backup.Retention = spec.Retention
 		backup.Paused = spec.Paused
 
-		randHours := schedule.RandomHourInRange(config.Global.ArgoController.App.BaaS.Schedule.MinHour, config.Global.ArgoController.App.BaaS.Schedule.MaxHour)
+		randHours := schedule.RandomHourInRange(config.Global.ProductsConfig.ArgoApp.Backup.Schedule.MinHour, config.Global.ProductsConfig.ArgoApp.Backup.Schedule.MaxHour)
 		randMinutes := rand.IntN(60)
 		backup.Schedule = fmt.Sprintf("%d %d */%d * *", randMinutes, randHours, spec.Schedule)
 
@@ -116,10 +116,10 @@ func CreateArgoApp(ctx context.Context, localId string, az config.AZConfig, spec
 			IgnoreDifferences argoApp.IgnoreDifferences `json:"ignoreDifferences"`
 		}{
 			Source: argoApp.AppSource{
-				RepoURL:        config.Global.ArgoController.App.BaaS.Repo.RepoURL,
-				TargetRevision: config.Global.ArgoController.App.BaaS.Repo.TargetRevision,
-				Chart:          config.Global.ArgoController.App.BaaS.Repo.Chart,
-				Path:           config.Global.ArgoController.App.BaaS.Repo.Path,
+				RepoURL:        config.Global.ProductsConfig.ArgoApp.Backup.Repo.RepoURL,
+				TargetRevision: config.Global.ProductsConfig.ArgoApp.Backup.Repo.TargetRevision,
+				Chart:          config.Global.ProductsConfig.ArgoApp.Backup.Repo.Chart,
+				Path:           config.Global.ProductsConfig.ArgoApp.Backup.Repo.Path,
 				Plugin: argoApp.ApplicationSourcePlugin{
 					Name: "uuidv5",
 					Env: argoApp.Env{

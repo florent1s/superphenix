@@ -19,35 +19,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/az/health": {
-            "get": {
-                "description": "Contact each configured AZ's /health endpoint to determine availability",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin endpoint"
-                ],
-                "summary": "Check health of all AZs",
-                "responses": {
-                    "200": {
-                        "description": "Map of AZ code to status (up/down)",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/admin/permission/update-schema": {
             "post": {
                 "description": "Update permission schema in database and Permify",
@@ -108,7 +79,7 @@ const docTemplate = `{
                 "tags": [
                     "api-token"
                 ],
-                "summary": "List API tokens",
+                "summary": "List API Tokens",
                 "responses": {
                     "200": {
                         "description": "List of API tokens",
@@ -155,7 +126,7 @@ const docTemplate = `{
                 "tags": [
                     "api-token"
                 ],
-                "summary": "Create an API token",
+                "summary": "Create an API Token",
                 "parameters": [
                     {
                         "description": "Token creation payload",
@@ -209,7 +180,7 @@ const docTemplate = `{
                 "tags": [
                     "api-token"
                 ],
-                "summary": "Revoke an API token",
+                "summary": "Revoke an API Token",
                 "parameters": [
                     {
                         "type": "string",
@@ -252,7 +223,7 @@ const docTemplate = `{
         },
         "/billing/organization/{orgaId}": {
             "get": {
-                "description": "Get Organization Name by SPX Orga ID",
+                "description": "Get Organization Name by SPX Organization ID",
                 "produces": [
                     "application/json"
                 ],
@@ -265,7 +236,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Orga ID",
+                        "description": "Organization ID",
                         "name": "orgaId",
                         "in": "path",
                         "required": true
@@ -336,6 +307,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/readyz": {
+            "get": {
+                "description": "Check that both public and admin HTTP servers are reachable",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Kubernetes readiness probe",
+                "responses": {
+                    "200": {
+                        "description": "All servers are up",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "One or more servers are down",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/invite-code": {
             "post": {
                 "security": [
@@ -378,7 +381,7 @@ const docTemplate = `{
                     "v1",
                     "session"
                 ],
-                "summary": "Logout current user",
+                "summary": "Logout Current User",
                 "responses": {
                     "302": {
                         "description": "Found"
@@ -841,7 +844,7 @@ const docTemplate = `{
                         ]
                     }
                 ],
-                "description": "Invite a user into organization with given roles (or update his roles)",
+                "description": "Invite a user into an organization with given roles (or update their roles)",
                 "consumes": [
                     "application/json"
                 ],
@@ -852,7 +855,7 @@ const docTemplate = `{
                     "v1",
                     "iam"
                 ],
-                "summary": "Invite User in Org",
+                "summary": "Invite User to Organization",
                 "parameters": [
                     {
                         "type": "string",
@@ -909,7 +912,7 @@ const docTemplate = `{
                     "v1",
                     "iam"
                 ],
-                "summary": "Remove User from Org",
+                "summary": "Remove User from Organization",
                 "parameters": [
                     {
                         "type": "string",
@@ -1333,7 +1336,7 @@ const docTemplate = `{
                     "v1",
                     "session"
                 ],
-                "summary": "Generates an access token",
+                "summary": "Generate an Access Token",
                 "responses": {
                     "200": {
                         "description": "JWT",
@@ -1362,7 +1365,7 @@ const docTemplate = `{
                     "v1",
                     "session"
                 ],
-                "summary": "Generates access and refresh token",
+                "summary": "Generate Access and Refresh Tokens",
                 "responses": {
                     "302": {
                         "description": "Found"
@@ -1388,7 +1391,7 @@ const docTemplate = `{
                     "v1",
                     "session"
                 ],
-                "summary": "Get current user information",
+                "summary": "Get Current User Information",
                 "responses": {
                     "200": {
                         "description": "User",
@@ -1420,7 +1423,7 @@ const docTemplate = `{
                     "v1",
                     "Argo CD"
                 ],
-                "summary": "Get Argo CD application link",
+                "summary": "Get Argo CD Application Link",
                 "parameters": [
                     {
                         "type": "string",
@@ -2473,7 +2476,7 @@ const docTemplate = `{
                         ]
                     }
                 ],
-                "description": "Update an disk",
+                "description": "Update a disk",
                 "consumes": [
                     "application/json"
                 ],
@@ -2872,7 +2875,7 @@ const docTemplate = `{
                         ]
                     }
                 ],
-                "description": "Update a new EIP",
+                "description": "Update an EIP",
                 "consumes": [
                     "application/json"
                 ],

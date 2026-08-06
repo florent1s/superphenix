@@ -39,7 +39,7 @@ func AddUserIdToRequestHeader(next http.Handler) http.Handler {
 }
 
 // ReverseProxy Return a Reverse Proxy with a Rewrite function that change destination host and remove pattern from path
-func ReverseProxy(rawUrl, pattern string) (httputil.ReverseProxy, error) {
+func ReverseProxy(rawUrl, pattern string, authSecret string) (httputil.ReverseProxy, error) {
 	if rawUrl == "" || pattern == "" {
 		return httputil.ReverseProxy{}, fmt.Errorf("parameters can't be empty: %s, %s", rawUrl, pattern)
 	}
@@ -58,6 +58,9 @@ func ReverseProxy(rawUrl, pattern string) (httputil.ReverseProxy, error) {
 			log := logger.GetLogger(r.In.Context())
 			log.Info().Str("method", r.In.Method).Msgf("Proxy to %s on %s", rawUrl, pattern)
 			r.SetURL(endpoint)
+			if authSecret != "" {
+				r.Out.Header.Set(consts.AuthorizationHeader, fmt.Sprintf("Bearer %s", authSecret)) // Override the AuthorizationHeader if needed
+			}
 			r.Out.RequestURI = strings.Replace(r.Out.RequestURI, pattern, "", 1) // Include Path and QueryParam
 			r.Out.URL.Path = strings.Replace(r.Out.URL.Path, pattern, "", 1)     // Include only the path
 		}}, nil
@@ -78,7 +81,7 @@ func SendBatchProxy(r *http.Request, targets []config.AZConfig, pattern string) 
 		// Re-add userId in header and Bearer
 		r2.Header.Set(consts.HeaderUserId, r.Header.Get(consts.HeaderUserId))
 		r2.Header.Set(middleware.RequestIDHeader, r.Header.Get(middleware.RequestIDHeader))
-		r2.Header.Set(consts.AuthorizationHeader, fmt.Sprintf("Bearer %s", config.Global.Controller.AuthSecret))
+		r2.Header.Set(consts.AuthorizationHeader, fmt.Sprintf("Bearer %s", target.AuthSecret))
 
 		if err := RewriteRequest(r2, target.ControllerUrl, pattern); err != nil {
 			log.Error().Err(err).Msg("failed to proxy")
@@ -105,7 +108,7 @@ func SendProxy(r *http.Request, target config.AZConfig, pattern string, body io.
 	// Re-add userId in header and Bearer
 	r2.Header.Set(consts.HeaderUserId, r.Header.Get(consts.HeaderUserId))
 	r2.Header.Set(middleware.RequestIDHeader, r.Header.Get(middleware.RequestIDHeader))
-	r2.Header.Set(consts.AuthorizationHeader, fmt.Sprintf("Bearer %s", config.Global.Controller.AuthSecret))
+	r2.Header.Set(consts.AuthorizationHeader, fmt.Sprintf("Bearer %s", target.AuthSecret))
 	// Rewrite Request to redirect to the right controller
 	if err := RewriteRequest(r2, target.ControllerUrl, pattern+"/"+target.Code); err != nil {
 		log.Error().Err(err).Msg("failed to proxy")

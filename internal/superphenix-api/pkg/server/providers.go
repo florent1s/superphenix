@@ -3,7 +3,6 @@ package server
 import (
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/config"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/router"
-	adminAz "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/admin/az"
 	adminBilling "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/admin/billing"
 	adminPermission "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/admin/permission"
 	apiToken "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/auth/apitoken"
@@ -23,6 +22,7 @@ import (
 	subnetctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/subnet"
 	vmsnapshotctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/vmsnapshot"
 	vpcctrl "github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/controller/vpc"
+	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/health"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/iam/group"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/iam/membership"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/pkg/services/iam/organization"
@@ -71,9 +71,11 @@ type Providers struct {
 	Argo         RegisterFunc
 
 	// admin
-	AdminAZ         RegisterFunc
 	AdminPermission RegisterFunc
 	AdminBilling    RegisterFunc
+
+	// health
+	Health RegisterFunc
 }
 
 // DefaultProviders returns the default service set.
@@ -105,9 +107,10 @@ func DefaultProviders() Providers {
 		Metadata:     metadatactrl.ProvideService,
 		Argo:         argoApp.ProvideService,
 
-		AdminAZ:         adminAz.ProvideService,
 		AdminPermission: adminPermission.ProvideService,
 		AdminBilling:    adminBilling.ProvideService,
+
+		Health: health.ProvideService,
 	}
 }
 
@@ -132,10 +135,24 @@ func (p Providers) registerPublic(cfg *config.Config, reg *router.Registry) {
 // field is skipped, so an edition can drop a service by zeroing its slot.
 func (p Providers) registerAdmin(cfg *config.Config, reg *router.Registry) {
 	for _, register := range []RegisterFunc{
-		p.AdminAZ, p.AdminPermission, p.AdminBilling,
+		p.AdminPermission, p.AdminBilling,
 	} {
 		if register == nil {
 			log.Debug().Msg("server: skipping nil admin provider")
+			continue
+		}
+		register(cfg, reg)
+	}
+}
+
+// registerHealth registers every health service on reg, in a fixed order. A nil
+// field is skipped, so an edition can drop a service by zeroing its slot.
+func (p Providers) registerHealth(cfg *config.Config, reg *router.Registry) {
+	for _, register := range []RegisterFunc{
+		p.Health,
+	} {
+		if register == nil {
+			log.Debug().Msg("server: skipping nil health provider")
 			continue
 		}
 		register(cfg, reg)

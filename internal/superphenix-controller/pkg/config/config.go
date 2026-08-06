@@ -62,50 +62,44 @@ type Config struct {
 
 	SpxPrefix string `yaml:"spxPrefix"`
 
-	OrganizationWhitelist []string `yaml:"organizationWhitelist"`
+	ProductsConfig struct {
+		NatGatewayDefault struct {
+			ExternalSubnets []string `yaml:"externalSubnets"`
+			DefaultRoutes   []struct {
+				Cidr      string `yaml:"cidr"`
+				NextHopIP string `yaml:"nextHopIP"`
+			} `yaml:"defaultRoutes"`
+			BgpSpeaker struct {
+				Enabled               bool          `yaml:"enabled"`
+				ASN                   uint32        `yaml:"asn"`
+				RemoteASN             uint32        `yaml:"remoteAsn"`
+				Neighbors             []string      `yaml:"neighbors"`
+				HoldTime              time.Duration `yaml:"holdTime"`
+				RouterID              string        `yaml:"routerId"`
+				Password              string        `yaml:"password"`
+				EnableGracefulRestart bool          `yaml:"enableGracefulRestart"`
+				ExtraArgs             []string      `yaml:"extraArgs"`
+			} `yaml:"bgpSpeaker"`
+		} `yaml:"natGatewayDefault"`
+		EipDefault struct {
+			ExternalSubnet string `yaml:"externalSubnet"`
+		} `yaml:"eipDefault"`
 
-	NatGatewayDefault struct {
-		ExternalSubnets []string `yaml:"externalSubnets"`
-		DefaultRoutes   []struct {
-			Cidr      string `yaml:"cidr"`
-			NextHopIP string `yaml:"nextHopIP"`
-		} `yaml:"defaultRoutes"`
-		BgpSpeaker struct {
-			Enabled               bool          `yaml:"enabled"`
-			ASN                   uint32        `yaml:"asn"`
-			RemoteASN             uint32        `yaml:"remoteAsn"`
-			Neighbors             []string      `yaml:"neighbors"`
-			HoldTime              time.Duration `yaml:"holdTime"`
-			RouterID              string        `yaml:"routerId"`
-			Password              string        `yaml:"password"`
-			EnableGracefulRestart bool          `yaml:"enableGracefulRestart"`
-			ExtraArgs             []string      `yaml:"extraArgs"`
-		} `yaml:"bgpSpeaker"`
-	} `yaml:"natGatewayDefault"`
-	EipDefault struct {
-		ExternalSubnet string `yaml:"externalSubnet"`
-	} `yaml:"eipDefault"`
+		Datavolume struct {
+			DefaultAnnotations map[string]string `yaml:"defaultAnnotations"`
+		} `yaml:"datavolume"`
 
-	SubnetDefault struct {
-		DnsV4 string `yaml:"dnsV4"`
-		DnsV6 string `yaml:"dnsV6"`
-	} `yaml:"subnetDefault"`
+		BlockStorage struct {
+			StorageClassMapping map[string]string `yaml:"storageClassMapping"`
+		} `yaml:"blockStorage"`
 
-	Datavolume struct {
-		DefaultAnnotations []struct {
-			Key   string `yaml:"key"`
-			Value string `yaml:"value"`
-		} `yaml:"defaultAnnotations"`
-	} `yaml:"datavolume"`
-
-	StorageClassMapping map[string]string `yaml:"storageClassMapping"`
-
-	S3 struct {
-		StorageClassMapping map[string]string `yaml:"storageClassMapping"`
-		MaxBucketSize       string            `yaml:"maxBucketSize"`
-		MaxBucketObjects    uint64            `yaml:"maxBucketObjects"`
-		ExternalEndpoint    string            `yaml:"externalEndpoint"`
-	} `yaml:"s3"`
+		ObjectStorage struct {
+			StorageClassMapping map[string]string `yaml:"storageClassMapping"`
+			MaxBucketSize       string            `yaml:"maxBucketSize"`
+			MaxBucketObjects    uint64            `yaml:"maxBucketObjects"`
+			ExternalEndpoint    string            `yaml:"externalEndpoint"`
+		} `yaml:"objectStorage"`
+	} `yaml:"productsConfig"`
 
 	DisableEditionForResourcesByLabels map[string]string `yaml:"disableEditionForResourcesByLabels"`
 
@@ -121,14 +115,10 @@ type Config struct {
 		QPS   float32 `yaml:"qps"`
 		Burst int     `yaml:"burst"`
 	} `yaml:"kubernetesConfig"`
-
-	SnapshotSchedule struct {
-		MinHour int `yaml:"minHour"`
-		MaxHour int `yaml:"maxHour"`
-	} `yaml:"snapshotSchedule"`
 }
 
 var defaultConfig = []byte(`
+azName: ""
 logging:
   pretty: true
 http:
@@ -147,34 +137,39 @@ metrics:
 swagger:
   baseURL: "localhost:8080"
 spxPrefix: "spx"
-organizationWhitelist: []
 containerDiskCatalog: []
-natGatewayDefault:
-  externalSubnets:
-    - spx-internal-bgp
-  defaultRoutes:
-    - cidr: 198.18.0.0/16
-      nextHopIP: gateway
-  bgpSpeaker:
-    enabled: true
-    asn: 65500
-    remoteAsn: 65000
-    neighbors:
-    - "172.17.0.1"
-    - "fd00:0:0:ffff::1"
-    extraArgs:
-      - -v5
-      - --graceful-restart
-eipDefault: 
-  externalSubnet: skala-subnet
-datavolume:
-  defaultAnnotations:
-  - key: "v1.multus-cni.io/default-network"
-    value: "kube-system/system-isolated-egress"
-  - key : "cdi.kubevirt.io/allowClaimAdoption"
-    value: "true"
+productsConfig:
+  natGatewayDefault:
+    externalSubnets:
+      - spx-internal-bgp
+    defaultRoutes:
+      - cidr: 198.18.0.0/16
+        nextHopIP: gateway
+    bgpSpeaker:
+      enabled: false
+      asn: 65500
+      remoteAsn: 65000
+      neighbors:
+        - "172.17.0.1"
+        - "fd00:0:0:ffff::1"
+      extraArgs:
+        - -v5
+        - --graceful-restart
+  eipDefault:
+    externalSubnet: external-subnet
+  datavolume:
+    defaultAnnotations:
+      "v1.multus-cni.io/default-network": "kube-system/system-isolated-egress"
+      "cdi.kubevirt.io/allowClaimAdoption": "true"
+  blockStorage:
+    storageClassMapping: {}
+  objectStorage:
+    storageClassMapping: {}
+    maxBucketSize: "1Ti"
+    maxBucketObjects: 1000000
+    externalEndpoint: ""
 disableEditionForResourcesByLabels:
-  - "app.kubernetes.io/name": "sfs-kaas"
+  "app.kubernetes.io/name": "sfs-kaas"
 garbageCollection:
   interval: 15m
   timeout: 10m
@@ -184,35 +179,31 @@ garbageCollection:
 kubernetesConfig:
   qps: 100
   burst: 100
-snapshotSchedule:
-  minHour: 21
-  maxHour: 23
-s3:
-  storageClassMapping: {}
-  maxBucketSize: "1Ti"
-  maxBucketObjects: 1000000
-  externalEndpoint: ""
 `)
 
 // Global is the global configuration of this application, provisioned once LoadConfig is called
 var Global Config
+
+// v is a viper instance with a custom key delimiter to avoid treating dots
+// in YAML map keys (e.g. "cdi.kubevirt.io/allowClaimAdoption") as nested paths.
+var v = viper.NewWithOptions(viper.KeyDelimiter("::"))
 
 // LoadConfig loads the configuration from the file-system, environment variables and flags.
 // The retrieved configuration is merged with the defaults values defined in this package,
 // with user defined values taking priority over the hardcoded default values.
 func LoadConfig() error {
 	// Fetch configs from config.yaml
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	v.SetConfigName("config")
+	v.SetConfigType("yaml")
 
 	// Places where the config file can be stored
-	viper.AddConfigPath("/etc/" + AppName + "/")
-	viper.AddConfigPath(".")
+	v.AddConfigPath("/etc/" + AppName + "/")
+	v.AddConfigPath(".")
 
 	// Enable overriding values using env variables
-	viper.SetEnvPrefix(strings.ToUpper(AppName))
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.AutomaticEnv()
+	v.SetEnvPrefix(strings.ToUpper(AppName))
+	v.SetEnvKeyReplacer(strings.NewReplacer("::", "_"))
+	v.AutomaticEnv()
 
 	// Set the default configuration
 	if err := loadDefaults(); err != nil {
@@ -220,7 +211,7 @@ func LoadConfig() error {
 	}
 
 	// Find and read the config file supplied by the user
-	err := viper.ReadInConfig()
+	err := v.ReadInConfig()
 	if err != nil && errors.Is(err, err.(viper.ConfigFileNotFoundError)) {
 		return FileNotFound
 	}
@@ -229,15 +220,15 @@ func LoadConfig() error {
 		return fmt.Errorf("failed to read configuration file: %s", err.Error())
 	}
 
-	return viper.Unmarshal(&Global)
+	return v.Unmarshal(&Global)
 }
 
 // loadDefaults loads the default application configuration
 func loadDefaults() error {
-	err := viper.ReadConfig(bytes.NewBuffer(defaultConfig))
+	err := v.ReadConfig(bytes.NewBuffer(defaultConfig))
 	if err != nil {
 		return err
 	}
 
-	return viper.Unmarshal(&Global)
+	return v.Unmarshal(&Global)
 }

@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	AppName = "superphenix-api" // Name of the application in lowercase, used to determine the configuration path
+	AppName   = "superphenix-api" // Name of the application in lowercase, used to determine the configuration path
+	ApiPrefix = "/api/spx-ctrl"
 )
 
 var (
@@ -53,6 +54,7 @@ func ResolveKubeVersionRepo(versions []KubeVersionConfig, def RepoArgoAppConfig,
 // AZConfig represents an Availability Zone defined in configuration
 type AZConfig struct {
 	Code          string   `yaml:"code"`
+	AuthSecret    string   `yaml:"authSecret"`
 	Name          string   `yaml:"name"`
 	LogoUrl       string   `yaml:"logoUrl"`
 	ControllerUrl string   `yaml:"controllerUrl"`
@@ -73,24 +75,17 @@ type Config struct {
 	}
 
 	AdminHTTP struct {
-		Enabled        bool
-		HealthEndpoint string
-		Address        string
-		AuthSecret     string
-	}
-
-	BillingHTTP struct {
+		Enabled    bool
+		Address    string
 		AuthSecret string
 	}
 
-	SuperAdmins []string `yaml:"superAdmins"`
+	ReadinessProbe struct {
+		Enabled bool
+		Address string
+	} `yaml:"readinessProbe"`
 
-	Redis struct {
-		Address  string
-		Password string
-		Database int
-		Timeout  time.Duration
-	}
+	SuperAdmins []string `yaml:"superAdmins"`
 
 	Tracing struct {
 		Enabled        bool
@@ -118,10 +113,8 @@ type Config struct {
 	Swagger struct {
 		BaseURL string
 	}
-	Session struct {
-		UserIsActiveOnCreate           bool          `json:"userIsActiveOnCreate"` // If false, need manual activation in database
-		InviteCodeRegenerationCooldown time.Duration `yaml:"inviteCodeRegenerationCooldown"`
 
+	Session struct {
 		DefaultReturnUrl string
 		AccessValidity   time.Duration
 		RefreshValidity  time.Duration
@@ -139,36 +132,19 @@ type Config struct {
 		}
 	}
 
+	UserSettings struct {
+		UserIsActiveOnCreate           bool          `yaml:"userIsActiveOnCreate"` // If false, need manual activation in database
+		EnableProjectDefaultResources  bool          `yaml:"enableProjectDefaultResources"`
+		InviteCodeRegenerationCooldown time.Duration `yaml:"inviteCodeRegenerationCooldown"`
+	} `yaml:"userSettings"`
+
 	Permify struct {
 		Url string
-	}
-
-	Controller struct {
-		ApiPrefix  string
-		AuthSecret string
 	}
 
 	ArgoController struct {
 		Url        string
 		AuthSecret string
-
-		App struct {
-			KaaS struct {
-				Repo             RepoArgoAppConfig   `yaml:"repo"`
-				KubeVersions     []KubeVersionConfig `yaml:"kubeVersions,omitempty"`
-				KubeConfigDomain string              `yaml:"kubeConfigDomain"`
-				// AZ code -> domain, sent in KaaS helm values.
-				AzDomains map[string]string `yaml:"azDomains"`
-			}
-
-			BaaS struct {
-				Repo     RepoArgoAppConfig `yaml:"repo"`
-				Schedule struct {
-					MinHour int `yaml:"minHour"`
-					MaxHour int `yaml:"maxHour"`
-				} `yaml:"schedule"`
-			}
-		} `yaml:"app"`
 	}
 
 	Database struct {
@@ -181,27 +157,53 @@ type Config struct {
 
 	AZs []AZConfig `yaml:"azs"`
 
-	S3 struct {
-		// MaxMinifiedJSONLen caps bucket policy/lifecycle JSON minified length
-		MaxMinifiedJSONLen int `yaml:"maxMinifiedJSONLen"`
-	} `yaml:"s3"`
-
 	SpxPrefix string `yaml:"spxPrefix"`
 	ArgoCdUrl string `yaml:"argoCdUrl"`
 
-	DefaultProducts struct {
-		VPC struct {
+	ProductsConfig struct {
+		ArgoApp struct {
+			Kubernetes struct {
+				Repo             RepoArgoAppConfig   `yaml:"repo"`
+				KubeVersions     []KubeVersionConfig `yaml:"kubeVersions,omitempty"`
+				KubeConfigDomain string              `yaml:"kubeConfigDomain"`
+				// AZ code -> domain, sent in KaaS helm values.
+				AzDomains map[string]string `yaml:"azDomains"`
+			} `yaml:"kubernetes"`
+
+			Backup struct {
+				Repo     RepoArgoAppConfig `yaml:"repo"`
+				Schedule struct {
+					MinHour int `yaml:"minHour"`
+					MaxHour int `yaml:"maxHour"`
+				} `yaml:"schedule"`
+			} `yaml:"backup"`
+		} `yaml:"argoApp"`
+
+		DefaultVPC struct {
 			ProductName string `yaml:"productName"`
-		} `yaml:"vpc"`
-		Subnet struct {
+		} `yaml:"defaultVpc"`
+
+		DefaultSubnet struct {
 			ProductName       string `yaml:"productName"`
 			Protocol          string `yaml:"protocol"`
 			IPv4              string `yaml:"ipv4"`
 			IPv6              string `yaml:"ipv6"`
 			NatGatewayEnabled bool   `yaml:"natGatewayEnabled"`
 			Private           bool   `yaml:"private"`
-		} `yaml:"subnet"`
-	} `yaml:"defaultProducts"`
+			DnsV4             string `yaml:"dnsV4"`
+			DnsV6             string `yaml:"dnsV6"`
+		} `yaml:"defaultSubnet"`
+
+		SnapshotSchedule struct {
+			MinHour int `yaml:"minHour"`
+			MaxHour int `yaml:"maxHour"`
+		} `yaml:"snapshotSchedule"`
+
+		S3 struct {
+			// MaxMinifiedJSONLen caps bucket policy/lifecycle JSON minified length
+			MaxMinifiedJSONLen int `yaml:"maxMinifiedJSONLen"`
+		} `yaml:"s3"`
+	} `yaml:"productsConfig"`
 }
 
 var defaultConfig = []byte(`
@@ -213,18 +215,12 @@ publicHttp:
   maxBodySize: 5
 adminHttp:
   enabled: true
-  healthEndpoint: "/healthz"
   address: ":7000"
   authSecret: ""
-  azHealthTimeout: 15
-billingHttp:
-  authSecret: ""
+readinessProbe:
+  enabled: true
+  address: ":9000"
 superAdmins: []
-redis:
-  address: "<redis-host>:<redis-port>"
-  password: "<redis-password>"
-  database: 0
-  timeout: 10s
 tracing:
   enabled: true
   address: "http://<tracing-host>:<tracing-port>/api/traces"
@@ -244,9 +240,11 @@ authentication:
   redirectUrl: "https://<kratos-public-host>/self-service/login/browser?refresh=true&return_to=%s"
 swagger:
   baseURL: "localhost:8080"
-session:
+userSettings:
   userIsActiveOnCreate: false
+  enableProjectDefaultResources: true
   inviteCodeRegenerationCooldown: 2h
+session:
   defaultReturnUrl: "http://localhost:4200/callback"
   accessValidity: 1h
   refreshValidity: 24h
@@ -260,21 +258,9 @@ session:
     allowedOrigins: ["*"]
 permify:
   url: <permify-host>:<permify-port>
-controller:
-  apiPrefix: "/api/spx-ctrl"
-  authSecret: "secret"
 argoController:
   url: "argo-url"
   authSecret: "secret"
-  app:
-    kaas:
-      kubeConfigDomain: "<kube-config-domain>"
-      kubeVersions: []
-      azDomains: {}
-    baas:
-      schedule:
-        minHour: 20
-        maxHour: 23
 database:
   host: ""
   port: ""
@@ -282,20 +268,40 @@ database:
   password: ""
   database: ""
 azs: []
-s3:
-  maxMinifiedJSONLen: 5000
 spxPrefix: "spx"
 argoCdUrl: "https://<argocd-host>"
-defaultProducts:
-  vpc:
+productsConfig:
+  argoApp:
+    kubernetes:
+      repo:
+        repoURL: ""
+        targetRevision: ""
+      kubeVersions: []
+      kubeConfigDomain: "<kube-config-domain>"
+      azDomains: {}
+    backup:
+      repo:
+        repoURL: ""
+        targetRevision: ""
+      schedule:
+        minHour: 20
+        maxHour: 23
+  defaultVpc:
     productName: "default"
-  subnet:
+  defaultSubnet:
     productName: "default"
     protocol: "Dual"
     ipv4: "10.10.0.0/16"
     ipv6: "fd00:10:10::/64"
-    natGatewayEnabled: false 
+    natGatewayEnabled: false
     private: false
+    dnsV4: "1.1.1.1"
+    dnsV6: "2606:4700:4700::1111"
+  snapshotSchedule:
+    minHour: 21
+    maxHour: 23
+  s3:
+    maxMinifiedJSONLen: 5000
 `)
 
 // Global is the global configuration of this application, provisioned once LoadConfig is called
