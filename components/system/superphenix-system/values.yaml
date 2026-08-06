@@ -1585,7 +1585,7 @@ apps:
             port: 5432
             database: superphenix
             username: superphenix
-            password: "{{ $.Values.apps.postgres.helm.values.auth.password | quote }}"
+            password: "{{ $.Values.apps.postgres.helm.values.auth.password }}"
 
           # -- Permify endpoint used for authorization checks.
           permify:
@@ -1725,7 +1725,6 @@ apps:
                 "properties": {
                   "traits": {
                     "type": "object",
-
                     "properties": {
                       "email": {
                         "type": "string",
