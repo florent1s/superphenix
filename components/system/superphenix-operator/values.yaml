@@ -97,6 +97,9 @@ config:
   # -- Duration after which an in-progress sub-application sync is considered stuck.
   syncTimeout: 15m
 
+  # -- Disable validation of versions entirely.
+  disableVersionValidation: false
+
   # -- Telemetry settings.
   telemetry:
     # -- Disable sending anonymous telemetry.

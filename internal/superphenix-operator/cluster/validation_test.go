@@ -472,6 +472,27 @@ var _ = Describe("Cluster Validation", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
+	Context("DisableVersionValidation", func() {
+		It("should skip version validation when disabled", func() {
+			r := &Reconciler{
+				Client:                   k8sClient,
+				OperatorNamespace:        operatorNamespace,
+				DisableVersionValidation: true,
+			}
+
+			// This would normally fail because management app is missing/mismatched
+			cluster := &operatorv1alpha1.Cluster{
+				Spec: operatorv1alpha1.ClusterSpec{
+					Version:            "0.9.0",
+					DeploymentTopology: operatorv1alpha1.DeploymentTopologyHyperconverged,
+				},
+			}
+
+			err := r.validate(ctx, cluster)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })
 
 func ptr[T any](v T) *T {

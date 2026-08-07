@@ -63,6 +63,9 @@ type Reconciler struct {
 	// talos-manager chart configuration.
 	TalosManagerChartURL     string
 	TalosManagerChartVersion string
+
+	// DisableVersionValidation disables validation of versions entirely.
+	DisableVersionValidation bool
 }
 
 // SetupWithManager sets up the controller with the Manager.

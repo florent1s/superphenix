@@ -77,6 +77,7 @@ func main() {
 	var talosManagerChartVersion string
 	var disableTelemetry bool
 	var telemetryEndpoint string
+	var disableVersionValidation bool
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -111,6 +112,7 @@ func main() {
 	flag.StringVar(&operatorNamespace, "operator-namespace", os.Getenv("OPERATOR_NAMESPACE"), "The namespace where the operator is deployed")
 	flag.BoolVar(&disableTelemetry, "disable-telemetry", false, "Disable sending anonymous telemetry to the Superphenix open-source project")
 	flag.StringVar(&telemetryEndpoint, "telemetry-endpoint", telemetry.DefaultEndpoint, "URL of the telemetry ingest endpoint")
+	flag.BoolVar(&disableVersionValidation, "disable-version-validation", false, "Disable validation of versions entirely")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -260,6 +262,7 @@ func main() {
 		SyncTimeout:              syncTimeout,
 		TalosManagerChartURL:     talosManagerChartURL,
 		TalosManagerChartVersion: talosManagerChartVersion,
+		DisableVersionValidation: disableVersionValidation,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "Cluster")
 		os.Exit(1)

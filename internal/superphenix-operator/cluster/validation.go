@@ -15,6 +15,11 @@ func (r *Reconciler) validate(ctx context.Context, cluster *v1alpha1.Cluster) er
 		return err
 	}
 
+	// Bypass checks entirely
+	if r.DisableVersionValidation {
+		return nil
+	}
+
 	// Validate compatibility with management cluster
 	if err := r.validateManagementCompatibility(ctx, cluster); err != nil {
 		return err
