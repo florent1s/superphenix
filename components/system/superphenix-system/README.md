@@ -17,9 +17,9 @@ In a normal Superphenix deployment, the operator is responsible for installing c
 
 For every entry in `.Values.apps` the chart renders a single Argo CD `Application` object. Whether an entry actually results in an `Application` depends on three inputs:
 
-1. The global switch `.Values.disableAll`  `true`, nothing is deployed.
-2. The per-app switch `.Values.apps.<name>.enabled`.
-3. The per-app `modes` list, matched against the *effective mode* of the target cluster.
+1. If the global switch `.Values.disableAll` is set to true `true`, nothing is deployed.
+2. The per-app switch `.Values.apps.<name>.enabled` must be set to true.
+3. The per-app `modes` list must match against the *effective mode* of the target cluster.
 
 The effective mode is the concatenation of `.Values.cluster.deploymentTopology` and `.Values.cluster.type`, giving one of:
 
@@ -1752,7 +1752,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
           "database": {
             "database": "superphenix",
             "host": "postgres.{{ $.Release.Namespace }}.svc",
-            "password": "{{ $.Values.apps.postgres.helm.values.auth.password | quote }}",
+            "password": "{{ $.Values.apps.postgres.helm.values.auth.password }}",
             "port": 5432,
             "username": "superphenix"
           },
@@ -4345,7 +4345,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
         "database": {
           "database": "superphenix",
           "host": "postgres.{{ $.Release.Namespace }}.svc",
-          "password": "{{ $.Values.apps.postgres.helm.values.auth.password | quote }}",
+          "password": "{{ $.Values.apps.postgres.helm.values.auth.password }}",
           "port": 5432,
           "username": "superphenix"
         },
@@ -4373,7 +4373,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
 {
   "database": "superphenix",
   "host": "postgres.{{ $.Release.Namespace }}.svc",
-  "password": "{{ $.Values.apps.postgres.helm.values.auth.password | quote }}",
+  "password": "{{ $.Values.apps.postgres.helm.values.auth.password }}",
   "port": 5432,
   "username": "superphenix"
 }
