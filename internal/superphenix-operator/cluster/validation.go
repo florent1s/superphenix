@@ -48,6 +48,10 @@ func (r *Reconciler) validateTopology(cluster *v1alpha1.Cluster) error {
 
 // validateManagementCompatibility ensures the management cluster can handle the cluster version.
 func (r *Reconciler) validateManagementCompatibility(ctx context.Context, cluster *v1alpha1.Cluster) error {
+	if cluster.Spec.Type != nil && *cluster.Spec.Type == v1alpha1.ClusterTypeManagement {
+		return nil
+	}
+
 	mgmtVersion, err := version.GetCurrentManagementVersion(ctx, r, r.OperatorNamespace)
 	if err != nil {
 		return fmt.Errorf("failed to get management version: %w", err)
@@ -67,6 +71,10 @@ func (r *Reconciler) validateUpgradePath(ctx context.Context, cluster *v1alpha1.
 	currentVersion, err := version.GetCurrentClusterVersion(ctx, r, cluster.Name, r.OperatorNamespace)
 	if err != nil {
 		return fmt.Errorf("failed to get current cluster version: %w", err)
+	}
+
+	if cluster.Spec.Type != nil && *cluster.Spec.Type == v1alpha1.ClusterTypeManagement {
+		return version.IsOperatorUpgradeSupported(currentVersion, specVersion)
 	}
 
 	return version.IsClusterUpgradeSupported(currentVersion, specVersion)

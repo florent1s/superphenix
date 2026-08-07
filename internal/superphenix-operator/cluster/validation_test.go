@@ -157,6 +157,58 @@ var _ = Describe("Cluster Validation", func() {
 			err := r.validateUpgradePath(ctx, cluster)
 			Expect(err).NotTo(HaveOccurred())
 		})
+
+		It("should use IsOperatorUpgradeSupported for management clusters", func() {
+			r := &Reconciler{
+				Client:            k8sClient,
+				OperatorNamespace: operatorNamespace,
+			}
+
+			By("Setting MinOperatorVersion to 1.0.0")
+			oldMinOperatorVersion := version.MinOperatorVersion
+			version.MinOperatorVersion = "1.0.0"
+			defer func() { version.MinOperatorVersion = oldMinOperatorVersion }()
+
+			By("Creating an ArgoCD Application for the management cluster with version 0.9.0")
+			app := &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "argoproj.io/v1alpha1",
+					"kind":       "Application",
+					"metadata": map[string]interface{}{
+						"name":      clusterName,
+						"namespace": operatorNamespace,
+					},
+					"spec": map[string]interface{}{
+						"project": "default",
+						"source": map[string]interface{}{
+							"repoURL":        "https://example.com/charts",
+							"targetRevision": "0.9.0",
+						},
+						"destination": map[string]interface{}{
+							"server":    "https://kubernetes.default.svc",
+							"namespace": operatorNamespace,
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, app)).To(Succeed())
+
+			clusterType := operatorv1alpha1.ClusterTypeManagement
+			cluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: clusterNamespace,
+				},
+				Spec: operatorv1alpha1.ClusterSpec{
+					Type:    &clusterType,
+					Version: "1.1.0",
+				},
+			}
+
+			err := r.validateUpgradePath(ctx, cluster)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("management upgrade from 0.9.0 to 1.1.0 is not supported"))
+		})
 	})
 
 	Context("validateManagementCompatibility", func() {
@@ -288,6 +340,48 @@ var _ = Describe("Cluster Validation", func() {
 			cluster := &operatorv1alpha1.Cluster{
 				Spec: operatorv1alpha1.ClusterSpec{
 					Version: "0.0.0",
+				},
+			}
+
+			err := r.validateManagementCompatibility(ctx, cluster)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("should skip check if cluster type is Management", func() {
+			r := &Reconciler{
+				Client:            k8sClient,
+				OperatorNamespace: operatorNamespace,
+			}
+
+			By("Creating an ArgoCD Application for management with version 1.1.0")
+			app := &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "argoproj.io/v1alpha1",
+					"kind":       "Application",
+					"metadata": map[string]interface{}{
+						"name":      version.ManagementAppName,
+						"namespace": operatorNamespace,
+					},
+					"spec": map[string]interface{}{
+						"project": "default",
+						"source": map[string]interface{}{
+							"repoURL":        "https://example.com/charts",
+							"targetRevision": "1.1.0",
+						},
+						"destination": map[string]interface{}{
+							"server":    "https://kubernetes.default.svc",
+							"namespace": operatorNamespace,
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, app)).To(Succeed())
+
+			clusterType := operatorv1alpha1.ClusterTypeManagement
+			cluster := &operatorv1alpha1.Cluster{
+				Spec: operatorv1alpha1.ClusterSpec{
+					Type:    &clusterType,
+					Version: "0.9.0", // Would normally fail if not skipped
 				},
 			}
 
