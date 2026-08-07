@@ -409,7 +409,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Created Organization",
                         "schema": {
-                            "$ref": "#/definitions/model.Organization"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization"
                         }
                     },
                     "400": {
@@ -506,7 +506,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Organization",
                         "schema": {
-                            "$ref": "#/definitions/model.Organization"
+                            "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization"
                         }
                     },
                     "400": {
@@ -827,6 +827,69 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.APIGroup"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/organization/{orgaId}/iam/group/{groupId}/duplicate": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "OrganizationIAMWrite"
+                        ]
+                    }
+                ],
+                "description": "Copy an IAM group, predefined or not, into a new editable custom group",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "iam"
+                ],
+                "summary": "Duplicate an IAM group into a custom one",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Group ID",
+                        "name": "groupId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New group name",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/group.DuplicateOrganizationGroupBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Group",
+                        "schema": {
+                            "$ref": "#/definitions/model.APIGroup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -1221,7 +1284,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Organization"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization"
                             }
                         }
                     },
@@ -1250,7 +1313,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Product"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Product"
                             }
                         }
                     },
@@ -1279,7 +1342,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Project"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project"
                             }
                         }
                     },
@@ -1308,7 +1371,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.User"
+                                "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.User"
                             }
                         }
                     },
@@ -8618,6 +8681,209 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization": {
+            "type": "object",
+            "properties": {
+                "administrativeContact": {
+                    "type": "string"
+                },
+                "billingContact": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "predefinedCatalogVersion": {
+                    "description": "PredefinedCatalogVersion is the catalog version this organization is reconciled against.",
+                    "type": "integer"
+                },
+                "projects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project"
+                    }
+                },
+                "technicalContact": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userRoles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.UserOrganization"
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.User"
+                    }
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Product": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "effectiveID": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "productName": {
+                    "type": "string"
+                },
+                "productType": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.ProductType"
+                },
+                "productTypeId": {
+                    "type": "string"
+                },
+                "project": {
+                    "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project"
+                },
+                "projectId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.ProductType": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "orgaId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.User": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "guestOrg": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inviteCode": {
+                    "type": "string"
+                },
+                "inviteCodeRegeneratedAt": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "description": "Default value defined by config",
+                    "type": "boolean"
+                },
+                "lastname": {
+                    "type": "string"
+                },
+                "personalOrg": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization"
+                    }
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "providerId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.UserOrganization": {
+            "type": "object",
+            "properties": {
+                "groupId": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "gorm.DeletedAt": {
             "type": "object",
             "properties": {
@@ -8627,6 +8893,39 @@ const docTemplate = `{
                 "valid": {
                     "description": "Valid is true if Time is not NULL",
                     "type": "boolean"
+                }
+            }
+        },
+        "group.DuplicateOrganizationGroupBody": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 63
+                }
+            }
+        },
+        "group.ReconcileReport": {
+            "type": "object",
+            "properties": {
+                "groupsCreated": {
+                    "type": "integer"
+                },
+                "groupsUpdated": {
+                    "type": "integer"
+                },
+                "organizationFailedIds": {
+                    "description": "OrganizationFailedIds are retried on the next pass.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "organizationsScanned": {
+                    "type": "integer"
+                },
+                "organizationsUpdated": {
+                    "type": "integer"
                 }
             }
         },
@@ -9393,6 +9692,10 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "predefinedKey": {
+                    "description": "PredefinedKey is set on groups that cannot be edited or deleted. Empty means custom.",
+                    "type": "string"
+                },
                 "projectIds": {
                     "description": "List all projects concerned by the Group",
                     "type": "array",
@@ -9540,205 +9843,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Organization": {
-            "type": "object",
-            "properties": {
-                "administrativeContact": {
-                    "type": "string"
-                },
-                "billingContact": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "ownerId": {
-                    "type": "string"
-                },
-                "projects": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Project"
-                    }
-                },
-                "technicalContact": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "userRoles": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.UserOrganization"
-                    }
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.User"
-                    }
-                }
-            }
-        },
-        "model.Product": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "effectiveID": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "productName": {
-                    "type": "string"
-                },
-                "productType": {
-                    "$ref": "#/definitions/model.ProductType"
-                },
-                "productTypeId": {
-                    "type": "string"
-                },
-                "project": {
-                    "$ref": "#/definitions/model.Project"
-                },
-                "projectId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.ProductType": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.Project": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "orgaId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.User": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "firstname": {
-                    "type": "string"
-                },
-                "guestOrg": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Organization"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "inviteCode": {
-                    "type": "string"
-                },
-                "inviteCodeRegeneratedAt": {
-                    "type": "string"
-                },
-                "isActive": {
-                    "description": "Default value defined by config",
-                    "type": "boolean"
-                },
-                "lastname": {
-                    "type": "string"
-                },
-                "personalOrg": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Organization"
-                    }
-                },
-                "provider": {
-                    "type": "string"
-                },
-                "providerId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.UserOrganization": {
-            "type": "object",
-            "properties": {
-                "groupId": {
-                    "type": "string"
-                },
-                "organizationId": {
-                    "type": "string"
-                },
-                "userId": {
-                    "type": "string"
-                }
-            }
-        },
         "organization.TransferOrganizationBody": {
             "type": "object",
             "properties": {
@@ -9788,6 +9892,10 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "force": {
+                    "description": "Force reconciles every organization, not only those behind the catalog version.",
+                    "type": "boolean"
+                },
                 "renamedRelations": {
                     "type": "array",
                     "items": {
@@ -9833,6 +9941,9 @@ const docTemplate = `{
                 },
                 "organization_updated": {
                     "type": "integer"
+                },
+                "reconcile": {
+                    "$ref": "#/definitions/group.ReconcileReport"
                 }
             }
         },

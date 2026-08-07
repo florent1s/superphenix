@@ -491,6 +491,141 @@ definitions:
             $ref: '#/definitions/firewall.LabelSelector'
         type: object
     type: object
+  github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization:
+    properties:
+      administrativeContact:
+        type: string
+      billingContact:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: string
+      name:
+        type: string
+      ownerId:
+        type: string
+      predefinedCatalogVersion:
+        description: PredefinedCatalogVersion is the catalog version this organization
+          is reconciled against.
+        type: integer
+      projects:
+        items:
+          $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project'
+        type: array
+      technicalContact:
+        type: string
+      updatedAt:
+        type: string
+      userRoles:
+        items:
+          $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.UserOrganization'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.User'
+        type: array
+    type: object
+  github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Product:
+    properties:
+      codeAZ:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      effectiveID:
+        type: string
+      id:
+        type: string
+      productName:
+        type: string
+      productType:
+        $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.ProductType'
+      productTypeId:
+        type: string
+      project:
+        $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project'
+      projectId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.ProductType:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: string
+      name:
+        type: string
+      orgaId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      firstname:
+        type: string
+      guestOrg:
+        items:
+          $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization'
+        type: array
+      id:
+        type: string
+      inviteCode:
+        type: string
+      inviteCodeRegeneratedAt:
+        type: string
+      isActive:
+        description: Default value defined by config
+        type: boolean
+      lastname:
+        type: string
+      personalOrg:
+        items:
+          $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization'
+        type: array
+      provider:
+        type: string
+      providerId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.UserOrganization:
+    properties:
+      groupId:
+        type: string
+      organizationId:
+        type: string
+      userId:
+        type: string
+    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -498,6 +633,28 @@ definitions:
       valid:
         description: Valid is true if Time is not NULL
         type: boolean
+    type: object
+  group.DuplicateOrganizationGroupBody:
+    properties:
+      name:
+        maxLength: 63
+        type: string
+    type: object
+  group.ReconcileReport:
+    properties:
+      groupsCreated:
+        type: integer
+      groupsUpdated:
+        type: integer
+      organizationFailedIds:
+        description: OrganizationFailedIds are retried on the next pass.
+        items:
+          type: string
+        type: array
+      organizationsScanned:
+        type: integer
+      organizationsUpdated:
+        type: integer
     type: object
   group.UpdateOrganizationGroupBody:
     properties:
@@ -1005,6 +1162,10 @@ definitions:
         items:
           type: string
         type: array
+      predefinedKey:
+        description: PredefinedKey is set on groups that cannot be edited or deleted.
+          Empty means custom.
+        type: string
       projectIds:
         description: List all projects concerned by the Group
         items:
@@ -1101,137 +1262,6 @@ definitions:
       lastname:
         type: string
     type: object
-  model.Organization:
-    properties:
-      administrativeContact:
-        type: string
-      billingContact:
-        type: string
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: string
-      name:
-        type: string
-      ownerId:
-        type: string
-      projects:
-        items:
-          $ref: '#/definitions/model.Project'
-        type: array
-      technicalContact:
-        type: string
-      updatedAt:
-        type: string
-      userRoles:
-        items:
-          $ref: '#/definitions/model.UserOrganization'
-        type: array
-      users:
-        items:
-          $ref: '#/definitions/model.User'
-        type: array
-    type: object
-  model.Product:
-    properties:
-      codeAZ:
-        type: string
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      effectiveID:
-        type: string
-      id:
-        type: string
-      productName:
-        type: string
-      productType:
-        $ref: '#/definitions/model.ProductType'
-      productTypeId:
-        type: string
-      project:
-        $ref: '#/definitions/model.Project'
-      projectId:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  model.ProductType:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: string
-      name:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  model.Project:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: string
-      name:
-        type: string
-      orgaId:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  model.User:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      email:
-        type: string
-      firstname:
-        type: string
-      guestOrg:
-        items:
-          $ref: '#/definitions/model.Organization'
-        type: array
-      id:
-        type: string
-      inviteCode:
-        type: string
-      inviteCodeRegeneratedAt:
-        type: string
-      isActive:
-        description: Default value defined by config
-        type: boolean
-      lastname:
-        type: string
-      personalOrg:
-        items:
-          $ref: '#/definitions/model.Organization'
-        type: array
-      provider:
-        type: string
-      providerId:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  model.UserOrganization:
-    properties:
-      groupId:
-        type: string
-      organizationId:
-        type: string
-      userId:
-        type: string
-    type: object
   organization.TransferOrganizationBody:
     properties:
       newOwnerInviteCode:
@@ -1265,6 +1295,10 @@ definitions:
         items:
           type: string
         type: array
+      force:
+        description: Force reconciles every organization, not only those behind the
+          catalog version.
+        type: boolean
       renamedRelations:
         items:
           properties:
@@ -1295,6 +1329,8 @@ definitions:
         items:
           type: string
         type: array
+      reconcile:
+        $ref: '#/definitions/group.ReconcileReport'
     type: object
   project.CreateOrUpdateProjectBody:
     properties:
@@ -6122,7 +6158,7 @@ paths:
         "200":
           description: Created Organization
           schema:
-            $ref: '#/definitions/model.Organization'
+            $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization'
         "400":
           description: Bad Request
         "500":
@@ -6209,7 +6245,7 @@ paths:
         "200":
           description: Organization
           schema:
-            $ref: '#/definitions/model.Organization'
+            $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization'
         "400":
           description: Bad Request
         "404":
@@ -6397,6 +6433,48 @@ paths:
         - OrganizationRead
         - OrganizationIAMRead
       summary: Get an IAM group by ID
+      tags:
+      - v1
+      - iam
+  /v1/organization/{orgaId}/iam/group/{groupId}/duplicate:
+    post:
+      consumes:
+      - application/json
+      description: Copy an IAM group, predefined or not, into a new editable custom
+        group
+      parameters:
+      - description: Organization ID
+        in: path
+        name: orgaId
+        required: true
+        type: string
+      - description: Group ID
+        in: path
+        name: groupId
+        required: true
+        type: string
+      - description: New group name
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/group.DuplicateOrganizationGroupBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group
+          schema:
+            $ref: '#/definitions/model.APIGroup'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer:
+        - OrganizationRead
+        - OrganizationIAMWrite
+      summary: Duplicate an IAM group into a custom one
       tags:
       - v1
       - iam
@@ -6652,7 +6730,7 @@ paths:
           description: Organizations
           schema:
             items:
-              $ref: '#/definitions/model.Organization'
+              $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization'
             type: array
         "404":
           description: Not Found
@@ -6672,7 +6750,7 @@ paths:
           description: Products
           schema:
             items:
-              $ref: '#/definitions/model.Product'
+              $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Product'
             type: array
         "404":
           description: Not Found
@@ -6692,7 +6770,7 @@ paths:
           description: Projects
           schema:
             items:
-              $ref: '#/definitions/model.Project'
+              $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Project'
             type: array
         "404":
           description: Not Found
@@ -6712,7 +6790,7 @@ paths:
           description: Users
           schema:
             items:
-              $ref: '#/definitions/model.User'
+              $ref: '#/definitions/github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.User'
             type: array
         "404":
           description: Not Found

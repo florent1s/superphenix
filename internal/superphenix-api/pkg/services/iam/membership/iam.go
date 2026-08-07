@@ -96,7 +96,7 @@ func (h *Service) InviteIntoOrganization(w http.ResponseWriter, r *http.Request)
 	var listGroupUuid []uuid.UUID
 	var listGroupId []string
 	for _, g := range groups {
-		if g.Name == v1.DefaultGroupOwnerName {
+		if g.PredefinedKey != nil && *g.PredefinedKey == v1.PredefinedGroupOwner {
 			log.Error().Err(err).Str("orgaId", orgaId).Str("userInviteCode", body.UserInviteCode.String()).Str("userId", userToInvite.ID.String()).Strs("groups", body.GroupIds).Msg("Cannot add user as owner")
 		} else {
 			listGroupUuid = append(listGroupUuid, g.ID)

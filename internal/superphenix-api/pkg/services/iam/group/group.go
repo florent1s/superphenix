@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	groupDb "github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/group"
+	orgaDb "github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/organization"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/crud/project"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/db/model"
 	"github.com/super-phenix/superphenix/internal/superphenix-api/internal/utils"
@@ -148,14 +149,23 @@ func (h *Service) CreateOrUpdateOrganizationGroup(w http.ResponseWriter, r *http
 			return
 		}
 
-		// Hard limit, we don't allow modification on admin group
-		if group.Name == v1.DefaultGroupOwnerName {
-			const reason = "Cannot update owner group"
-			log.Error().Err(err).Msg(reason)
+		// Predefined groups are realigned on the catalog, so an edit here would be reverted on the
+		// next reconciliation. Duplicate the group instead.
+		if group.PredefinedKey != nil {
+			const reason = "Cannot update a predefined group"
+			log.Error().Str("predefinedKey", *group.PredefinedKey).Msg(reason)
 			http.Error(w, reason, http.StatusForbidden)
 			return
 		}
 	} else {
+		// Existing duplicates left by the backfill keep working, but no new ones appear.
+		if v1.IsPredefinedGroupName(body.Name) {
+			const reason = "Cannot create a group named after a predefined group"
+			log.Error().Str("name", body.Name).Msg(reason)
+			http.Error(w, reason, http.StatusBadRequest)
+			return
+		}
+
 		// New group - Check quota
 		reached, err := groupDb.IsQuotaCreationReached(r.Context(), orgaUuid)
 		if err != nil {
@@ -235,10 +245,10 @@ func (h *Service) DeleteOrganizationGroup(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Hard limit, we don't allow modification on admin group
-	if group.Name == v1.DefaultGroupOwnerName {
-		const reason = "Cannot update owner group"
-		log.Error().Err(err).Msg(reason)
+	// A predefined group would be recreated by the reconciler anyway.
+	if group.PredefinedKey != nil {
+		const reason = "Cannot delete a predefined group"
+		log.Error().Str("predefinedKey", *group.PredefinedKey).Msg(reason)
 		http.Error(w, reason, http.StatusForbidden)
 		return
 	}
@@ -265,50 +275,122 @@ func (h *Service) DeleteOrganizationGroup(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
-// InitializeDefaultGroups Initialize default groups for organization, and add user as admin
+// DuplicateOrganizationGroupBody is the payload of the duplicate endpoint.
+type DuplicateOrganizationGroupBody struct {
+	Name string `json:"name" validate:"max=63"`
+}
+
+// DuplicateOrganizationGroup
+//
+//	@Summary		Duplicate an IAM group into a custom one
+//	@Description	Copy an IAM group, predefined or not, into a new editable custom group
+//	@Tags			v1, iam
+//	@Accept			json
+//	@Produce		json
+//	@Param			orgaId	path		string							true	"Organization ID"
+//	@Param			groupId	path		string							true	"Group ID"
+//	@Param			Body	body		DuplicateOrganizationGroupBody	true	"New group name"
+//	@Success		200		{object}	model.APIGroup					"Group"
+//	@Failure		400
+//	@Failure		500
+//	@Router			/v1/organization/{orgaId}/iam/group/{groupId}/duplicate [post]
+//	@Security		Bearer[OrganizationRead, OrganizationIAMWrite]
+func (h *Service) DuplicateOrganizationGroup(w http.ResponseWriter, r *http.Request) {
+	log := logger.GetLogger(r.Context())
+	orgaId := chi.URLParam(r, "orgaId")
+	groupId := chi.URLParam(r, "groupId")
+	orgaUuid, _ := uuid.Parse(orgaId)
+
+	var body DuplicateOrganizationGroupBody
+	if err := decoder.HandleHTTPJSON(w, r, &body, h.cfg.PublicHTTP.MaxBodySize); err != nil {
+		return
+	}
+
+	if body.Name == "" {
+		const reason = "A name is required to duplicate a group"
+		log.Error().Msg(reason)
+		http.Error(w, reason, http.StatusBadRequest)
+		return
+	}
+	if v1.IsPredefinedGroupName(body.Name) {
+		const reason = "Cannot create a group named after a predefined group"
+		log.Error().Str("name", body.Name).Msg(reason)
+		http.Error(w, reason, http.StatusBadRequest)
+		return
+	}
+
+	source, err := groupDb.FindByIdAndOrgaId(groupId, orgaId)
+	if err != nil {
+		log.Error().Err(err).Str("orgaId", orgaId).Str("groupId", groupId).Msg("Failed to find group")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	reached, err := groupDb.IsQuotaCreationReached(r.Context(), orgaUuid)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to check quota")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if reached {
+		log.Error().Msg("Quota to create group reached")
+		http.Error(w, "Quota to create group reached", http.StatusBadRequest)
+		return
+	}
+
+	// PredefinedKey left nil: the copy is custom.
+	group, err := SaveGroup(r.Context(), model.Group{
+		Name:           body.Name,
+		OrgaId:         orgaUuid,
+		AllProjects:    source.AllProjects,
+		ProjectIds:     source.ProjectIds,
+		PermissionSets: source.PermissionSets,
+	})
+	if err != nil {
+		log.Error().Err(err).Str("groupId", groupId).Msg("Failed to duplicate group")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	var result httpModel.APIGroup
+	if err := utils.Cast(group, &result); err != nil {
+		log.Error().Err(err).Msg("Failed to cast group")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	marshal, err := json.Marshal(result)
+	if err != nil {
+		log.Error().Err(err).Msg("Error marshalling response")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	ch.Data(w, http.StatusOK, ch.MIMEJSON, marshal)
+}
+
+// InitializeDefaultGroups Initialize default groups for organization, and add user as admin.
+// Groups are created from the catalog and stamped with their key.
 func InitializeDefaultGroups(ctx context.Context, orgaUuid, ownerUuid uuid.UUID) error {
+	var ownerGroup model.Group
 
-	// Default Owner
-	ownerGroup, err := SaveGroup(ctx, model.Group{
-		Name:           v1.DefaultGroupOwnerName,
-		OrgaId:         orgaUuid,
-		AllProjects:    true,
-		PermissionSets: append(v1.DefaultOrganizationOwner, v1.DefaultProjectOwner...),
-	})
-	if err != nil {
-		return err
+	for _, predefined := range v1.PredefinedGroups {
+		key := predefined.Key
+		saved, err := SaveGroup(ctx, model.Group{
+			Name:           predefined.Name,
+			OrgaId:         orgaUuid,
+			AllProjects:    true,
+			PermissionSets: predefined.Sets(),
+			PredefinedKey:  &key,
+		})
+		if err != nil {
+			return err
+		}
+		if predefined.Key == v1.PredefinedGroupOwner {
+			ownerGroup = saved
+		}
 	}
 
-	// Default Admin
-	_, err = SaveGroup(ctx, model.Group{
-		Name:           v1.DefaultGroupAdminName,
-		OrgaId:         orgaUuid,
-		AllProjects:    true,
-		PermissionSets: append(v1.DefaultOrganizationAdmin, v1.DefaultProjectAdmin...),
-	})
-	if err != nil {
-		return err
-	}
-
-	// Default Billing
-	_, err = SaveGroup(ctx, model.Group{
-		Name:           v1.DefaultGroupBillingName,
-		OrgaId:         orgaUuid,
-		AllProjects:    true,
-		PermissionSets: append(v1.DefaultOrganizationBilling, v1.DefaultProjectBilling...),
-	})
-	if err != nil {
-		return err
-	}
-
-	// Default Developer
-	_, err = SaveGroup(ctx, model.Group{
-		Name:           v1.DefaultGroupDeveloperName,
-		OrgaId:         orgaUuid,
-		AllProjects:    true,
-		PermissionSets: append(v1.DefaultOrganizationDeveloper, v1.DefaultProjectDeveloper...),
-	})
-	if err != nil {
+	if err := orgaDb.SetPredefinedCatalogVersion(orgaUuid, v1.PredefinedCatalogVersion); err != nil {
 		return err
 	}
 
