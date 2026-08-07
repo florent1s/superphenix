@@ -8,5 +8,3 @@ metadata:
 data:
   argocd: |
     {{- toYaml .Values.config.argocd.values | nindent 4 }}
-  superphenix: |
-    {{- toYaml .Values.config.management.values | nindent 4 }}

@@ -54,7 +54,6 @@ serviceMonitor:
   metricRelabelings: []
 
 # Configuration values must be under `.superphenixController.config`
-# All superphenixController configurations are documented in `/docs/config/README.md`
 superphenixController: {}
 
 ingress:

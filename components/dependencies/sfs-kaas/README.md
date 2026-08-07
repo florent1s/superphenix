@@ -1,4 +1,4 @@
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)
+![Version: 0.0.0](https://img.shields.io/badge/Version-0.0.0-informational?style=flat-square)
 
 This Helm Chart is used by the self-service ArgoCDs of Superphénix to create Kubernetes clusters.
 
@@ -69,6 +69,15 @@ This Helm Chart is used by the self-service ArgoCDs of Superphénix to create Ku
 </pre>
 </td>
 		<td>Maximum mumber of AZs in a region (for cluster migrations). This parameter cannot be overriden by the user.</td>
+	</tr>
+	<tr>
+		<td>azDomains</td>
+		<td>object</td>
+		<td><pre lang="json">
+{}
+</pre>
+</td>
+		<td>Domains to use in urls generated to fetch AZ IPs (per region) Defaults to .domain for any given region. This parameter cannot be overriden by the user.</td>
 	</tr>
 	<tr>
 		<td>clusters</td>
@@ -156,6 +165,60 @@ false
 		<td>string</td>
 		<td><pre lang="json">
 "v8.5.0"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>kubevirtCsi."v1.36".csiAttacherVersion</td>
+		<td>string</td>
+		<td><pre lang="json">
+"v4.12.0"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>kubevirtCsi."v1.36".csiDriverVersion</td>
+		<td>string</td>
+		<td><pre lang="json">
+"latest"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>kubevirtCsi."v1.36".csiLivenessprobeVersion</td>
+		<td>string</td>
+		<td><pre lang="json">
+"v2.19.0"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>kubevirtCsi."v1.36".csiProvisionerVersion</td>
+		<td>string</td>
+		<td><pre lang="json">
+"v6.3.0"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>kubevirtCsi."v1.36".csiResizerVersion</td>
+		<td>string</td>
+		<td><pre lang="json">
+"v2.2.1"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>kubevirtCsi."v1.36".csiSnapshotterVersion</td>
+		<td>string</td>
+		<td><pre lang="json">
+"v8.6.0"
 </pre>
 </td>
 		<td></td>

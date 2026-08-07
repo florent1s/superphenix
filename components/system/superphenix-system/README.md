@@ -2,24 +2,24 @@
 
 ![Version: 0.0.0](https://img.shields.io/badge/Version-0.0.0-informational?style=flat-square)  ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
-Helm chart to install Superphenix system on all Superphenix clusters (management, hyperconverged, storage, workload)
-
-This chart is the central piece of the Superphenix system installation. It is responsible for installing and configuring all the necessary components on **all Superphenix clusters**, regardless of their role:
+This chart is the central piece of the Superphenix system installation.
+It is responsible for installing and configuring all the necessary components on **all Superphenix clusters**, regardless of their role:
 
 - **Management clusters**: host the Superphenix control plane (console, API, identity, database, ...).
 - **Hyperconverged clusters**: combine storage and workload on the same nodes.
 - **Storage clusters**: dedicated to storage workloads (Rook / Ceph).
 - **Workload clusters**: dedicated to running virtualized workloads (KubeVirt).
 
-For more information about the different deployment topologies and cluster types, please refer to the official [Superphenix Deployment Topology documentation](https://docs.superphenix.net/architecture/deployment-topology/).
+While this chart could be used on its own, it is more likely to be used in conjunction with the [Superphenix Operator](https://github.com/superphenix/superphenix-operator).
+In a normal Superphenix deployment, the operator is responsible for installing clusters through this chart, by passing it the desired configuration.
 
 ## How it works
 
 For every entry in `.Values.apps` the chart renders a single Argo CD `Application` object. Whether an entry actually results in an `Application` depends on three inputs:
 
-1. The global switch `.Values.disableAll` — when `true`, nothing is deployed.
-2. The per-app switch `.Values.apps.<name>.enabled`.
-3. The per-app `modes` list, matched against the *effective mode* of the target cluster.
+1. If the global switch `.Values.disableAll` is set to true `true`, nothing is deployed.
+2. The per-app switch `.Values.apps.<name>.enabled` must be set to true.
+3. The per-app `modes` list must match against the *effective mode* of the target cluster.
 
 The effective mode is the concatenation of `.Values.cluster.deploymentTopology` and `.Values.cluster.type`, giving one of:
 
@@ -27,7 +27,7 @@ The effective mode is the concatenation of `.Values.cluster.deploymentTopology` 
 | ------------------ | ----------------- | --------------------------- |
 | `Hyperconverged`   | *(empty)*         | `Hyperconverged`            |
 | `Decoupled`        | `Storage`         | `DecoupledStorage`          |
-| `Decoupled`        | `Workload`        | `DecoupledWorkload`   |
+| `Decoupled`        | `Workload`        | `DecoupledWorkload`         |
 | *(empty)*          | `Management`      | `Management`                |
 
 - If an application's `modes` list is empty or not specified, it is considered eligible for deployment in any effective mode (as long as it is enabled).
@@ -756,7 +756,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
             }
           },
           "identitySchemas": {
-            "identity.default.schema.json": "{\n  \"$id\": \"https://schemas.ory.sh/presets/kratos/identity.email.schema.json\",\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Person\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"traits\": {\n      \"type\": \"object\",\n\n      \"properties\": {\n        \"email\": {\n          \"type\": \"string\",\n          \"format\": \"email\",\n          \"title\": \"Email\",\n          \"ory.sh/kratos\": {\n            \"credentials\": {\n              \"password\": {\n                \"identifier\": true\n              }\n            },\n            \"recovery\": {\n              \"via\": \"email\"\n            },\n            \"verification\": {\n              \"via\": \"email\"\n            }\n          }\n        },\n        \"name\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"first\": {\n              \"type\": \"string\",\n              \"title\": \"First name\"\n            },\n            \"last\": {\n              \"type\": \"string\",\n              \"title\": \"Last name\"\n            }\n          }\n        }\n      },\n      \"required\": [\"email\"],\n      \"additionalProperties\": false\n    }\n  }\n}\n"
+            "identity.default.schema.json": "{\n  \"$id\": \"https://schemas.ory.sh/presets/kratos/identity.email.schema.json\",\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Person\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"traits\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"email\": {\n          \"type\": \"string\",\n          \"format\": \"email\",\n          \"title\": \"Email\",\n          \"ory.sh/kratos\": {\n            \"credentials\": {\n              \"password\": {\n                \"identifier\": true\n              }\n            },\n            \"recovery\": {\n              \"via\": \"email\"\n            },\n            \"verification\": {\n              \"via\": \"email\"\n            }\n          }\n        },\n        \"name\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"first\": {\n              \"type\": \"string\",\n              \"title\": \"First name\"\n            },\n            \"last\": {\n              \"type\": \"string\",\n              \"title\": \"Last name\"\n            }\n          }\n        }\n      },\n      \"required\": [\"email\"],\n      \"additionalProperties\": false\n    }\n  }\n}\n"
           }
         }
       }
@@ -1752,7 +1752,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
           "database": {
             "database": "superphenix",
             "host": "postgres.{{ $.Release.Namespace }}.svc",
-            "password": "{{ $.Values.apps.postgres.helm.values.auth.password | quote }}",
+            "password": "{{ $.Values.apps.postgres.helm.values.auth.password }}",
             "port": 5432,
             "username": "superphenix"
           },
@@ -2687,7 +2687,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kaas-system",
   "repoURL": "ghcr.io/super-phenix/charts",
@@ -2718,7 +2718,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kaas-datastore-system",
   "repoURL": "ghcr.io/super-phenix/charts",
@@ -2788,7 +2788,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kamaji-system",
   "repoURL": "harbor.agc.dpk-agc-cl04.agoracalyce.net/spx-helm",
@@ -2979,7 +2979,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
           }
         },
         "identitySchemas": {
-          "identity.default.schema.json": "{\n  \"$id\": \"https://schemas.ory.sh/presets/kratos/identity.email.schema.json\",\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Person\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"traits\": {\n      \"type\": \"object\",\n\n      \"properties\": {\n        \"email\": {\n          \"type\": \"string\",\n          \"format\": \"email\",\n          \"title\": \"Email\",\n          \"ory.sh/kratos\": {\n            \"credentials\": {\n              \"password\": {\n                \"identifier\": true\n              }\n            },\n            \"recovery\": {\n              \"via\": \"email\"\n            },\n            \"verification\": {\n              \"via\": \"email\"\n            }\n          }\n        },\n        \"name\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"first\": {\n              \"type\": \"string\",\n              \"title\": \"First name\"\n            },\n            \"last\": {\n              \"type\": \"string\",\n              \"title\": \"Last name\"\n            }\n          }\n        }\n      },\n      \"required\": [\"email\"],\n      \"additionalProperties\": false\n    }\n  }\n}\n"
+          "identity.default.schema.json": "{\n  \"$id\": \"https://schemas.ory.sh/presets/kratos/identity.email.schema.json\",\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Person\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"traits\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"email\": {\n          \"type\": \"string\",\n          \"format\": \"email\",\n          \"title\": \"Email\",\n          \"ory.sh/kratos\": {\n            \"credentials\": {\n              \"password\": {\n                \"identifier\": true\n              }\n            },\n            \"recovery\": {\n              \"via\": \"email\"\n            },\n            \"verification\": {\n              \"via\": \"email\"\n            }\n          }\n        },\n        \"name\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"first\": {\n              \"type\": \"string\",\n              \"title\": \"First name\"\n            },\n            \"last\": {\n              \"type\": \"string\",\n              \"title\": \"Last name\"\n            }\n          }\n        }\n      },\n      \"required\": [\"email\"],\n      \"additionalProperties\": false\n    }\n  }\n}\n"
         }
       }
     }
@@ -3212,7 +3212,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
 			<td>object</td>
 			<td><pre lang="json">
 {
-  "identity.default.schema.json": "{\n  \"$id\": \"https://schemas.ory.sh/presets/kratos/identity.email.schema.json\",\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Person\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"traits\": {\n      \"type\": \"object\",\n\n      \"properties\": {\n        \"email\": {\n          \"type\": \"string\",\n          \"format\": \"email\",\n          \"title\": \"Email\",\n          \"ory.sh/kratos\": {\n            \"credentials\": {\n              \"password\": {\n                \"identifier\": true\n              }\n            },\n            \"recovery\": {\n              \"via\": \"email\"\n            },\n            \"verification\": {\n              \"via\": \"email\"\n            }\n          }\n        },\n        \"name\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"first\": {\n              \"type\": \"string\",\n              \"title\": \"First name\"\n            },\n            \"last\": {\n              \"type\": \"string\",\n              \"title\": \"Last name\"\n            }\n          }\n        }\n      },\n      \"required\": [\"email\"],\n      \"additionalProperties\": false\n    }\n  }\n}\n"
+  "identity.default.schema.json": "{\n  \"$id\": \"https://schemas.ory.sh/presets/kratos/identity.email.schema.json\",\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Person\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"traits\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"email\": {\n          \"type\": \"string\",\n          \"format\": \"email\",\n          \"title\": \"Email\",\n          \"ory.sh/kratos\": {\n            \"credentials\": {\n              \"password\": {\n                \"identifier\": true\n              }\n            },\n            \"recovery\": {\n              \"via\": \"email\"\n            },\n            \"verification\": {\n              \"via\": \"email\"\n            }\n          }\n        },\n        \"name\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"first\": {\n              \"type\": \"string\",\n              \"title\": \"First name\"\n            },\n            \"last\": {\n              \"type\": \"string\",\n              \"title\": \"Last name\"\n            }\n          }\n        }\n      },\n      \"required\": [\"email\"],\n      \"additionalProperties\": false\n    }\n  }\n}\n"
 }
 </pre>
 </td>
@@ -3411,7 +3411,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kube-system",
   "repoURL": "oci://ghcr.io/kubeovn/charts/kube-ovn-v2",
@@ -3420,7 +3420,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
 }
 </pre>
 </td>
-			<td>Kube-OVN is used as the CNI for the virtualization layer</td>
+			<td>Kube-OVN is used as the CNI for the workload layer</td>
 		</tr>
 		<tr>
 			<td>apps.kubevirt</td>
@@ -3440,7 +3440,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   "enabled": true,
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kubevirt-system",
   "path": "v1.7.3/",
@@ -3476,7 +3476,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kyverno-system",
   "repoURL": "https://kyverno.github.io/kyverno/",
@@ -3614,7 +3614,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   "modes": [
     "Hyperconverged",
     "DecoupledStorage",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "loki-system",
   "repoURL": "https://grafana.github.io/helm-charts",
@@ -3656,7 +3656,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kube-system",
   "repoURL": "oci://ghcr.io/super-phenix/charts/multus",
@@ -3755,7 +3755,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "kube-system",
   "repoURL": "oci://ghcr.io/super-phenix/charts/spx-policies",
@@ -3913,135 +3913,6 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
           "selector": {
             "k8s-app": "kube-controller-manager"
           }
-        ]
-      }
-    }
-  },
-  "modes": [
-    "DecoupledStorage"
-  ],
-  "namespace": "ingress-nginx-system",
-  "nsLabels": {
-    "pod-security.kubernetes.io/enforce": "privileged"
-  },
-  "repoURL": "https://kubernetes.github.io/ingress-nginx",
-  "targetRevision": "4.13.3",
-  "wave": "-10"
-}
-</pre>
-</td>
-			<td>ingress-nginx ingress controller. Kept for backwards compatibility with legacy Ingress annotations. TODO: phase out ingress-nginx and rely on Traefik only.</td>
-		</tr>
-		<tr>
-			<td>apps.kaas-controller</td>
-			<td>object</td>
-			<td><pre lang="json">
-{
-  "automation": {
-    "cleanupOnDeletion": false,
-    "enabled": true,
-    "prune": true,
-    "selfHeal": true,
-    "syncOptions": {}
-  },
-  "enabled": true,
-  "helm": {
-    "chart": "kaas-controller",
-    "releaseName": "kaas-controller"
-  },
-  "modes": [
-    "Hyperconverged",
-    "DecoupledWorkload"
-  ],
-  "namespace": "kaas-system",
-  "repoURL": "ghcr.io/super-phenix/charts",
-  "targetRevision": "",
-  "wave": "15"
-}
-</pre>
-</td>
-			<td>KaaS controller: extra CRDs and controllers backing the Kubernetes-as-a-Service stack.</td>
-		</tr>
-		<tr>
-			<td>apps.kaas-datastore</td>
-			<td>object</td>
-			<td><pre lang="json">
-{
-  "automation": {
-    "cleanupOnDeletion": false,
-    "enabled": true,
-    "prune": true,
-    "selfHeal": true,
-    "syncOptions": {}
-  },
-  "enabled": true,
-  "helm": {
-    "chart": "kaas-datastore",
-    "releaseName": "kaas-datastore",
-    "values": {}
-  },
-  "modes": [
-    "Hyperconverged",
-    "DecoupledWorkload"
-  ],
-  "namespace": "kaas-datastore-system",
-  "repoURL": "ghcr.io/super-phenix/charts",
-  "targetRevision": "",
-  "wave": "5"
-}
-</pre>
-</td>
-			<td>KaaS datastore: provisions etcd clusters (via etcd-operator) used as Kamaji datastores.</td>
-		</tr>
-		<tr>
-			<td>apps.kamaji</td>
-			<td>object</td>
-			<td><pre lang="json">
-{
-  "automation": {
-    "cleanupOnDeletion": false,
-    "enabled": true,
-    "prune": true,
-    "selfHeal": true,
-    "syncOptions": {}
-  },
-  "enabled": true,
-  "helm": {
-    "chart": "kamaji",
-    "releaseName": "kamaji",
-    "values": {
-      "affinity": {
-        "podAntiAffinity": {
-          "preferredDuringSchedulingIgnoredDuringExecution": [
-            {
-              "podAffinityTerm": {
-                "labelSelector": {
-                  "matchLabels": {
-                    "app.kubernetes.io/name": "kamaji"
-                  }
-                },
-                "topologyKey": "kubernetes.io/hostname"
-              },
-              "weight": 1
-            }
-          ]
-        }
-      },
-      "defaultDatastoreName": "",
-      "extraArgs": [
-        "--certificate-expiration-deadline=336h"
-      ],
-      "image": {
-        "tag": "26.7.3-edge"
-      },
-      "kamaji-etcd": {
-        "deploy": false
-      },
-      "replicaCount": 3,
-      "resources": {
-        "limits": {
-          "cpu": "1000m",
-          "memory": "2Gi"
         },
         "serviceMonitor": {
           "metricRelabelings": [
@@ -4406,9 +4277,10 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledStorage"
+    "DecoupledStorage",
+    "DecoupledWorkload"
   ],
-  "namespace": "spx-storage",
+  "namespace": "rook-system",
   "nsLabels": {
     "pod-security.kubernetes.io/enforce": "privileged"
   },
@@ -4418,7 +4290,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
 }
 </pre>
 </td>
-			<td>Rook operator, required on any cluster that interacts with Ceph/Rook. Virtualization clusters need it to provision an external connection to a centralized storage cluster; centralized storage clusters need it to provision a local Ceph cluster that acts as the remote backend for "client" clusters.</td>
+			<td>Rook operator, required on any cluster that interacts with Ceph/Rook. Workload clusters need it to provision an external connection to a centralized storage cluster; centralized storage clusters need it to provision a local Ceph cluster that acts as the remote backend for "client" clusters.</td>
 		</tr>
 		<tr>
 			<td>apps.snapscheduler</td>
@@ -4443,7 +4315,6 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledStorage",
     "DecoupledWorkload"
   ],
   "namespace": "snapscheduler-system",
@@ -4461,11 +4332,9 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
 			<td><pre lang="json">
 {
   "automation": {
-    "cleanupOnDeletion": false,
     "enabled": true,
     "prune": true,
-    "selfHeal": true,
-    "syncOptions": {}
+    "selfHeal": true
   },
   "enabled": true,
   "helm": {
@@ -4476,7 +4345,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
         "database": {
           "database": "superphenix",
           "host": "postgres.{{ $.Release.Namespace }}.svc",
-          "password": "{{ $.Values.apps.postgres.helm.values.auth.password | quote }}",
+          "password": "{{ $.Values.apps.postgres.helm.values.auth.password }}",
           "port": 5432,
           "username": "superphenix"
         },
@@ -4488,8 +4357,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
     }
   },
   "modes": [
-    "Hyperconverged",
-    "DecoupledWorkload"
+    "Management"
   ],
   "repoURL": "oci://ghcr.io/super-phenix/charts/superphenix-api",
   "targetRevision": ""
@@ -4505,7 +4373,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
 {
   "database": "superphenix",
   "host": "postgres.{{ $.Release.Namespace }}.svc",
-  "password": "{{ $.Values.apps.postgres.helm.values.auth.password | quote }}",
+  "password": "{{ $.Values.apps.postgres.helm.values.auth.password }}",
   "port": 5432,
   "username": "superphenix"
 }
@@ -4613,7 +4481,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "superphenix-system",
   "repoURL": "ghcr.io/super-phenix/charts",
@@ -4644,7 +4512,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   "modes": [
     "Hyperconverged",
     "DecoupledStorage",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "talos-backup",
   "repoURL": "oci://ghcr.io/super-phenix/charts/talos-backup",
@@ -4814,7 +4682,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "traefik-system",
   "nsLabels": {
@@ -4848,7 +4716,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   "modes": [
     "Hyperconverged",
     "DecoupledStorage",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "tuned-system",
   "nsLabels": {
@@ -4991,7 +4859,7 @@ Applications that omit `targetRevision` (or set it to `""`) inherit `Chart.AppVe
   },
   "modes": [
     "Hyperconverged",
-    "DecoupledVirtualization"
+    "DecoupledWorkload"
   ],
   "namespace": "volume-replicator",
   "repoURL": "ghcr.io/super-phenix/helm-charts",
@@ -5108,7 +4976,7 @@ false
 ""
 </pre>
 </td>
-			<td>Cluster role. One of: "Storage", "Virtualization", "Management".</td>
+			<td>Cluster role. One of: "Storage", "Workload", "Management".</td>
 		</tr>
 		<tr>
 			<td>disableAll</td>

@@ -2,24 +2,24 @@
 
 {{ template "chart.versionBadge" . }} {{ template "chart.typeBadge" . }}
 
-{{ template "chart.description" . }}
-
-This chart is the central piece of the Superphenix system installation. It is responsible for installing and configuring all the necessary components on **all Superphenix clusters**, regardless of their role:
+This chart is the central piece of the Superphenix system installation.
+It is responsible for installing and configuring all the necessary components on **all Superphenix clusters**, regardless of their role:
 
 - **Management clusters**: host the Superphenix control plane (console, API, identity, database, ...).
 - **Hyperconverged clusters**: combine storage and workload on the same nodes.
 - **Storage clusters**: dedicated to storage workloads (Rook / Ceph).
 - **Workload clusters**: dedicated to running virtualized workloads (KubeVirt).
 
-For more information about the different deployment topologies and cluster types, please refer to the official [Superphenix Deployment Topology documentation](https://docs.superphenix.net/architecture/deployment-topology/).
+While this chart could be used on its own, it is more likely to be used in conjunction with the [Superphenix Operator](https://github.com/superphenix/superphenix-operator).
+In a normal Superphenix deployment, the operator is responsible for installing clusters through this chart, by passing it the desired configuration.
 
 ## How it works
 
 For every entry in `.Values.apps` the chart renders a single Argo CD `Application` object. Whether an entry actually results in an `Application` depends on three inputs:
 
-1. The global switch `.Values.disableAll` — when `true`, nothing is deployed.
-2. The per-app switch `.Values.apps.<name>.enabled`.
-3. The per-app `modes` list, matched against the *effective mode* of the target cluster.
+1. If the global switch `.Values.disableAll` is set to true `true`, nothing is deployed.
+2. The per-app switch `.Values.apps.<name>.enabled` must be set to true.
+3. The per-app `modes` list must match against the *effective mode* of the target cluster.
 
 The effective mode is the concatenation of `.Values.cluster.deploymentTopology` and `.Values.cluster.type`, giving one of:
 

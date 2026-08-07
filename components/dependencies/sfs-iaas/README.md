@@ -149,7 +149,7 @@ false
 ""
 </pre>
 </td>
-			<td>S3 buckets that can be created in the project through Ceph/Rook OBCs</td>
+			<td>S3 buckets that can be created in the project</td>
 		</tr>
 	</tbody>
 </table>

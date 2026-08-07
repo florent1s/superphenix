@@ -1,0 +1,17 @@
+# {{ template "chart.name" . }}
+
+{{ template "chart.versionBadge" . }} {{ template "chart.typeBadge" . }}
+
+## Introduction
+
+The Superphenix Operator is the core component responsible for managing the lifecycle of Superphenix clusters.
+
+- **Management Cluster Deployment**: This operator is installed on the management cluster of SPX.
+- **Cluster Lifecycle Management**: It handles the installation and lifecycle management of Superphenix clusters using the `Cluster` Custom Resource Definition (CRD).
+- **Deployment Engine**: It deploys an ArgoCD instance as the deployment engine used to bootstrap all Superphenix clusters.
+- **Self-Management**: The management configuration (API, Console, etc.) is handled via the Helm chart, which deploys a `Cluster` resource pointing to the local Kubernetes cluster where the operator is running.
+- **Versatility**: The operator can be used to install various types of clusters, including hyperconverged or decoupled Availability Zones (AZs), storage clusters, and workload clusters.
+
+{{ template "chart.valuesSectionHtml" . }}
+
+{{ template "helm-docs.versionFooter" . }}

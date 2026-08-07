@@ -1,6 +1,6 @@
 # SFS-BAAS
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)
+![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square)
 
 This Helm Chart is used by the self-service ArgoCDs of Superphénix to create backup policies.
 
