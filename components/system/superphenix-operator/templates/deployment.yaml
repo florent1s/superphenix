@@ -80,6 +80,9 @@ spec:
             {{- if .Values.config.enableHTTP2 }}
             - --enable-http2
             {{- end }}
+            {{- if .Values.config.disableVersionValidation }}
+            - --disable-version-validation
+            {{- end }}
             {{- if .Values.config.argocd.ha.enabled }}
             - --ha-enabled=true
             {{- end }}

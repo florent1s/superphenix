@@ -409,7 +409,7 @@ apps:
           - --kubelet-insecure-tls
           - --metric-resolution=15s
 
-  # -- ingress-nginx ingress controller. Kept for backwards compatibility with legacy Ingress annotations.
+  # -- ingress-nginx ingress controller.
   # TODO: phase out ingress-nginx and rely on Traefik only.
   ingress-nginx:
     enabled: true

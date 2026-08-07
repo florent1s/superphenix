@@ -659,6 +659,20 @@ var _ = Describe("Cluster Controller", func() {
 				Name:      resourceName,
 				Namespace: "default",
 			}
+
+			// Helper to update ArgoCD Application version in tests
+			updateAppVersion := func(v string) {
+				app := &unstructured.Unstructured{}
+				app.SetGroupVersionKind(schema.GroupVersionKind{
+					Group:   "argoproj.io",
+					Version: "v1alpha1",
+					Kind:    "Application",
+				})
+				Expect(k8sClient.Get(ctx, types.NamespacedName{Name: resourceName, Namespace: "default"}, app)).To(Succeed())
+				Expect(unstructured.SetNestedField(app.Object, v, "spec", "source", "targetRevision")).To(Succeed())
+				Expect(k8sClient.Update(ctx, app)).To(Succeed())
+			}
+
 			cluster := &operatorv1alpha1.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      resourceName,
@@ -744,6 +758,10 @@ var _ = Describe("Cluster Controller", func() {
 			updatedCluster.Status.SuperphenixVersion = "0.9.0"
 			updatedCluster.Status.Conditions = nil
 			Expect(k8sClient.Status().Update(ctx, updatedCluster)).To(Succeed())
+
+			// Also update the ArgoCD Application version to 0.9.0 so validation picks it up
+			updateAppVersion("0.9.0")
+
 			Expect(k8sClient.Get(ctx, typeNamespacedName, updatedCluster)).To(Succeed())
 			if updatedCluster.Status.SuperphenixVersion != "0.9.0" {
 				updatedCluster.Status.SuperphenixVersion = "0.9.0"
@@ -792,6 +810,7 @@ var _ = Describe("Cluster Controller", func() {
 			updatedCluster.Status.SuperphenixVersion = "1.0.0"
 			updatedCluster.Status.Conditions = nil
 			Expect(k8sClient.Status().Update(ctx, updatedCluster)).To(Succeed())
+			updateAppVersion("1.0.0")
 			Expect(k8sClient.Get(ctx, typeNamespacedName, updatedCluster)).To(Succeed())
 			if updatedCluster.Status.SuperphenixVersion != "1.0.0" {
 				updatedCluster.Status.SuperphenixVersion = "1.0.0"
