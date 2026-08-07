@@ -10,9 +10,9 @@ import (
 )
 
 func TestIsManagementUpgradeSupported(t *testing.T) {
-	oldMin := MinManagementVersionBeforeUpgrade
-	MinManagementVersionBeforeUpgrade = "1.0.0"
-	defer func() { MinManagementVersionBeforeUpgrade = oldMin }()
+	oldMin := MinOperatorVersion
+	MinOperatorVersion = "1.0.0"
+	defer func() { MinOperatorVersion = oldMin }()
 
 	tests := []struct {
 		name    string
@@ -31,7 +31,7 @@ func TestIsManagementUpgradeSupported(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := IsManagementUpgradeSupported(tt.current, tt.target)
+			err := IsOperatorUpgradeSupported(tt.current, tt.target)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -101,7 +101,7 @@ func TestIsClusterCompatibleWithManagement(t *testing.T) {
 		{"Incompatible version (at max)", "2.0.0", "1.0.0", true},
 		{"Incompatible version (below min)", "0.9.0", "1.0.0", true},
 		{"Incompatible version (above max)", "2.1.0", "1.0.0", true},
-		{"Latest cluster incompatible", "0.0.0", "1.0.0", true},
+		{"Latest cluster compatible", "0.0.0", "1.0.0", false},
 		{"Empty management", "1.0.0", "", false},
 		{"Latest management", "1.1.0", "0.0.0", false},
 		{"Unknown management version (still works)", "1.0.0", "9.9.9", false},
@@ -109,7 +109,7 @@ func TestIsClusterCompatibleWithManagement(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := IsClusterCompatibleWithManagement(tt.clusterVersion, tt.managementVersion)
+			err := IsClusterCompatibleWithOperator(tt.clusterVersion, tt.managementVersion)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

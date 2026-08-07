@@ -15,13 +15,13 @@ func (r *Reconciler) validate(ctx context.Context, cluster *v1alpha1.Cluster) er
 		return err
 	}
 
-	// Validate version upgrade/downgrade
-	if err := r.validateUpgradePath(ctx, cluster); err != nil {
+	// Validate compatibility with management cluster
+	if err := r.validateManagementCompatibility(ctx, cluster); err != nil {
 		return err
 	}
 
-	// Validate compatibility with management cluster
-	if err := r.validateManagementCompatibility(ctx, cluster); err != nil {
+	// Validate version upgrade
+	if err := r.validateUpgradePath(ctx, cluster); err != nil {
 		return err
 	}
 
@@ -46,14 +46,6 @@ func (r *Reconciler) validateTopology(cluster *v1alpha1.Cluster) error {
 	return nil
 }
 
-// validateUpgradePath ensures the upgrade path is possible and safe.
-func (r *Reconciler) validateUpgradePath(ctx context.Context, cluster *v1alpha1.Cluster) error {
-	specVersion := cluster.Spec.Version
-	statusVersion := cluster.Status.SuperphenixVersion
-
-	return version.IsClusterUpgradeSupported(statusVersion, specVersion)
-}
-
 // validateManagementCompatibility ensures the management cluster can handle the cluster version.
 func (r *Reconciler) validateManagementCompatibility(ctx context.Context, cluster *v1alpha1.Cluster) error {
 	mgmtVersion, err := version.GetCurrentManagementVersion(ctx, r, r.OperatorNamespace)
@@ -66,5 +58,16 @@ func (r *Reconciler) validateManagementCompatibility(ctx context.Context, cluste
 		return nil
 	}
 
-	return version.IsClusterCompatibleWithManagement(cluster.Spec.Version, mgmtVersion)
+	return version.IsClusterCompatibleWithOperator(cluster.Spec.Version, mgmtVersion)
+}
+
+// validateUpgradePath ensures the upgrade path is possible and safe.
+func (r *Reconciler) validateUpgradePath(ctx context.Context, cluster *v1alpha1.Cluster) error {
+	specVersion := cluster.Spec.Version
+	currentVersion, err := version.GetCurrentClusterVersion(ctx, r, cluster.Name, r.OperatorNamespace)
+	if err != nil {
+		return fmt.Errorf("failed to get current cluster version: %w", err)
+	}
+
+	return version.IsClusterUpgradeSupported(currentVersion, specVersion)
 }

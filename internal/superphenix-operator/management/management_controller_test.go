@@ -22,14 +22,14 @@ var _ = Describe("Management Controller", func() {
 	var oldMinCluster string
 
 	BeforeEach(func() {
-		oldMinMgmt = version.MinManagementVersionBeforeUpgrade
+		oldMinMgmt = version.MinOperatorVersion
 		oldMinCluster = version.MinClusterVersion
-		version.MinManagementVersionBeforeUpgrade = "1.0.0"
+		version.MinOperatorVersion = "1.0.0"
 		version.MinClusterVersion = "1.0.0"
 	})
 
 	AfterEach(func() {
-		version.MinManagementVersionBeforeUpgrade = oldMinMgmt
+		version.MinOperatorVersion = oldMinMgmt
 		version.MinClusterVersion = oldMinCluster
 	})
 

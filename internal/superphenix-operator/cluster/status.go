@@ -420,7 +420,7 @@ func (r *Reconciler) updateCompatibilityCondition(ctx context.Context, cluster *
 		return
 	}
 
-	err = version.IsClusterCompatibleWithManagement(cluster.Spec.Version, mgmtVersion)
+	err = version.IsClusterCompatibleWithOperator(cluster.Spec.Version, mgmtVersion)
 	status := metav1.ConditionTrue
 	reason := operatorv1alpha1.ReasonCompatibleVersion
 	message := "Cluster version is compatible with management version"

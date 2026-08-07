@@ -214,24 +214,26 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		}
 	}
 
-	// Examination of Connection mode is used to decide the destination in ArgoCD
-	// We must ensure we use the latest Spec from the cluster object passed to us.
-	var err error
-	app, err = r.reconcileApplication(ctx, cluster)
-	if err != nil {
-		log.Error(err, "Failed to reconcile ArgoCD Application")
-		if reconcileErr == nil {
-			reconcileErr = err
-		}
-	} else {
-		// Fetch the latest app object after reconcile (it might have status now)
-		_ = r.Get(ctx, types.NamespacedName{Name: app.GetName(), Namespace: app.GetNamespace()}, app)
-	}
-
 	if reconcileErr == nil {
 		// Validate cluster configuration
 		if err := r.validate(ctx, cluster); err != nil {
 			reconcileErr = err
+		}
+	}
+
+	if reconcileErr == nil {
+		// Examination of Connection mode is used to decide the destination in ArgoCD
+		// We must ensure we use the latest Spec from the cluster object passed to us.
+		var err error
+		app, err = r.reconcileApplication(ctx, cluster)
+		if err != nil {
+			log.Error(err, "Failed to reconcile ArgoCD Application")
+			if reconcileErr == nil {
+				reconcileErr = err
+			}
+		} else {
+			// Fetch the latest app object after reconcile (it might have status now)
+			_ = r.Get(ctx, types.NamespacedName{Name: app.GetName(), Namespace: app.GetNamespace()}, app)
 		}
 	}
 

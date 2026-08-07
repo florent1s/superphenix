@@ -15,9 +15,6 @@ import (
 const (
 	// ManagementAppName is the ArgoCD Application name for the management stack.
 	ManagementAppName = "management"
-
-	// ClusterSystemChartName is the default name of the cluster system chart.
-	ClusterSystemChartName = "superphenix-system"
 )
 
 var (
@@ -34,8 +31,8 @@ var (
 )
 
 var (
-	// MinManagementVersionBeforeUpgrade is the minimum version the management must be in before upgrade.
-	MinManagementVersionBeforeUpgrade = "0.0.0"
+	// MinOperatorVersion is the minimum version the operator must be in before upgrade.
+	MinOperatorVersion = "0.0.0"
 
 	// MinClusterVersion is the minimum version of the cluster supported by the operator.
 	MinClusterVersion = "0.0.0"
@@ -47,57 +44,92 @@ var (
 	OperatorVersion = "dev"
 )
 
-// IsManagementUpgradeSupported checks if upgrading management from current to target version is supported.
-// Upgrades are supported if the current version is at least MinManagementVersionBeforeUpgrade.
-// Special versions like "0.0.0" or empty versions bypass the check.
-func IsManagementUpgradeSupported(current, target string) error {
+// IsOperatorUpgradeSupported checks if upgrading the operator from current to target version is supported.
+//
+// Validation process:
+// 1. Skip check if current version is empty or "0.0.0" (new installation).
+// 2. Skip check if target version is "0.0.0" (usually representing 'latest' or 'dev').
+// 3. Verify that the current version satisfies the minimum version requirement (MinOperatorVersion).
+func IsOperatorUpgradeSupported(current, target string) error {
 	if current == "" || current == "0.0.0" || target == "0.0.0" {
 		return nil
 	}
 
-	constraintString := ">= " + MinManagementVersionBeforeUpgrade
-	return checkConstraint(current, current, target, constraintString, "management")
+	constraint := ">= " + MinOperatorVersion
+	ok, err := checkConstraint(current, constraint)
+	if err != nil {
+		return fmt.Errorf("management upgrade from %s to %s is not supported: %w", current, target, err)
+	}
+	if !ok {
+		return fmt.Errorf("management upgrade from %s to %s is not supported (must satisfy: %s)",
+			current, target, constraint)
+	}
+	return nil
 }
 
 // IsClusterUpgradeSupported checks if upgrading a cluster from current to target is supported.
-// Upgrades are supported if both the current and target versions are within the supported range [MinClusterVersion, MaxClusterVersion[.
-// Special versions like "0.0.0" or empty versions bypass the check.
+//
+// Validation process:
+// 1. Skip check if versions are identical or empty.
+// 2. Skip check if the current/target version is "0.0.0".
+// 3. Verify that both current and target versions are within the supported range [MinClusterVersion, MaxClusterVersion[.
 func IsClusterUpgradeSupported(current, target string) error {
 	if current == "" || target == "" || current == target {
 		return nil
 	}
 
-	// Special case for latest
-	if target == "0.0.0" {
+	if current == "0.0.0" || target == "0.0.0" {
 		return nil
 	}
 
-	constraintString := fmt.Sprintf(">= %s, < %s", MinClusterVersion, MaxClusterVersion)
-	if err := checkConstraint(current, current, target, constraintString, "cluster"); err != nil {
-		return err
+	constraint := fmt.Sprintf(">= %s, < %s", MinClusterVersion, MaxClusterVersion)
+
+	// Validate current version is still supported
+	ok, err := checkConstraint(current, constraint)
+	if err != nil {
+		return fmt.Errorf("cluster upgrade from %s to %s is not supported: %w", current, target, err)
+	}
+	if !ok {
+		return fmt.Errorf("cluster upgrade from %s to %s is not supported: current version %s is outside supported range (%s)",
+			current, target, current, constraint)
 	}
 
-	return checkConstraint(target, current, target, constraintString, "cluster")
+	// Validate target version is supported
+	ok, err = checkConstraint(target, constraint)
+	if err != nil {
+		return fmt.Errorf("cluster upgrade from %s to %s is not supported: %w", current, target, err)
+	}
+	if !ok {
+		return fmt.Errorf("cluster upgrade from %s to %s is not supported: target version %s is outside supported range (%s)",
+			current, target, target, constraint)
+	}
+
+	return nil
 }
 
-// IsClusterCompatibleWithManagement checks if a cluster version is supported by a management version.
-// A cluster is considered compatible if its version is within the supported range [MinClusterVersion, MaxClusterVersion[.
-// Empty management version bypasses the check.
-func IsClusterCompatibleWithManagement(clusterVersion, managementVersion string) error {
-	if managementVersion == "" {
+// IsClusterCompatibleWithOperator checks if a cluster version is supported by an operator version.
+//
+// Validation process:
+// 1. Skip check if management version/cluster version is empty (unknown compatibility).
+// 2. Skip check if management version/cluster version is "0.0.0".
+// 3. Verify that the cluster version is within the supported range [MinClusterVersion, MaxClusterVersion[.
+func IsClusterCompatibleWithOperator(clusterVersion, managementVersion string) error {
+	if managementVersion == "" || managementVersion == "0.0.0" || clusterVersion == "" || clusterVersion == "0.0.0" {
 		return nil
 	}
 
-	constraintString := fmt.Sprintf(">= %s, < %s", MinClusterVersion, MaxClusterVersion)
-
-	if clusterVersion == "" || clusterVersion == "0.0.0" {
-		if clusterVersion == "0.0.0" {
-			return checkConstraint("0.0.0", clusterVersion, managementVersion, constraintString, "cluster compatibility")
-		}
-		return nil
+	constraint := fmt.Sprintf(">= %s, < %s", MinClusterVersion, MaxClusterVersion)
+	ok, err := checkConstraint(clusterVersion, constraint)
+	if err != nil {
+		return fmt.Errorf("cluster compatibility check failed: %w", err)
 	}
 
-	return checkConstraint(clusterVersion, clusterVersion, managementVersion, constraintString, "cluster compatibility")
+	if !ok {
+		return fmt.Errorf("cluster version %s is not supported by management version %s (required: %s)",
+			clusterVersion, managementVersion, constraint)
+	}
+
+	return nil
 }
 
 // GetCurrentManagementVersion attempts to retrieve the current version of the management chart
@@ -140,25 +172,18 @@ func GetApplicationVersion(ctx context.Context, c client.Reader, name, namespace
 	return version, nil
 }
 
-func checkConstraint(vStr, current, target, constraintString, scope string) error {
-	v, err := semver.NewVersion(vStr)
+// checkConstraint parses a version string and checks it against a semver constraint.
+// It returns true if the version satisfies the constraint, and an error if parsing fails.
+func checkConstraint(versionString, constraintString string) (bool, error) {
+	v, err := semver.NewVersion(versionString)
 	if err != nil {
-		return fmt.Errorf("invalid %s version %q: %w", scope, vStr, err)
+		return false, fmt.Errorf("invalid version %q: %w", versionString, err)
 	}
 
 	constraint, err := semver.NewConstraint(constraintString)
 	if err != nil {
-		return fmt.Errorf("invalid semver constraint for %s version %s: %w", scope, target, err)
+		return false, fmt.Errorf("invalid constraint %q: %w", constraintString, err)
 	}
 
-	if !constraint.Check(v) {
-		if scope == "cluster compatibility" {
-			return fmt.Errorf("cluster version %s is not supported by management version %s (required: %s)",
-				current, target, constraintString)
-		}
-		return fmt.Errorf("%s upgrade from %s to %s is not supported (must satisfy: %s)",
-			scope, current, target, constraintString)
-	}
-
-	return nil
+	return constraint.Check(v), nil
 }
