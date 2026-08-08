@@ -20,7 +20,7 @@ spec:
     spec:
       {{- if .Values.installOnClusterWithoutCNI }}
       hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
+      dnsPolicy: Default
       {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
