@@ -2,6 +2,7 @@ package management
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -231,17 +233,44 @@ func locateAndLoadArgoCDChart(chartPathOptions *action.ChartPathOptions, helmSet
 	return ch, nil
 }
 
-// runHelmUpgradeInstall executes the Helm upgrade+install for the given chart and values.
+// runHelmUpgradeInstall executes the Helm upgrade or install for the given chart and values.
+// It explicitly checks for release existence because action.Upgrade with Install=true does not
+// trigger an install when the release is missing.
 // Namespace-not-found errors are silenced because they are a known envtest limitation.
-func runHelmUpgradeInstall(ctx context.Context, clientUpgrade *action.Upgrade, releaseName string, ch *chart.Chart, vals map[string]interface{}) error {
+func (r *Reconciler) runHelmUpgradeInstall(ctx context.Context, actionConfig *action.Configuration, releaseName string, ch *chart.Chart, vals map[string]interface{}) error {
 	log := logf.FromContext(ctx)
 
-	if _, err := clientUpgrade.Run(releaseName, ch, vals); err != nil {
-		if strings.Contains(err.Error(), "namespaces") && strings.Contains(err.Error(), "not found") {
-			log.Info("Namespace not found during Helm install; treating as envtest limitation and skipping")
-			return nil
+	// Check if the release already exists to decide between Install and Upgrade.
+	histClient := action.NewHistory(actionConfig)
+	histClient.Max = 1
+	_, err := histClient.Run(releaseName)
+	if err != nil && (errors.Is(err, driver.ErrReleaseNotFound) || strings.Contains(err.Error(), "not found")) {
+		log.Info("Helm release not found, performing initial install", "release", releaseName)
+		clientInstall := action.NewInstall(actionConfig)
+		clientInstall.ReleaseName = releaseName
+		clientInstall.Namespace = r.OperatorNamespace
+		clientInstall.Wait = false
+
+		if _, err := clientInstall.Run(ch, vals); err != nil {
+			// Namespace-not-found errors are silenced because they are a known envtest limitation.
+			if strings.Contains(err.Error(), "namespaces") && strings.Contains(err.Error(), "not found") {
+				log.Info("Namespace not found during Helm install; treating as envtest limitation and skipping")
+				return nil
+			}
+			return fmt.Errorf("failed to install initial ArgoCD Helm chart: %w", err)
 		}
-		return fmt.Errorf("failed to upgrade+install initial ArgoCD Helm chart: %w", err)
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("failed to check Helm release history: %w", err)
+	}
+
+	log.Info("Helm release found, performing upgrade", "release", releaseName)
+	clientUpgrade := action.NewUpgrade(actionConfig)
+	clientUpgrade.Namespace = r.OperatorNamespace
+	clientUpgrade.Wait = false
+
+	if _, err := clientUpgrade.Run(releaseName, ch, vals); err != nil {
+		return fmt.Errorf("failed to upgrade initial ArgoCD Helm chart: %w", err)
 	}
 
 	return nil
@@ -284,14 +313,12 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 
 	log.Info("Performing initial ArgoCD Helm upgrade+install", "chart", "argo-cd", "version", r.ArgoCDChartVersion)
 
-	clientUpgrade := action.NewUpgrade(actionConfig)
-	clientUpgrade.Install = true
-	clientUpgrade.Namespace = r.OperatorNamespace
-	clientUpgrade.RepoURL = r.ArgoCDChartURL
-	clientUpgrade.Version = r.ArgoCDChartVersion
-	clientUpgrade.Wait = false
+	chartPathOptions := &action.ChartPathOptions{
+		RepoURL: r.ArgoCDChartURL,
+		Version: r.ArgoCDChartVersion,
+	}
 
-	ch, err := locateAndLoadArgoCDChart(&clientUpgrade.ChartPathOptions, helmSettings)
+	ch, err := locateAndLoadArgoCDChart(chartPathOptions, helmSettings)
 	if err != nil {
 		return err
 	}
@@ -301,7 +328,7 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 		return fmt.Errorf("failed to merge ArgoCD values for initial install: %w", err)
 	}
 
-	return runHelmUpgradeInstall(ctx, clientUpgrade, ArgoCDApp, ch, values)
+	return r.runHelmUpgradeInstall(ctx, actionConfig, ArgoCDApp, ch, values)
 }
 
 // buildApplication constructs a self-syncing ArgoCD Application manifest backed by a Helm chart.
