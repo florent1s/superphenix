@@ -11,6 +11,17 @@ data:
     global:
       # Domain used for ingresses, certificates, SSO, notifications, etc.
       domain: superphenix.net
+      {{- if .Values.installOnClusterWithoutCNI }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - key: "node.kubernetes.io/not-ready"
+          operator: "Exists"
+          effect: "NoExecute"
+        - key: "node.kubernetes.io/not-ready"
+          operator: "Exists"
+          effect: "NoSchedule"
+      {{- end }}
 
       # Restrict network flow in and out of ArgoCD
       networkPolicy:
