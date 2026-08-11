@@ -177,76 +177,32 @@ func (h *Service) GetInstance(w http.ResponseWriter, r *http.Request) {
 	resp, err := proxy.SendProxy(r, azDb, config.ApiPrefix, http.NoBody)
 	if err != nil {
 		log.Error().Err(err).Str("az", azDb.Code).Msg(consts.SpxProxyToAZFailure)
-	} else if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
-		// If the request is not OK or NotFound then log it
-		log.Error().Str("path", r.URL.Path).Str("status", resp.Status).Int("statusCode", resp.StatusCode).Str("az", azDb.Code).Msg("Request on superphenix-controller failed")
+	} else {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
+			// If the request is not OK or NotFound then log it
+			log.Error().Str("path", r.URL.Path).Str("status", resp.Status).Int("statusCode", resp.StatusCode).Str("az", azDb.Code).Msg("Request on superphenix-controller failed")
+		}
 	}
-	defer resp.Body.Close()
 
 	resourceEId := chi.URLParam(r, "effectiveId")
 	dbProduct, dbErr := product.FindByEId(resourceEId)
-	var result InstanceFullResponse
 
-	// If we didn't find spx-ctrl, but we got db info
-	if (resp.StatusCode != http.StatusOK) && dbErr == nil {
-		result = InstanceFullResponse{
-			ProductResponse: ProductResponse{
-				ID:            dbProduct.ID.String(),
-				EId:           dbProduct.EffectiveID,
-				ProductName:   dbProduct.ProductName,
-				CodeAZ:        azDb.Code,
-				ProductTypeId: dbProduct.ProductTypeId,
-				Gitops:        "false",
-			},
-		}
-	} else if resp.StatusCode == http.StatusOK {
-		mapResult := ctrlutils.ReadResponse(resp).(map[string]interface{})
-
-		containerDisks := resolveMountedContainerDisks(mapResult)
-
-		// We only have spx-ctrl info
-		if dbErr != nil {
-			log.Info().Err(dbErr).Str("resourceEId", resourceEId).Msg("Resource not found in DB")
-
-			result = InstanceFullResponse{
-				ProductResponse: ProductResponse{
-					ID:          mapResult["id"].(string),
-					EId:         mapResult["eid"].(string),
-					ProductName: mapResult["productName"].(string),
-					CodeAZ:      azDb.Code,
-					Gitops:      mapResult["gitops"].(string),
-				},
-				VM:             mapResult["vm"],
-				VMI:            mapResult["vmi"],
-				CloudInit:      mapResult["cloudInit"],
-				ContainerDisks: containerDisks,
-			}
-		} else {
-			//	We got both db and spx-ctrl info
-			if dbProduct.ID.String() == mapResult["id"] {
-				result = InstanceFullResponse{
-					ProductResponse: ProductResponse{
-						ID:            dbProduct.ID.String(),
-						EId:           mapResult["eid"].(string),
-						ProductName:   dbProduct.ProductName,
-						CodeAZ:        azDb.Code,
-						ProductTypeId: dbProduct.ProductTypeId,
-						Gitops:        mapResult["gitops"].(string),
-					},
-					VM:             mapResult["vm"],
-					VMI:            mapResult["vmi"],
-					CloudInit:      mapResult["cloudInit"],
-					ContainerDisks: containerDisks,
-				}
-			}
-		}
-	}
+	productResponse, azResult, outcome := controller.ResolveProductResponse(r.Context(), azDb.Code, resp, dbProduct, dbErr)
 
 	// If we can't find either spx-ctrl or db info
-	if (resp.StatusCode == http.StatusNotFound) && dbErr != nil {
+	if outcome == controller.MergeNotFound {
 		log.Error().Str("effectiveId", resourceEId).Msg(consts.SpxResourceNotFound)
 		httpError.Http(w, r, http.StatusNotFound).Str("eid", resourceEId).Msg(consts.SpxResourceNotFound)
 		return
+	}
+
+	result := InstanceFullResponse{ProductResponse: productResponse}
+	if azResult != nil {
+		result.VM = azResult["vm"]
+		result.VMI = azResult["vmi"]
+		result.CloudInit = azResult["cloudInit"]
+		result.ContainerDisks = resolveMountedContainerDisks(azResult)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -174,71 +174,31 @@ func (h *Service) GetEip(w http.ResponseWriter, r *http.Request) {
 	resp, err := proxy.SendProxy(r, azDb, config.ApiPrefix, http.NoBody)
 	if err != nil {
 		log.Error().Err(err).Str("az", azDb.Code).Msg(consts.SpxProxyToAZFailure)
-	} else if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
-		log.Error().Str("path", r.URL.Path).Str("status", resp.Status).Int("statusCode", resp.StatusCode).Str("az", azDb.Code).Msg("Request on superphenix-controller failed")
+	} else {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
+			log.Error().Str("path", r.URL.Path).Str("status", resp.Status).Int("statusCode", resp.StatusCode).Str("az", azDb.Code).Msg("Request on superphenix-controller failed")
+		}
 	}
-	defer resp.Body.Close()
 
 	productEId := chi.URLParam(r, "effectiveId")
 	dbProduct, err := product.FindByEId(productEId)
-	var result EipFullResponse
 
-	if (resp.StatusCode != http.StatusOK) && err == nil {
-		result = EipFullResponse{
-			ProductResponse: ProductResponse{
-				ID:            dbProduct.ID.String(),
-				EId:           dbProduct.EffectiveID,
-				ProductName:   dbProduct.ProductName,
-				CodeAZ:        azDb.Code,
-				ProductTypeId: dbProduct.ProductTypeId,
-				Gitops:        "false",
-			},
-		}
-	} else if resp.StatusCode == http.StatusOK {
-		mapResult := ctrlutils.ReadResponse(resp).(map[string]interface{})
-		// We only have spx-ctrl info
-		if err != nil {
-			log.Info().Err(err).Str("productEId", productEId).Msg("Resource not found in DB")
-
-			result = EipFullResponse{
-				ProductResponse: ProductResponse{
-					ID:          mapResult["id"].(string),
-					EId:         mapResult["eid"].(string),
-					ProductName: mapResult["productName"].(string),
-					CodeAZ:      azDb.Code,
-					Gitops:      mapResult["gitops"].(string),
-				},
-				Eip:  mapResult["eip"],
-				Fip:  mapResult["fip"],
-				SNat: mapResult["snat"],
-				DNat: mapResult["dnat"],
-			}
-		} else {
-			//	We got both db and spx-ctrl info
-			if dbProduct.ID.String() == mapResult["id"] {
-				result = EipFullResponse{
-					ProductResponse: ProductResponse{
-						ID:            dbProduct.ID.String(),
-						EId:           mapResult["eid"].(string),
-						ProductName:   dbProduct.ProductName,
-						CodeAZ:        azDb.Code,
-						ProductTypeId: dbProduct.ProductTypeId,
-						Gitops:        mapResult["gitops"].(string),
-					},
-					Eip:  mapResult["eip"],
-					Fip:  mapResult["fip"],
-					SNat: mapResult["snat"],
-					DNat: mapResult["dnat"],
-				}
-			}
-		}
-	}
+	productResponse, azResult, outcome := controller.ResolveProductResponse(r.Context(), azDb.Code, resp, dbProduct, err)
 
 	// If we can't find either spx-ctrl or db info
-	if (resp.StatusCode == http.StatusNotFound) && err != nil {
+	if outcome == controller.MergeNotFound {
 		log.Error().Str("effectiveId", productEId).Msg(consts.SpxResourceNotFound)
 		httpError.Http(w, r, http.StatusNotFound).Str("eid", productEId).Msg(consts.SpxResourceNotFound)
 		return
+	}
+
+	result := EipFullResponse{ProductResponse: productResponse}
+	if azResult != nil {
+		result.Eip = azResult["eip"]
+		result.Fip = azResult["fip"]
+		result.SNat = azResult["snat"]
+		result.DNat = azResult["dnat"]
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -23,7 +23,10 @@ func GetCluster(ctx context.Context, namespace, eid string) (view.Cluster, error
 	clusterResources := k8s.DynamicClientSet.Resource(clustersGVR).Namespace(namespace)
 	unstructuredCluster, err := clusterResources.Get(ctx, eid, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
-		return view.Cluster{}, nil
+		// Propagate the NotFound so the handler answers 404. Returning an empty cluster with a
+		// nil error made the API believe the AZ owned a cluster with an empty identity, which
+		// blanked out the whole product response.
+		return view.Cluster{}, err
 	}
 	if err != nil {
 		log.Err(err).Str("namespace", namespace).Msg("Error getting cluster list")
@@ -43,8 +46,13 @@ func GetCluster(ctx context.Context, namespace, eid string) (view.Cluster, error
 		LabelSelector: fmt.Sprintf("%s=%s", ClusterLabelKey, clusterObject.GetName()),
 	})
 
+	// The cluster itself exists, so a missing machine deployment list only means it has no node
+	// group yet: keep the cluster and report an empty list rather than dropping everything.
 	if apierrors.IsNotFound(err) {
-		return view.Cluster{}, nil
+		return view.Cluster{
+			Cluster:            clusterObject,
+			MachineDeployments: []view.MachineDeployment{},
+		}, nil
 	}
 	if err != nil {
 		log.Err(err).Str("namespace", namespace).Str("eid", eid).Msg("Error getting machine deployment for cluster")
