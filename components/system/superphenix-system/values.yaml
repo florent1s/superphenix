@@ -1187,7 +1187,6 @@ apps:
         # if the parent SnapshotSchedule is ever deleted.
         enableOwnerReferences: true
 
-
   ###########################################################################
   #                        KAAS CONTROLLER SYSTEM                           #
   ###########################################################################

@@ -148,6 +148,14 @@ func (r *Reconciler) configMapPredicate() predicate.Predicate {
 func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
+	// In CNI-less mode, we must ensure ArgoCD is NOT self-managed,
+	// because ArgoCD would otherwise revert the hostNetwork and affinity settings.
+	if r.InstallWithoutCNI {
+		if err := r.ensureArgoCDNotSelfManaged(ctx); err != nil {
+			return fmt.Errorf("failed to ensure ArgoCD is not self-managed: %w", err)
+		}
+	}
+
 	// Install ArgoCD using Helm.
 	if err := r.ensureInitialHelmInstall(ctx); err != nil {
 		return fmt.Errorf("failed to ensure initial ArgoCD install: %w", err)
@@ -161,8 +169,10 @@ func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	}
 
 	// Give back control to ArgoCD itself.
-	if err := r.ensureArgoCDSelfManaged(ctx); err != nil {
-		return fmt.Errorf("failed to ensure ArgoCD is self-managed: %w", err)
+	if !r.InstallWithoutCNI {
+		if err := r.ensureArgoCDSelfManaged(ctx); err != nil {
+			return fmt.Errorf("failed to ensure ArgoCD is self-managed: %w", err)
+		}
 	}
 
 	log.Info("Successfully reconciled ArgoCD")
@@ -301,7 +311,7 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 		Kind:    "Application",
 	})
 	err := r.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: r.OperatorNamespace}, app)
-	if err == nil {
+	if err == nil && !r.InstallWithoutCNI {
 		log.Info("ArgoCD is already self-managed (Application exists), skipping initial Helm install")
 		return nil
 	}
@@ -438,6 +448,33 @@ func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
 	return r.createOrUpdateArgoCDApplication(ctx, r.buildArgoCDApplication(values))
 }
 
+// ensureArgoCDNotSelfManaged removes the ArgoCD Application that hands ArgoCD's lifecycle to itself.
+func (r *Reconciler) ensureArgoCDNotSelfManaged(ctx context.Context) error {
+	log := logf.FromContext(ctx)
+
+	app := &unstructured.Unstructured{}
+	app.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "argoproj.io",
+		Version: "v1alpha1",
+		Kind:    "Application",
+	})
+
+	err := r.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: r.OperatorNamespace}, app)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to get ArgoCD Application for removal: %w", err)
+	}
+
+	log.Info("Removing ArgoCD Application to avoid ruining patches (CNI-less mode)", "name", ArgoCDApp)
+	if err := r.Delete(ctx, app); err != nil {
+		return fmt.Errorf("failed to delete ArgoCD Application: %w", err)
+	}
+
+	return nil
+}
+
 // loadYAMLFileValues reads the YAML file at path and unmarshals it into a map.
 // Returns (nil, false, nil) when the file does not exist.
 func loadYAMLFileValues(path string) (map[string]interface{}, bool, error) {
@@ -534,7 +571,8 @@ func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, c
 	return merged, nil
 }
 
-// patchRedisForHostNetwork patches the ArgoCD redis deployment to use hostNetwork.
+// patchRedisForHostNetwork patches the ArgoCD redis deployment to use hostNetwork
+// and removes password requirement in CNI-less environments.
 func (r *Reconciler) patchRedisForHostNetwork(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 	deploymentName := ArgoCDApp + "-redis"
@@ -548,17 +586,46 @@ func (r *Reconciler) patchRedisForHostNetwork(ctx context.Context) error {
 		return fmt.Errorf("failed to get redis deployment: %w", err)
 	}
 
-	if deployment.Spec.Template.Spec.HostNetwork {
-		return nil
-	}
-
 	patch := client.MergeFrom(deployment.DeepCopy())
 	deployment.Spec.Template.Spec.HostNetwork = true
-	if err := r.Patch(ctx, deployment, patch); err != nil {
-		return fmt.Errorf("failed to patch redis deployment for hostNetwork: %w", err)
+
+	// Patch the redis container to remove password requirement when running without CNI.
+	for i := range deployment.Spec.Template.Spec.Containers {
+		container := &deployment.Spec.Template.Spec.Containers[i]
+		if container.Name == "redis" {
+			// Remove --requirepass $(REDIS_PASSWORD) from args.
+			// It can be a single arg "--requirepass $(REDIS_PASSWORD)" or two args "--requirepass" and "$(REDIS_PASSWORD)".
+			newArgs := make([]string, 0, len(container.Args))
+			for i := 0; i < len(container.Args); i++ {
+				arg := container.Args[i]
+				if arg == "--requirepass $(REDIS_PASSWORD)" {
+					continue
+				}
+				if arg == "--requirepass" && i+1 < len(container.Args) && container.Args[i+1] == "$(REDIS_PASSWORD)" {
+					i++ // Skip next arg too
+					continue
+				}
+				newArgs = append(newArgs, arg)
+			}
+			container.Args = newArgs
+
+			// Remove REDIS_PASSWORD from env.
+			newEnv := make([]corev1.EnvVar, 0, len(container.Env))
+			for _, env := range container.Env {
+				if env.Name == "REDIS_PASSWORD" {
+					continue
+				}
+				newEnv = append(newEnv, env)
+			}
+			container.Env = newEnv
+		}
 	}
 
-	log.Info("Successfully patched redis deployment for hostNetwork", "deployment", deploymentName)
+	if err := r.Patch(ctx, deployment, patch); err != nil {
+		return fmt.Errorf("failed to patch redis deployment: %w", err)
+	}
+
+	log.Info("Successfully patched redis deployment", "deployment", deploymentName)
 	return nil
 }
 

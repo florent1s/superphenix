@@ -97,6 +97,14 @@ data:
     controller:
       {{- if .Values.installOnClusterWithoutCNI }}
       hostNetwork: true
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: superphenix-argocd
+                app.kubernetes.io/managed-by: Helm
+            topologyKey: kubernetes.io/hostname
       {{- end }}
       metrics:
         enabled: true
@@ -122,6 +130,14 @@ data:
     server:
       {{- if .Values.installOnClusterWithoutCNI }}
       hostNetwork: true
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: superphenix-argocd
+                app.kubernetes.io/managed-by: Helm
+            topologyKey: kubernetes.io/hostname
       {{- end }}
       metrics:
         enabled: true
@@ -144,6 +160,14 @@ data:
     repoServer:
       {{- if .Values.installOnClusterWithoutCNI }}
       hostNetwork: true
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: superphenix-argocd
+                app.kubernetes.io/managed-by: Helm
+            topologyKey: kubernetes.io/hostname
       {{- end }}
       metrics:
         enabled: true
@@ -154,6 +178,21 @@ data:
           # We simply skip the dry-run in that case
           annotations:
             argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+
+    redis:
+      {{- if .Values.installOnClusterWithoutCNI }}
+      hostNetwork: true
+      auth:
+        enabled: false
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: superphenix-argocd
+                app.kubernetes.io/managed-by: Helm
+            topologyKey: kubernetes.io/hostname
+      {{- end }}
 
     applicationSet:
       metrics:

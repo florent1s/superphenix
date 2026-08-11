@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -331,7 +332,7 @@ var _ = Describe("Management Controller", func() {
 			Expect(vals["otherKey"]).To(Equal("otherValue"))
 		})
 
-		It("should patch redis for hostNetwork if InstallWithoutCNI is true", func() {
+		It("should patch redis for hostNetwork and remove password if InstallWithoutCNI is true", func() {
 			const opNamespace = "op-hostnetwork-ns"
 			const redisName = ArgoCDApp + "-redis"
 
@@ -353,7 +354,32 @@ var _ = Describe("Management Controller", func() {
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "redis"}},
 						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{{Name: "redis", Image: "redis"}},
+							Containers: []corev1.Container{{
+								Name:  "redis",
+								Image: "redis",
+								Args: []string{
+									"--save",
+									"",
+									"--appendonly",
+									"no",
+									"--requirepass $(REDIS_PASSWORD)",
+								},
+								Env: []corev1.EnvVar{
+									{
+										Name: "REDIS_PASSWORD",
+										ValueFrom: &corev1.EnvVarSource{
+											SecretKeyRef: &corev1.SecretKeySelector{
+												LocalObjectReference: corev1.LocalObjectReference{Name: "argocd-redis"},
+												Key:                  "auth",
+											},
+										},
+									},
+									{
+										Name:  "OTHER_ENV",
+										Value: "other-value",
+									},
+								},
+							}},
 						},
 					},
 				},
@@ -373,10 +399,133 @@ var _ = Describe("Management Controller", func() {
 			err := mgmtReconciler.patchRedisForHostNetwork(ctx)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Verifying hostNetwork is true")
+			By("Verifying hostNetwork is true and password is removed")
 			updatedDep := &appsv1.Deployment{}
 			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: redisName, Namespace: opNamespace}, updatedDep)).To(Succeed())
 			Expect(updatedDep.Spec.Template.Spec.HostNetwork).To(BeTrue())
+
+			container := updatedDep.Spec.Template.Spec.Containers[0]
+			Expect(container.Args).To(Equal([]string{"--save", "", "--appendonly", "no"}))
+			Expect(container.Env).To(HaveLen(1))
+			Expect(container.Env[0].Name).To(Equal("OTHER_ENV"))
+		})
+
+		It("should handle separate --requirepass and $(REDIS_PASSWORD) args", func() {
+			const opNamespace = "op-sep-args-ns"
+			const redisName = ArgoCDApp + "-redis"
+
+			ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: opNamespace}}
+			Expect(k8sClient.Create(ctx, ns)).To(Succeed())
+			defer func() { _ = k8sClient.Delete(ctx, ns) }()
+
+			redisDep := &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{Name: redisName, Namespace: opNamespace},
+				Spec: appsv1.DeploymentSpec{
+					Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"app": "redis"}},
+					Template: corev1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "redis"}},
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{{
+								Name:  "redis",
+								Image: "redis",
+								Args:  []string{"--requirepass", "$(REDIS_PASSWORD)", "--other-arg"},
+							}},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, redisDep)).To(Succeed())
+			defer func() { _ = k8sClient.Delete(ctx, redisDep) }()
+
+			mgmtReconciler := &Reconciler{
+				Client:            k8sClient,
+				OperatorNamespace: opNamespace,
+				InstallWithoutCNI: true,
+			}
+
+			err := mgmtReconciler.patchRedisForHostNetwork(ctx)
+			Expect(err).NotTo(HaveOccurred())
+
+			updatedDep := &appsv1.Deployment{}
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: redisName, Namespace: opNamespace}, updatedDep)).To(Succeed())
+			Expect(updatedDep.Spec.Template.Spec.Containers[0].Args).To(Equal([]string{"--other-arg"}))
+		})
+
+		It("should NOT create the ArgoCD Application in CNI-less mode", func() {
+			const argoNamespace = "argocd-no-cni-test-1"
+			ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: argoNamespace}}
+			Expect(k8sClient.Create(ctx, ns)).To(Succeed())
+			defer func() { _ = k8sClient.Delete(ctx, ns) }()
+
+			mgmtReconciler := &Reconciler{
+				Client:             k8sClient,
+				Scheme:             k8sClient.Scheme(),
+				ArgoCDChartURL:     "https://argoproj.github.io/argo-helm",
+				ArgoCDChartVersion: "7.7.12",
+				OperatorNamespace:  argoNamespace,
+				InstallWithoutCNI:  true,
+			}
+
+			err := mgmtReconciler.reconcileManagementArgoCD(ctx)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Verifying the ArgoCD Application does NOT exist")
+			app := &unstructured.Unstructured{}
+			app.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "argoproj.io",
+				Version: "v1alpha1",
+				Kind:    "Application",
+			})
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: argoNamespace}, app)
+			Expect(apierrors.IsNotFound(err)).To(BeTrue(), "ArgoCD Application should not have been created")
+		})
+
+		It("should DELETE the ArgoCD Application in CNI-less mode if it already exists", func() {
+			const argoNamespace = "argocd-no-cni-test-2"
+			ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: argoNamespace}}
+			Expect(k8sClient.Create(ctx, ns)).To(Succeed())
+			defer func() { _ = k8sClient.Delete(ctx, ns) }()
+
+			By("Creating the ArgoCD Application manually")
+			app := &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"apiVersion": "argoproj.io/v1alpha1",
+					"kind":       "Application",
+					"metadata": map[string]interface{}{
+						"name":      ArgoCDApp,
+						"namespace": argoNamespace,
+					},
+					"spec": map[string]interface{}{
+						"project": "default",
+						"source": map[string]interface{}{
+							"repoURL":        "https://argoproj.github.io/argo-helm",
+							"targetRevision": "7.7.12",
+							"chart":          "argo-cd",
+						},
+						"destination": map[string]interface{}{
+							"name":      "in-cluster",
+							"namespace": argoNamespace,
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, app)).To(Succeed())
+
+			mgmtReconciler := &Reconciler{
+				Client:             k8sClient,
+				Scheme:             k8sClient.Scheme(),
+				ArgoCDChartURL:     "https://argoproj.github.io/argo-helm",
+				ArgoCDChartVersion: "7.7.12",
+				OperatorNamespace:  argoNamespace,
+				InstallWithoutCNI:  true,
+			}
+
+			err := mgmtReconciler.reconcileManagementArgoCD(ctx)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Verifying the ArgoCD Application was deleted")
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: argoNamespace}, app)
+			Expect(apierrors.IsNotFound(err)).To(BeTrue(), "ArgoCD Application should have been deleted to avoid ruining patches")
 		})
 	})
 })
