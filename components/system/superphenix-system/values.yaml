@@ -1328,8 +1328,7 @@ apps:
             version: v0.11.2 # https://github.com/kubernetes-sigs/cluster-api-provider-kubevirt/releases
         controlPlane:
           kamaji:
-            version: v0.19.0 # https://github.com/clastix/cluster-api-control-plane-provider-kamaji/releases
-
+            version: v0.20.0 # https://github.com/clastix/cluster-api-control-plane-provider-kamaji/releases
 
   # -- etcd-operator: manages the etcd datastores backing Kamaji control planes.
   etcd-operator:
