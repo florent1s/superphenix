@@ -7,16 +7,16 @@ import (
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 )
 
-func setCatalog(t *testing.T, entries []config.ContainerDiskCatalogEntry) {
+func setCatalog(t *testing.T, entries map[string]config.ContainerDiskCatalogEntry) {
 	t.Helper()
 	prev := config.Global.ContainerDiskCatalog
 	config.Global.ContainerDiskCatalog = entries
 	t.Cleanup(func() { config.Global.ContainerDiskCatalog = prev })
 }
 
-var sampleCatalog = []config.ContainerDiskCatalogEntry{
-	{ID: "windows-virtio-drivers", DisplayName: "Windows VirtIO Driver", Image: "quay.io/kubevirt/virtio-container-disk:v1.7.0", Bus: "sata", SupportedOS: []string{"windows"}, Recommended: true},
-	{ID: "extra-tools", DisplayName: "Extra", Image: "example.com/extra:1", Bus: "virtio", SupportedOS: []string{"ubuntu"}, Recommended: false},
+var sampleCatalog = map[string]config.ContainerDiskCatalogEntry{
+	"windows-virtio-drivers": {ID: "windows-virtio-drivers", DisplayName: "Windows VirtIO Driver", Image: "quay.io/kubevirt/virtio-container-disk:v1.7.0", Bus: "sata", SupportedOS: []string{"windows"}, Recommended: true},
+	"extra-tools":            {ID: "extra-tools", DisplayName: "Extra", Image: "example.com/extra:1", Bus: "virtio", SupportedOS: []string{"ubuntu"}, Recommended: false},
 }
 
 func TestSupportsOS(t *testing.T) {
@@ -169,8 +169,14 @@ func TestCatalogList(t *testing.T) {
 	if len(got) != 2 {
 		t.Fatalf("want 2 entries, got %d", len(got))
 	}
-	if got[0].ID != "windows-virtio-drivers" || got[0].Image != "quay.io/kubevirt/virtio-container-disk:v1.7.0" {
-		t.Fatalf("unexpected entry: %+v", got[0])
+	found := false
+	for _, e := range got {
+		if e.ID == "windows-virtio-drivers" && e.Image == "quay.io/kubevirt/virtio-container-disk:v1.7.0" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("expected windows-virtio-drivers entry in catalog list, got %+v", got)
 	}
 }
 

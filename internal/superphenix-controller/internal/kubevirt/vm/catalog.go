@@ -35,10 +35,14 @@ func catalogToSpec(c config.ContainerDiskCatalogEntry) ContainerDiskSpec {
 
 // CatalogList returns this AZ's catalog, normalising nil to an empty slice.
 func CatalogList() []config.ContainerDiskCatalogEntry {
-	if config.Global.ContainerDiskCatalog == nil {
+	if len(config.Global.ContainerDiskCatalog) == 0 {
 		return []config.ContainerDiskCatalogEntry{}
 	}
-	return config.Global.ContainerDiskCatalog
+	result := make([]config.ContainerDiskCatalogEntry, 0, len(config.Global.ContainerDiskCatalog))
+	for _, c := range config.Global.ContainerDiskCatalog {
+		result = append(result, c)
+	}
+	return result
 }
 
 // RecommendedFor returns the recommended specs matching the VM preference,
@@ -87,10 +91,5 @@ func Resolve(ids []string, vmPreference string) ([]ContainerDiskSpec, error) {
 }
 
 func catalogIndex() map[string]config.ContainerDiskCatalogEntry {
-	catalog := config.Global.ContainerDiskCatalog
-	index := make(map[string]config.ContainerDiskCatalogEntry, len(catalog))
-	for _, c := range catalog {
-		index[c.ID] = c
-	}
-	return index
+	return config.Global.ContainerDiskCatalog
 }

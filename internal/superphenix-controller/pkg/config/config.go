@@ -21,7 +21,7 @@ var (
 // ContainerDiskCatalogEntry is one mountable container-disk type for this AZ.
 // The ID is also used as the volume name on the VM spec.
 type ContainerDiskCatalogEntry struct {
-	ID          string   `yaml:"id" json:"id"`
+	ID          string   `yaml:"-" json:"id"`
 	DisplayName string   `yaml:"displayName" json:"displayName"`
 	Image       string   `yaml:"image" json:"image"`
 	Bus         string   `yaml:"bus" json:"bus"` // "sata" | "virtio"
@@ -54,7 +54,7 @@ type Config struct {
 		Pretty bool
 	}
 
-	ContainerDiskCatalog []ContainerDiskCatalogEntry `yaml:"containerDiskCatalog"`
+	ContainerDiskCatalog map[string]ContainerDiskCatalogEntry `yaml:"containerDiskCatalog"`
 
 	Http struct {
 		Address    string `yaml:"address"`
@@ -167,7 +167,7 @@ metrics:
 swagger:
   baseURL: "localhost:8080"
 spxPrefix: "spx"
-containerDiskCatalog: []
+containerDiskCatalog: {}
 productsConfig:
   natGatewayDefault:
     externalSubnets:
@@ -252,7 +252,11 @@ func LoadConfig() error {
 		return fmt.Errorf("failed to read configuration file: %s", err.Error())
 	}
 
-	return v.Unmarshal(&Global)
+	if err := v.Unmarshal(&Global); err != nil {
+		return err
+	}
+	populateCatalogIDs()
+	return nil
 }
 
 // loadDefaults loads the default application configuration
@@ -262,5 +266,17 @@ func loadDefaults() error {
 		return err
 	}
 
-	return v.Unmarshal(&Global)
+	if err := v.Unmarshal(&Global); err != nil {
+		return err
+	}
+	populateCatalogIDs()
+	return nil
+}
+
+// populateCatalogIDs sets each ContainerDiskCatalogEntry.ID from its map key.
+func populateCatalogIDs() {
+	for id, entry := range Global.ContainerDiskCatalog {
+		entry.ID = id
+		Global.ContainerDiskCatalog[id] = entry
+	}
 }

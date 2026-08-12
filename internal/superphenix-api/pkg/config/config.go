@@ -53,7 +53,7 @@ func ResolveKubeVersionRepo(versions []KubeVersionConfig, def RepoArgoAppConfig,
 
 // AZConfig represents an Availability Zone defined in configuration
 type AZConfig struct {
-	Code          string   `yaml:"code"`
+	Code          string   `yaml:"-"`
 	AuthSecret    string   `yaml:"authSecret"`
 	Name          string   `yaml:"name"`
 	LogoUrl       string   `yaml:"logoUrl"`
@@ -166,7 +166,7 @@ type Config struct {
 		Database string
 	}
 
-	AZs []AZConfig `yaml:"azs"`
+	AZs map[string]AZConfig `yaml:"azs"`
 
 	SpxPrefix string `yaml:"spxPrefix"`
 	ArgoCdUrl string `yaml:"argoCdUrl"`
@@ -285,7 +285,7 @@ database:
   username: ""
   password: ""
   database: ""
-azs: []
+azs: {}
 spxPrefix: "spx"
 argoCdUrl: "https://<argocd-host>"
 productsConfig:
@@ -366,7 +366,11 @@ func LoadConfig() error {
 		return fmt.Errorf("failed to read configuration file: %s", err.Error())
 	}
 
-	return viper.Unmarshal(&Global)
+	if err := viper.Unmarshal(&Global); err != nil {
+		return err
+	}
+	populateAZCodes()
+	return nil
 }
 
 // loadDefaults loads the default application configuration
@@ -376,5 +380,17 @@ func loadDefaults() error {
 		return err
 	}
 
-	return viper.Unmarshal(&Global)
+	if err := viper.Unmarshal(&Global); err != nil {
+		return err
+	}
+	populateAZCodes()
+	return nil
+}
+
+// populateAZCodes sets each AZConfig.Code from its map key.
+func populateAZCodes() {
+	for code, az := range Global.AZs {
+		az.Code = code
+		Global.AZs[code] = az
+	}
 }

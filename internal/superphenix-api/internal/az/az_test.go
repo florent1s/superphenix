@@ -8,10 +8,10 @@ import (
 )
 
 func TestGetByCode(t *testing.T) {
-	config.Global.AZs = []config.AZConfig{
-		{Code: "az1", Name: "AZ One", ControllerUrl: "http://az1"},
-		{Code: "az2", Name: "AZ Two", ControllerUrl: "http://az2"},
-		{Code: "az3", Name: "AZ Three", ControllerUrl: "http://az3", Whitelist: []string{"org-1", "org-2"}},
+	config.Global.AZs = map[string]config.AZConfig{
+		"az1": {Code: "az1", Name: "AZ One", ControllerUrl: "http://az1"},
+		"az2": {Code: "az2", Name: "AZ Two", ControllerUrl: "http://az2"},
+		"az3": {Code: "az3", Name: "AZ Three", ControllerUrl: "http://az3", Whitelist: []string{"org-1", "org-2"}},
 	}
 
 	tests := []struct {
@@ -49,10 +49,10 @@ func TestGetByCode(t *testing.T) {
 }
 
 func TestFindAll(t *testing.T) {
-	config.Global.AZs = []config.AZConfig{
-		{Code: "az1", Name: "AZ One"},
-		{Code: "az2", Name: "AZ Two", Whitelist: []string{"org-1", "org-2"}},
-		{Code: "az3", Name: "AZ Three", Whitelist: []string{"org-3"}},
+	config.Global.AZs = map[string]config.AZConfig{
+		"az1": {Code: "az1", Name: "AZ One"},
+		"az2": {Code: "az2", Name: "AZ Two", Whitelist: []string{"org-1", "org-2"}},
+		"az3": {Code: "az3", Name: "AZ Three", Whitelist: []string{"org-3"}},
 	}
 
 	tests := []struct {
@@ -71,9 +71,13 @@ func TestFindAll(t *testing.T) {
 			if len(result) != len(tt.wantCodes) {
 				t.Fatalf("expected %d AZs, got %d", len(tt.wantCodes), len(result))
 			}
-			for i, code := range tt.wantCodes {
-				if result[i].Code != code {
-					t.Errorf("expected code %s at index %d, got %s", code, i, result[i].Code)
+			gotCodes := make(map[string]bool, len(result))
+			for _, az := range result {
+				gotCodes[az.Code] = true
+			}
+			for _, code := range tt.wantCodes {
+				if !gotCodes[code] {
+					t.Errorf("expected code %s in result, but not found", code)
 				}
 			}
 		})
