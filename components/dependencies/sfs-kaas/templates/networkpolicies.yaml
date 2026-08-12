@@ -58,7 +58,7 @@ spec:
     - port: {{ $controlPlaneDefaults.network.konnectivity.port }}
     - port: {{ $controlPlaneDefaults.network.apiServer.port }}
     - port: {{ $controlPlaneDefaults.network.apiServer.proxyPort }}
-  {{- if eq $cpNetPol "default" }}
+  {{- if eq $cpIngressNetPol "default" }}
   # Make controlplane's public ports acessible from anywhere
   - from:
     - ipBlock:
@@ -115,7 +115,7 @@ spec:
     - podSelector:
         matchLabels:
           cluster.x-k8s.io/cluster-name: {{ $clusterID | quote }}
-  {{- if eq $workersNetPol "default" }}
+  {{- if eq $workersIngressNetPol "default" }}
   # Make workers accessible from anywhere
   - from:
     - ipBlock:
@@ -123,7 +123,7 @@ spec:
     - ipBlock:
         cidr: "::/0"
   {{- end }}
-  {{- if eq $workersNetPol "strict" }}
+  {{- if eq $workersIngressNetPol "strict" }}
   # Make workers accessible from anywhere on HTTP/S ports only
   - from:
     - ipBlock:
@@ -140,7 +140,7 @@ spec:
     - podSelector:
         matchLabels:
           cluster.x-k8s.io/cluster-name: {{ $clusterID | quote }}
-  {{- if eq $workersNetPol "default" }}
+  {{- if eq $workersEgressNetPol "default" }}
   # Allow workers internet access
   - to:
     - ipBlock:
@@ -148,7 +148,7 @@ spec:
     - ipBlock:
         cidr: "::/0"
   {{- end }}
-  {{- if eq $workersNetPol "strict" }}
+  {{- if eq $workersEgressNetPol "strict" }}
   # Allow workers to talk to controlplane and WWW on HTTP/S ports only
   - to:
     - ipBlock:
