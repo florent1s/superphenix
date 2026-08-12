@@ -972,7 +972,8 @@ apps:
           - /data/mapping
     repoURL: "oci://ghcr.io/super-phenix/charts/spx-rook-connection"
     path: "."
-    targetRevision: "0.2.0"
+    # TODO: We can switch to using the same version as superphenix-system
+    targetRevision: "0.2.1"
     helm:
       chart: "spx-rook-connection"
       releaseName: "spx-rook-connection"
