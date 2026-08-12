@@ -124,10 +124,11 @@ clusters: {}
   #     paused: false
     
   #     network:
-  #       # -- Controlplane networkpolicy to apply, one of [default, none]
+  #       # -- Controlplane networkpolicy configuration
   #       # @section -- Controlplane network
-  #       # @default -- default
-  #       defaultPolicies: default
+  #       defaultPolicies:
+  #         # -- Must be one of [default, none]
+  #         ingress: default
     
   #       # -- FQDN to join the controlplane on
   #       # @section -- Controlplane network
@@ -138,11 +139,13 @@ clusters: {}
   #   # @default -- {}
   #   workers:
   #     network:
-
-  #       # -- Worker networkpolicy to apply, one of [default, strict, none]
+  #       # -- Worker networkpolicy configuration
   #       # @section -- Worker network
-  #       # @default -- default
-  #       defaultPolicies: default
+  #       defaultPolicies:
+  #         # -- Must be one of [default, strict, none]
+  #         ingress: default
+  #         # -- Must be one of [default, strict, none]
+  #         egress: default
 
   #     # -- Each key defines a new worker VM pool to be deployed.
   #     # Each key should be unique.
