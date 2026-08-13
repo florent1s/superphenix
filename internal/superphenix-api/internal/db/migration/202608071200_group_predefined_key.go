@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"slices"
 	"time"
 
 	"github.com/go-gormigrate/gormigrate/v2"
@@ -9,17 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// isAdoptable202608071200 reports whether candidate's permission sets are a subset of catalog.
-// Subset rather than equality, because an organization created before a permission set existed
-// holds fewer of them. A group with sets outside the catalog was customized and stays custom.
+// isAdoptable202608071200 reports whether a group can adopt a predefined key.
+// Every permission set it holds must exist in the catalog. Holding fewer sets
+// is fine, since older organizations predate some of them. Holding sets outside
+// the catalog means someone customized the group, so it stays custom.
 func isAdoptable202608071200(candidate, catalog []string) bool {
-	allowed := make(map[string]struct{}, len(catalog))
-	for _, pSet := range catalog {
-		allowed[pSet] = struct{}{}
-	}
-
 	for _, pSet := range candidate {
-		if _, ok := allowed[pSet]; !ok {
+		if !slices.Contains(catalog, pSet) {
 			return false
 		}
 	}
