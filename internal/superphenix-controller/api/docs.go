@@ -13969,9 +13969,6 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "provisioner": {
-                    "type": "string"
-                },
                 "schedulingInterval": {
                     "type": "string"
                 },

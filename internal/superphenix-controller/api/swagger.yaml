@@ -9020,8 +9020,6 @@ definitions:
         type: string
       name:
         type: string
-      provisioner:
-        type: string
       schedulingInterval:
         type: string
       schedulingStartTime:

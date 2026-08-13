@@ -98,7 +98,6 @@ func TestVolumeReplicationClassToView(t *testing.T) {
 			},
 			want: view.ReplicationClassView{
 				Name:                "daily",
-				Provisioner:         "rbd.csi.example.org",
 				SchedulingInterval:  "5m",
 				SchedulingStartTime: "14:00:00-05:00",
 				MirroringMode:       "snapshot",
@@ -112,9 +111,7 @@ func TestVolumeReplicationClassToView(t *testing.T) {
 					Provisioner: "rbd.csi.example.org",
 				},
 			},
-			want: view.ReplicationClassView{
-				Provisioner: "rbd.csi.example.org",
-			},
+			want: view.ReplicationClassView{},
 		},
 	}
 

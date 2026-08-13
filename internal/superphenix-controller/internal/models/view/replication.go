@@ -17,7 +17,6 @@ type ReplicationView struct {
 
 type ReplicationClassView struct {
 	Name                string `json:"name,omitempty"`
-	Provisioner         string `json:"provisioner,omitempty"`
 	SchedulingInterval  string `json:"schedulingInterval,omitempty"`
 	SchedulingStartTime string `json:"schedulingStartTime,omitempty"`
 	MirroringMode       string `json:"mirroringMode,omitempty"`

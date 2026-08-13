@@ -27,8 +27,7 @@ func volumeReplicationToView(vr replicationv1alpha1.VolumeReplication) view.Repl
 
 func volumeReplicationClassToView(vrc replicationv1alpha1.VolumeReplicationClass) view.ReplicationClassView {
 	classView := view.ReplicationClassView{
-		Name:        vrc.Labels[ClassSelectorLabel],
-		Provisioner: vrc.Spec.Provisioner,
+		Name: vrc.Labels[ClassSelectorLabel],
 	}
 
 	// only expose scheduling parameters, secret refs stay out
