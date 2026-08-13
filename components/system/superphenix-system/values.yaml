@@ -1162,31 +1162,6 @@ apps:
       chart: "external-snapshotter"
       releaseName: "external-snapshotter"
 
-  # -- Kyverno policy engine.
-  # Currently only used to patch VolumeSnapshotClass/VolumeReplicationClass at runtime;
-  # this dependency should be removed as soon as possible.
-  kyverno:
-    enabled: true
-    wave: "0"
-    modes: [Hyperconverged, DecoupledWorkload]
-    automation:
-      enabled: true
-      selfHeal: true
-      prune: true
-      cleanupOnDeletion: false
-      syncOptions: {}
-    namespace: "kyverno-system"
-    repoURL: "https://kyverno.github.io/kyverno/"
-    targetRevision: "3.6.0"
-    helm:
-      chart: "kyverno"
-      releaseName: "kyverno"
-      values:
-        # The reports controller has been observed to spike CPU usage under undiagnosed
-        # conditions; disable it until the root cause is identified.
-        reportsController:
-          enabled: false
-
   # -- snapscheduler: periodic VolumeSnapshot scheduler for PVCs.
   snapscheduler:
     enabled: true
