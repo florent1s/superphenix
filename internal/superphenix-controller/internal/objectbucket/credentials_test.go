@@ -20,16 +20,15 @@ func TestGetCredentials(t *testing.T) {
 	const obName = "ob-creds"
 
 	tests := []struct {
-		name             string
-		externalEndpoint string
-		seedOB           bool
-		seedStore        bool
-		noOBC            bool
-		noSecret         bool
-		wantErr          bool
-		wantNotFound     bool
-		wantEndpoint     string
-		wantRegion       string
+		name         string
+		seedOB       bool
+		seedStore    bool
+		noOBC        bool
+		noSecret     bool
+		wantErr      bool
+		wantNotFound bool
+		wantEndpoint string
+		wantRegion   string
 	}{
 		{
 			name:         "endpoint and region from OB",
@@ -45,10 +44,9 @@ func TestGetCredentials(t *testing.T) {
 			wantRegion:   "us-east-1",
 		},
 		{
-			name:             "external endpoint fallback when no OB",
-			externalEndpoint: "https://s3.az1.superphenix.net",
-			seedOB:           false,
-			wantEndpoint:     "https://s3.az1.superphenix.net",
+			name:         "empty endpoint when no OB",
+			seedOB:       false,
+			wantEndpoint: "",
 		},
 		{
 			name:         "OBC missing",
@@ -66,7 +64,7 @@ func TestGetCredentials(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "", 0, tt.externalEndpoint)
+			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "", 0)
 
 			namespace := testNamespace(t)
 			eid := testEffectiveId(t)

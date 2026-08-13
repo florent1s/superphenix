@@ -49,7 +49,7 @@ func GetCredentials(ctx context.Context, namespace, effectiveId string) (Credent
 	}
 
 	return Credentials{
-		Endpoint:        endpointOrFallback(ob.Endpoint),
+		Endpoint:        ob.Endpoint,
 		BucketName:      bucketName,
 		Region:          ob.Region,
 		AccessKeyID:     string(secret.Data["AWS_ACCESS_KEY_ID"]),

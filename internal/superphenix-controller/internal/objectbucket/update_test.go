@@ -70,7 +70,7 @@ func TestUpdateBucket(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "1Ti", 0, "")
+			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "1Ti", 0)
 
 			namespace := testNamespace(t)
 			eid := testEffectiveId(t)

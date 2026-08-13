@@ -116,7 +116,6 @@ type Config struct {
 			StorageClassMapping map[string]string `yaml:"storageClassMapping"`
 			MaxBucketSize       string            `yaml:"maxBucketSize"`
 			MaxBucketObjects    uint64            `yaml:"maxBucketObjects"`
-			ExternalEndpoint    string            `yaml:"externalEndpoint"`
 		} `yaml:"objectStorage"`
 	} `yaml:"productsConfig"`
 
@@ -188,7 +187,6 @@ productsConfig:
     storageClassMapping: {}
     maxBucketSize: "1Ti"
     maxBucketObjects: 1000000
-    externalEndpoint: ""
 disableEditionForResourcesByLabels:
   - key: "app.kubernetes.io/name"
     value: "sfs-kaas"

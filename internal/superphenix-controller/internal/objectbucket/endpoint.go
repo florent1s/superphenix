@@ -49,7 +49,7 @@ func (s storeTLS) endpointFor(port int64) (bool, int64, bool) {
 // resolveOBEndpoint reads the cluster-scoped ObjectBucket referenced by the
 // OBC's spec.objectBucketName and returns its S3 endpoint details. The endpoint
 // is supplementary, so a missing or unreadable OB degrades to empty fields
-// rather than an error (the caller falls back to the configured endpoint).
+// rather than an error.
 func resolveOBEndpoint(ctx context.Context, obc *unstructured.Unstructured) obEndpoint {
 	log := logger.GetLogger(ctx)
 
