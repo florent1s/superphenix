@@ -40,7 +40,7 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
             {{- if .Values.webhook.enabled }}
-            - name: https
+            - name: webhook
               containerPort: 8443
               protocol: TCP
             {{- end }}

@@ -9,9 +9,9 @@ spec:
   type: ClusterIP
   ports:
     - port: 443
-      targetPort: https
+      targetPort: webhook
       protocol: TCP
-      name: https
+      name: webhook
   selector:
     {{- include "superphenix-controller.selectorLabels" . | nindent 4 }}
 {{- end }}

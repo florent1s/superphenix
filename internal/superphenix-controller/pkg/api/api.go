@@ -42,33 +42,31 @@ import (
 //	@name						X-User-Id
 //	@description				User ID accessing to the controller.
 func LaunchEndpoint(address string) {
-	router := chi.NewRouter()
+	// API Router
+	apiRouter := chi.NewRouter()
 
-	router.Use(middleware.RequestID)
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.RealIP)
-	router.Use(middleware.CleanPath)
-	router.Use(utils.AddUserToContext)
-	router.Use(customMw.RequestLogger)
-	router.Use(tracing.MiddlewareHTTP)
-	router.Use(metrics.MiddlewareHTTP)
+	apiRouter.Use(middleware.RequestID)
+	apiRouter.Use(middleware.Recoverer)
+	apiRouter.Use(middleware.RealIP)
+	apiRouter.Use(middleware.CleanPath)
+	apiRouter.Use(utils.AddUserToContext)
+	apiRouter.Use(customMw.RequestLogger)
+	apiRouter.Use(tracing.MiddlewareHTTP)
+	apiRouter.Use(metrics.MiddlewareHTTP)
 
 	// Heartbeat middleware returns if the router is alive
-	router.Use(middleware.Heartbeat("/health"))
-
-	// Mutating Webhook
-	router.Post("/mutate", admission.MutateVolumeSnapshot)
+	apiRouter.Use(middleware.Heartbeat("/health"))
 
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
-	router.Use(middleware.Timeout(60 * time.Second))
+	apiRouter.Use(middleware.Timeout(60 * time.Second))
 
-	router.Group(func(r chi.Router) {
+	apiRouter.Group(func(r chi.Router) {
 		setupDocumentation(r)
 	})
 
-	router.Route("/{orgId}/{projectId}", func(r chi.Router) {
+	apiRouter.Route("/{orgId}/{projectId}", func(r chi.Router) {
 		r.Use(authentication.BearerAuth())
 
 		r.Get("/mark", gc.MarkForDeletion)
@@ -106,18 +104,26 @@ func LaunchEndpoint(address string) {
 		k8s.SSHEndpoint(r)
 	})
 
-	if config.Global.Http.TLS.Enabled {
-		go func() {
-			log.Info().Msgf("Webhook TLS Server starting at %s", config.Global.Http.TLS.Address)
-			if err := http.ListenAndServeTLS(config.Global.Http.TLS.Address, config.Global.Http.TLS.CertFile, config.Global.Http.TLS.KeyFile, router); err != nil {
-				log.Fatal().Err(err).Msg("failed to start Webhook TLS Server")
-			}
-		}()
+	// Webhook Server
+	if config.Global.Http.Webhook.Enabled {
+		go launchWebhookServer()
 	}
 
 	log.Info().Msgf("Http Server starting at %s", address)
-	if err := http.ListenAndServe(address, router); err != nil {
+	if err := http.ListenAndServe(address, apiRouter); err != nil {
 		log.Fatal().Err(err).Msg("failed to start Http Server")
+	}
+}
+
+func launchWebhookServer() {
+	router := chi.NewRouter()
+	router.Use(customMw.RequestLogger)
+
+	router.Post("/mutate", admission.MutateVolumeSnapshot)
+
+	log.Info().Msgf("Webhook Server starting at %s", config.Global.Http.Webhook.Address)
+	if err := http.ListenAndServeTLS(config.Global.Http.Webhook.Address, config.Global.Http.Webhook.CertFile, config.Global.Http.Webhook.KeyFile, router); err != nil {
+		log.Fatal().Err(err).Msg("failed to start Webhook Server")
 	}
 }
 

@@ -59,12 +59,12 @@ type Config struct {
 	Http struct {
 		Address    string `yaml:"address"`
 		AuthSecret string `yaml:"authSecret"`
-		TLS        struct {
+		Webhook    struct {
 			Enabled  bool   `yaml:"enabled"`
 			Address  string `yaml:"address"`
 			CertFile string `yaml:"certFile"`
 			KeyFile  string `yaml:"keyFile"`
-		} `yaml:"tls"`
+		} `yaml:"webhook"`
 	} `yaml:"http"`
 
 	Tracing struct {
