@@ -1,0 +1,34 @@
+{{- if .Values.webhook.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "superphenix-controller.fullname" . }}
+  labels:
+    {{- include "superphenix-controller.labels" . | nindent 4 }}
+  {{- if .Values.webhook.certManager.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "superphenix-controller.fullname" . }}-webhook-cert
+  {{- end }}
+webhooks:
+  - name: volumesnapshot-mutator.superphenix.net
+    matchConditions:
+      - name: 'exclude-already-set-class'
+        expression: '!has(object.spec.volumeSnapshotClassName) || object.spec.volumeSnapshotClassName == ""'
+    admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: {{ include "superphenix-controller.fullname" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /mutate
+        port: 443
+      {{- if not .Values.webhook.certManager.enabled }}
+      caBundle: {{ .Values.webhook.caBundle }}
+      {{- end }}
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: ["snapshot.storage.k8s.io"]
+        apiVersions: ["v1"]
+        resources: ["volumesnapshots"]
+    failurePolicy: {{ .Values.webhook.failurePolicy | default "Fail" }}
+    sideEffects: None
+{{- end }}

@@ -39,6 +39,11 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+            {{- if .Values.webhook.enabled }}
+            - name: webhook
+              containerPort: 8443
+              protocol: TCP
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -47,6 +52,11 @@ spec:
             - name: config
               subPath: config.yaml
               mountPath: /etc/superphenix-controller/config.yaml
+            {{- if .Values.webhook.enabled }}
+            - name: webhook-cert
+              mountPath: /etc/superphenix-controller/certs
+              readOnly: true
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -65,3 +75,8 @@ spec:
         - name: config
           configMap:
             name: {{ template "superphenix-controller.fullname" . }}
+        {{- if .Values.webhook.enabled }}
+        - name: webhook-cert
+          secret:
+            secretName: {{ .Values.webhook.secretName | default (printf "%s-webhook-cert" (include "superphenix-controller.fullname" .)) }}
+        {{- end }}

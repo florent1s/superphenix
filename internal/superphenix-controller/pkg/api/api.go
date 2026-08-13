@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/api"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/admission"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/authentication"
 	configApi "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/config"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/gc"
@@ -41,6 +42,7 @@ import (
 //	@name						X-User-Id
 //	@description				User ID accessing to the controller.
 func LaunchEndpoint(address string) {
+	// API Router
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -102,9 +104,26 @@ func LaunchEndpoint(address string) {
 		k8s.SSHEndpoint(r)
 	})
 
+	// Webhook Server
+	if config.Global.Webhook.Enabled {
+		go launchWebhookServer()
+	}
+
 	log.Info().Msgf("Http Server starting at %s", address)
 	if err := http.ListenAndServe(address, router); err != nil {
 		log.Fatal().Err(err).Msg("failed to start Http Server")
+	}
+}
+
+func launchWebhookServer() {
+	router := chi.NewRouter()
+	router.Use(customMw.RequestLogger)
+	
+	router.Post("/mutate", admission.MutateVolumeSnapshot)
+	
+	log.Info().Msgf("Webhook Server starting at %s", config.Global.Webhook.Address)
+	if err := http.ListenAndServeTLS(config.Global.Webhook.Address, config.Global.Webhook.CertFile, config.Global.Webhook.KeyFile, router); err != nil {
+		log.Fatal().Err(err).Msg("failed to start Webhook Server")
 	}
 }
 

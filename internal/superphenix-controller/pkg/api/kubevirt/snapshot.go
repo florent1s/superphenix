@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/k8s"
-	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/volumeSnapshot"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/k8s/volumeSnapshot"
 	_ "github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
 	"github.com/super-phenix/superphenix/pkg/utils/decoder"

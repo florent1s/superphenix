@@ -1,0 +1,17 @@
+{{- if .Values.webhook.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "superphenix-controller.fullname" . }}-webhook
+  labels:
+    {{- include "superphenix-controller.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: webhook
+      protocol: TCP
+      name: webhook
+  selector:
+    {{- include "superphenix-controller.selectorLabels" . | nindent 4 }}
+{{- end }}
