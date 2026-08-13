@@ -199,6 +199,7 @@ func (h *Service) GetDisk(w http.ResponseWriter, r *http.Request) {
 		result.Disk = azResult["disk"]
 		result.PVC = azResult["pvc"]
 		result.MountStatus = azResult["mountStatus"]
+		result.Replication = azResult["replication"]
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -542,6 +543,7 @@ type DiskFullResponse struct {
 	Disk            interface{} `json:"disk"`
 	PVC             interface{} `json:"pvc"`
 	MountStatus     interface{} `json:"mountStatus"`
+	Replication     interface{} `json:"replication,omitempty"`
 }
 
 // Unmount

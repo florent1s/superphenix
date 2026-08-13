@@ -8304,7 +8304,8 @@ const docTemplate = `{
                 "productTypeId": {
                     "type": "string"
                 },
-                "pvc": {}
+                "pvc": {},
+                "replication": {}
             }
         },
         "disk.UpdateDiskBody": {

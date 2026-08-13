@@ -229,6 +229,15 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - replication.storage.openshift.io
+    resources:
+      - volumereplications
+      - volumereplicationclasses
+    verbs:
+      - get
+      - list
+      - watch
 
 
 ---

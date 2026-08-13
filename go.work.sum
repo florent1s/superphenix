@@ -349,6 +349,8 @@ github.com/cnf/structhash v0.0.0-20250313080605-df4c6cc74a9a/go.mod h1:pCxVEbcm3
 github.com/cockroachdb/datadriven v1.0.2 h1:H9MtNqVoVhvd9nCBwOyDjUEdZCREqbIdCJD93PBm/jA=
 github.com/container-storage-interface/spec v1.9.0 h1:zKtX4STsq31Knz3gciCYCi1SXtO2HJDecIjDVboYavY=
 github.com/container-storage-interface/spec v1.9.0/go.mod h1:ZfDu+3ZRyeVqxZM0Ds19MVLkN2d1XJ5MAfi1L3VjlT0=
+github.com/container-storage-interface/spec v1.11.0 h1:H/YKTOeUZwHtyPOr9raR+HgFmGluGCklulxDYxSdVNM=
+github.com/container-storage-interface/spec v1.11.0/go.mod h1:DtUvaQszPml1YJfIK7c00mlv6/g4wNMLanLgiUbKFRI=
 github.com/containerd/aufs v1.0.0 h1:2oeJiwX5HstO7shSrPZjrohJZLzK36wvpdmzDRkL/LY=
 github.com/containerd/aufs v1.0.0/go.mod h1:kL5kd6KM5TzQjR79jljyi4olc1Vrx6XBlcyj3gNv2PU=
 github.com/containerd/btrfs/v2 v2.0.0 h1:FN4wsx7KQrYoLXN7uLP0vBV4oVWHOIKDRQ1G2Z0oL5M=
@@ -402,6 +404,8 @@ github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8
 github.com/coreos/go-systemd/v22 v22.7.0 h1:LAEzFkke61DFROc7zNLX/WA2i5J8gYqe0rSj9KI28KA=
 github.com/coreos/go-systemd/v22 v22.7.0/go.mod h1:xNUYtjHu2EDXbsxz1i41wouACIwT7Ybq9o0BQhMwD0w=
 github.com/cpuguy83/go-md2man/v2 v2.0.6 h1:XJtiaUW6dEEqVuZiMTn1ldk455QWwEIsMIJlo5vtkx0=
+github.com/csi-addons/spec v0.2.1-0.20250610152019-b5a7205f6a79 h1:ditFTa+wl7DLanGQHSS/AwuITGuWeBXyl7syPO4n+4s=
+github.com/csi-addons/spec v0.2.1-0.20250610152019-b5a7205f6a79/go.mod h1:Mwq4iLiUV4s+K1bszcWU6aMsR5KPsbIYzzszJ6+56vI=
 github.com/danieljoos/wincred v1.1.2 h1:QLdCxFs1/Yl4zduvBdcHB8goaYk9RARS2SgLLRuAyr0=
 github.com/danieljoos/wincred v1.1.2/go.mod h1:GijpziifJoIBfYh+S7BbkdUTU4LfM+QnGqR5Vl2tAx0=
 github.com/davidmz/go-pageant v1.0.2 h1:bPblRCh5jGU+Uptpz6LgMZGD5hJoOt7otgT454WvHn0=
@@ -659,6 +663,8 @@ github.com/kubeovn/gonetworkmanager/v3 v3.0.0-20250410045132-f48faac0d315/go.mod
 github.com/kubeovn/ovsdb v0.0.0-20240410091831-5dd26006c475 h1:KZba2Kj9TXCUdUSqOR3eiy4VvkkIyhDVImYmYs6GQWU=
 github.com/kubeovn/ovsdb v0.0.0-20240410091831-5dd26006c475/go.mod h1:LAd0qoeAAm/QyZcpxN2BnpndM2/dhZt+/kokPvcxKcE=
 github.com/kubernetes-csi/csi-lib-utils v0.7.0 h1:t1cS7HTD7z5D7h9iAdjWuHtMxJPb9s1fIv34rxytzqs=
+github.com/kubernetes-csi/csi-lib-utils v0.22.0 h1:EUAs1+uHGps3OtVj4XVx16urhpI02eu+Z8Vps6plpHY=
+github.com/kubernetes-csi/csi-lib-utils v0.22.0/go.mod h1:f+PalKyS4Ujsjb9+m6Rj0W6c28y3nfea3paQ/VqjI28=
 github.com/kubernetes-csi/csi-test v2.0.0+incompatible h1:ia04uVFUM/J9n/v3LEMn3rEG6FmKV5BH9QLw7H68h44=
 github.com/kubernetes-csi/external-snapshotter v1.2.2 h1:OPXoJydNqkWjhLwJ20dSqOhkmUYcpm+CCO0pYm+C8Q8=
 github.com/kubernetes-csi/external-snapshotter/client/v8 v8.2.0 h1:Q3jQ1NkFqv5o+F8dMmHd8SfEmlcwNeo1immFApntEwE=
