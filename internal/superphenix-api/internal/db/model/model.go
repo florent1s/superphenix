@@ -71,6 +71,9 @@ type Organization struct {
 	AdministrativeContact *string
 	BillingContact        *string
 	TechnicalContact      *string
+
+	// PredefinedCatalogVersion is the catalog version this organization is reconciled against.
+	PredefinedCatalogVersion int `gorm:"not null;default:0"`
 }
 
 type Project struct {
@@ -89,6 +92,10 @@ type Group struct {
 	// List all projects concerned by the Group
 	ProjectIds     []string `gorm:"serializer:json"`
 	PermissionSets []string `gorm:"serializer:json"`
+
+	// PredefinedKey links the group to an entry of v1.PredefinedGroups. Nil means the group is
+	// custom: user-owned and never touched by the reconciler.
+	PredefinedKey *string `gorm:"index"`
 }
 
 type ProductType struct {

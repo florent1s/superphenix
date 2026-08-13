@@ -34,6 +34,26 @@ func Delete(id string) error {
 	return group.DeleteAllByOrgaId(id)
 }
 
+// SetPredefinedCatalogVersion is written once every predefined group of the organization has been
+// reconciled.
+func SetPredefinedCatalogVersion(orgaId uuid.UUID, version int) error {
+	return db.Client.Model(&model.Organization{}).
+		Where("id = ?", orgaId).
+		Update("predefined_catalog_version", version).Error
+}
+
+// FindStaleForPredefinedCatalog returns the organizations behind the given catalog version, or
+// every organization when all is set.
+func FindStaleForPredefinedCatalog(version int, all bool) ([]model.Organization, error) {
+	var list []model.Organization
+	query := db.Client.Model(&model.Organization{})
+	if !all {
+		query = query.Where("predefined_catalog_version < ?", version)
+	}
+	result := query.Find(&list)
+	return list, result.Error
+}
+
 func FindById(orgaId string) (model.Organization, error) {
 	orgaUuid, _ := uuid.Parse(orgaId)
 	return crud.Find[model.Organization, model.Organization](model.Organization{

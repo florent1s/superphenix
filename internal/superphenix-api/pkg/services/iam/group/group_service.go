@@ -21,6 +21,7 @@ type API interface {
 	GetAllOrganizationGroups(http.ResponseWriter, *http.Request)
 	GetOrganizationGroup(http.ResponseWriter, *http.Request)
 	CreateOrUpdateOrganizationGroup(http.ResponseWriter, *http.Request)
+	DuplicateOrganizationGroup(http.ResponseWriter, *http.Request)
 	DeleteOrganizationGroup(http.ResponseWriter, *http.Request)
 }
 
@@ -52,6 +53,7 @@ func Module(s API) router.Module {
 			router.Get("/organization/{orgaId}/iam/group", s.GetAllOrganizationGroups, jwtOrToken, orgaRead, iamRead),
 			router.Get("/organization/{orgaId}/iam/group/{groupId}", s.GetOrganizationGroup, jwtOrToken, orgaRead, iamRead),
 			router.Post("/organization/{orgaId}/iam/group", s.CreateOrUpdateOrganizationGroup, jwtOrToken, orgaRead, iamWrite),
+			router.Post("/organization/{orgaId}/iam/group/{groupId}/duplicate", s.DuplicateOrganizationGroup, jwtOrToken, orgaRead, iamWrite),
 			router.Delete("/organization/{orgaId}/iam/group", s.DeleteOrganizationGroup, jwtOrToken, orgaRead, iamWrite),
 		},
 	}

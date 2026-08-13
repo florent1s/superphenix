@@ -15,6 +15,38 @@ If assigned to multiple groups, the user benefits from all permissions granted b
 Permissions and PermissionSets are divided into two categories:
 those associated with an **organization** and those associated with a **project**.
 
+## Predefined vs. custom groups
+
+**Predefined groups** are Owner, Admin, Billing and Developer, defined by the `PredefinedGroups`
+catalog in `pkg/base/v1/schema_default.go`. Each is persisted with its catalog key (`owner`,
+`admin`, `billing`, `developer`) in `groups.predefined_key`. The key never changes, so the display
+name can be relabelled without losing track of the group. Predefined groups cannot be edited or
+deleted through the API (403) and do not count against the organization's IAM group quota.
+
+**Custom groups** have a `NULL` `predefined_key`, which is what keeps them out of the reconciler.
+`POST /v1/organization/{orgaId}/iam/group/{groupId}/duplicate` returns an editable copy of any
+group, with no key.
+
+### Keeping predefined groups up to date
+
+Each organization records the catalog version it is aligned on in
+`organizations.predefined_catalog_version`. On API startup, and from
+`POST /admin/permission/update-schema`, the reconciler selects the organizations below
+`PredefinedCatalogVersion`, pushes the default Permify schema, then upserts every catalog entry by
+key: missing ones are created, existing ones overwritten with the catalog's name and PermissionSets.
+The version is recorded only once every group of that organization succeeded, so a failure is
+retried on the next pass. Pass `{"force": true}` to the admin endpoint to re-run against every
+organization regardless of its version.
+
+Adding a PermissionSet to a predefined group is therefore:
+
+1. Declare the relation in `pkg/base/v1/schema/schema_default.perm`.
+2. Add the constant in `pkg/base/v1/permissionSet/permissionSet.go` and its entity mapping.
+3. Add it to the relevant entry of `PredefinedGroups`.
+4. Bump `PredefinedCatalogVersion`.
+
+Every live organization picks the change up on the next API start.
+
 ## Permissions by Right
 
 ### Organization Permissions

@@ -28,12 +28,15 @@ type UpdateDefaultSchemaBody struct {
 		New string
 	}
 	DeletedRelations []string
+	// Force reconciles every organization, not only those behind the catalog version.
+	Force bool
 }
 type UpdateDefaultSchemaResponse struct {
 	OrganizationUpdated   int                       `json:"organization_updated"`
 	OrganizationFailedIds []uuid.UUID               `json:"organizationFailedIds"`
 	GroupFailedIds        map[uuid.UUID][]uuid.UUID `json:"groupFailedIds"`
 	GroupMissingIds       map[uuid.UUID][]uuid.UUID `json:"groupMissingIds"`
+	Reconcile             group.ReconcileReport     `json:"reconcile"`
 }
 
 // UpdateDefaultSchema update permission schema
@@ -125,11 +128,18 @@ func (h *Service) UpdateDefaultSchema(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	// Runs last: the pass above can only rename or delete permission sets, not add one.
+	reconcile, err := group.ReconcilePredefinedGroups(r.Context(), body.Force)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to reconcile predefined groups")
+	}
+
 	result := UpdateDefaultSchemaResponse{
 		OrganizationUpdated:   len(orgaSucessfulIds),
 		OrganizationFailedIds: orgaFailedIds,
 		GroupFailedIds:        groupsFailedIds,
 		GroupMissingIds:       groupsMissingIds,
+		Reconcile:             reconcile,
 	}
 
 	d, _ := json.Marshal(result)

@@ -40,13 +40,18 @@ func FindAllByOrgaId(orgaId string) ([]httpModel.APIGroup, error) {
 	})
 }
 
+// FindByPredefinedKey returns the group holding the given catalog key in the organization. A
+// partial unique index guarantees the pair is unique.
+func FindByPredefinedKey(orgaId uuid.UUID, key string) (model.Group, error) {
+	var group model.Group
+	result := db.Client.Where("orga_id = ? AND predefined_key = ?", orgaId, key).First(&group)
+	return group, result.Error
+}
+
 func FindOwnerGroup(orgId string) (model.Group, error) {
 	orgUuid, _ := uuid.Parse(orgId)
 
-	return crud.Find[model.Group, model.Group](model.Group{
-		OrgaId: orgUuid,
-		Name:   v1.DefaultGroupOwnerName,
-	})
+	return FindByPredefinedKey(orgUuid, v1.PredefinedGroupOwner)
 }
 
 func FindAllByOrgaIdExceptOwner(orgaId string) ([]httpModel.APIGroup, error) {
@@ -56,7 +61,8 @@ func FindAllByOrgaIdExceptOwner(orgaId string) ([]httpModel.APIGroup, error) {
 		OrgaId: orgaUuid,
 	}
 
-	query := db.Client.Model(&modelGroup).Where(&modelGroup).Not(&model.Group{Name: v1.DefaultGroupOwnerName})
+	query := db.Client.Model(&modelGroup).Where(&modelGroup).
+		Where("predefined_key IS NULL OR predefined_key <> ?", v1.PredefinedGroupOwner)
 
 	var list []model.Group
 	result := query.Find(&list)
@@ -129,8 +135,10 @@ func IsQuotaCreationReached(ctx context.Context, orgaId uuid.UUID) (bool, error)
 		return false, err
 	}
 
+	// Only custom groups count, otherwise adding a predefined group would shrink the allowance.
 	var count int64
-	res := db.Client.Model(&model.Group{}).Where(&model.Group{OrgaId: orgaId}).Count(&count)
+	res := db.Client.Model(&model.Group{}).Where(&model.Group{OrgaId: orgaId}).
+		Where("predefined_key IS NULL").Count(&count)
 	if res.Error != nil {
 		log.Err(err).Str("orgaId", orgaId.String()).Msg("failed to count projects")
 		return false, err

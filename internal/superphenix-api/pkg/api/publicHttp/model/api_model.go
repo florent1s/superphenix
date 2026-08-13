@@ -73,6 +73,8 @@ type APIGroup struct {
 	// List all projects concerned by the Group
 	ProjectIds     []string `json:"projectIds,omitempty"`
 	PermissionSets []string `json:"permissionSets,omitempty"`
+	// PredefinedKey is set on groups that cannot be edited or deleted. Empty means custom.
+	PredefinedKey *string `json:"predefinedKey,omitempty"`
 }
 
 type APIAz struct {
