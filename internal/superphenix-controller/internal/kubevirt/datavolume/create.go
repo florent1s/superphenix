@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/k8s/pvc"
-	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/kubevirt/volumeSnapshot"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/k8s/volumeSnapshot"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"

@@ -54,6 +54,17 @@ serviceMonitor:
   metricRelabelings: []
 
 # Configuration values must be under `.superphenixController.config`
+webhook:
+  enabled: true
+  failurePolicy: Ignore
+  secretName: ""
+  caBundle: ""
+  certManager:
+    enabled: true
+    issuerRef:
+      kind: ClusterIssuer
+      name: selfsigned-issuer
+
 superphenixController: {}
 
 ingress:

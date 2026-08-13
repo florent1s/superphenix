@@ -19,7 +19,7 @@ import (
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/kubevirt/datavolume"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/kubevirt/vm"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/kubevirt/vmSnapshot"
-	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/kubevirt/volumeSnapshot"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/resources/k8s/volumeSnapshot"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/gc/utils"
 	apiUtils "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/utils"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"

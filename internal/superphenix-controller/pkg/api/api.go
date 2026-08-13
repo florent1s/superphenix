@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/api"
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/admission"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/authentication"
 	configApi "github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/config"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/api/gc"
@@ -55,6 +56,9 @@ func LaunchEndpoint(address string) {
 	// Heartbeat middleware returns if the router is alive
 	router.Use(middleware.Heartbeat("/health"))
 
+	// Mutating Webhook
+	router.Post("/mutate", admission.MutateVolumeSnapshot)
+
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
@@ -101,6 +105,15 @@ func LaunchEndpoint(address string) {
 		//// OTHERS ////
 		k8s.SSHEndpoint(r)
 	})
+
+	if config.Global.Http.TLS.Enabled {
+		go func() {
+			log.Info().Msgf("Webhook TLS Server starting at %s", config.Global.Http.TLS.Address)
+			if err := http.ListenAndServeTLS(config.Global.Http.TLS.Address, config.Global.Http.TLS.CertFile, config.Global.Http.TLS.KeyFile, router); err != nil {
+				log.Fatal().Err(err).Msg("failed to start Webhook TLS Server")
+			}
+		}()
+	}
 
 	log.Info().Msgf("Http Server starting at %s", address)
 	if err := http.ListenAndServe(address, router); err != nil {

@@ -59,6 +59,12 @@ type Config struct {
 	Http struct {
 		Address    string `yaml:"address"`
 		AuthSecret string `yaml:"authSecret"`
+		TLS        struct {
+			Enabled  bool   `yaml:"enabled"`
+			Address  string `yaml:"address"`
+			CertFile string `yaml:"certFile"`
+			KeyFile  string `yaml:"keyFile"`
+		} `yaml:"tls"`
 	} `yaml:"http"`
 
 	Tracing struct {
@@ -143,6 +149,11 @@ logging:
 http:
   address: ":8080"
   authSecret: "secret"
+  tls:
+    enabled: false
+    address: ":8443"
+    certFile: ""
+    keyFile: ""
 tracing:
   enabled: false
   address: "http://94.23.250.59:14268/api/traces"
