@@ -13,7 +13,7 @@ webhooks:
   - name: volumesnapshot-mutator.superphenix.net
     matchConditions:
       - name: 'exclude-already-set-class'
-        expression: '!has(object.spec.volumeSnapshotClassName)'
+        expression: '!has(object.spec.volumeSnapshotClassName) || object.spec.volumeSnapshotClassName == ""'
     admissionReviewVersions: ["v1"]
     clientConfig:
       service:

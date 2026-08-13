@@ -149,7 +149,7 @@ logging:
 http:
   address: ":8080"
   authSecret: "secret"
-  tls:
+  webhook:
     enabled: false
     address: ":8443"
     certFile: ""

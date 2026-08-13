@@ -43,30 +43,30 @@ import (
 //	@description				User ID accessing to the controller.
 func LaunchEndpoint(address string) {
 	// API Router
-	apiRouter := chi.NewRouter()
+	router := chi.NewRouter()
 
-	apiRouter.Use(middleware.RequestID)
-	apiRouter.Use(middleware.Recoverer)
-	apiRouter.Use(middleware.RealIP)
-	apiRouter.Use(middleware.CleanPath)
-	apiRouter.Use(utils.AddUserToContext)
-	apiRouter.Use(customMw.RequestLogger)
-	apiRouter.Use(tracing.MiddlewareHTTP)
-	apiRouter.Use(metrics.MiddlewareHTTP)
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.CleanPath)
+	router.Use(utils.AddUserToContext)
+	router.Use(customMw.RequestLogger)
+	router.Use(tracing.MiddlewareHTTP)
+	router.Use(metrics.MiddlewareHTTP)
 
 	// Heartbeat middleware returns if the router is alive
-	apiRouter.Use(middleware.Heartbeat("/health"))
+	router.Use(middleware.Heartbeat("/health"))
 
 	// Set a timeout value on the request context (ctx), that will signal
 	// through ctx.Done() that the request has timed out and further
 	// processing should be stopped.
-	apiRouter.Use(middleware.Timeout(60 * time.Second))
+	router.Use(middleware.Timeout(60 * time.Second))
 
-	apiRouter.Group(func(r chi.Router) {
+	router.Group(func(r chi.Router) {
 		setupDocumentation(r)
 	})
 
-	apiRouter.Route("/{orgId}/{projectId}", func(r chi.Router) {
+	router.Route("/{orgId}/{projectId}", func(r chi.Router) {
 		r.Use(authentication.BearerAuth())
 
 		r.Get("/mark", gc.MarkForDeletion)
@@ -110,7 +110,7 @@ func LaunchEndpoint(address string) {
 	}
 
 	log.Info().Msgf("Http Server starting at %s", address)
-	if err := http.ListenAndServe(address, apiRouter); err != nil {
+	if err := http.ListenAndServe(address, router); err != nil {
 		log.Fatal().Err(err).Msg("failed to start Http Server")
 	}
 }
