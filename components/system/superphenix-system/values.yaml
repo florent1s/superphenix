@@ -40,7 +40,7 @@ cleanupOnDeletion: false
 apps:
   # -- Superphenix controller deployed on every availability-zone cluster.
   superphenix-controller:
-    enabled: false
+    enabled: true
     wave: "-10"
     modes: [Hyperconverged, DecoupledWorkload]
     automation:
