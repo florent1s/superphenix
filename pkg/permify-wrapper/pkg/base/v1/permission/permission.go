@@ -36,8 +36,8 @@ const (
 	ProjectLoadBalancerRead  = "ProjectLoadBalancerRead"
 	ProjectLoadBalancerWrite = "ProjectLoadBalancerWrite"
 
-	ProjectFirewallRead  = "ProjectFirewallRead"
-	ProjectFirewallWrite = "ProjectFirewallWrite"
+	ProjectSecurityGroupRead  = "ProjectSecurityGroupRead"
+	ProjectSecurityGroupWrite = "ProjectSecurityGroupWrite"
 
 	ProjectSSHRead  = "ProjectSSHRead"
 	ProjectSSHWrite = "ProjectSSHWrite"
@@ -78,16 +78,16 @@ var PermissionsEntityMap = map[string]string{
 	ProjectSnapshotRead:  entity.Project,
 	ProjectSnapshotWrite: entity.Project,
 
-	ProjectVPCRead:           entity.Project,
-	ProjectVPCWrite:          entity.Project,
-	ProjectSubnetRead:        entity.Project,
-	ProjectSubnetWrite:       entity.Project,
-	ProjectEipRead:           entity.Project,
-	ProjectEipWrite:          entity.Project,
-	ProjectLoadBalancerRead:  entity.Project,
-	ProjectLoadBalancerWrite: entity.Project,
-	ProjectFirewallRead:      entity.Project,
-	ProjectFirewallWrite:     entity.Project,
+	ProjectVPCRead:            entity.Project,
+	ProjectVPCWrite:           entity.Project,
+	ProjectSubnetRead:         entity.Project,
+	ProjectSubnetWrite:        entity.Project,
+	ProjectEipRead:            entity.Project,
+	ProjectEipWrite:           entity.Project,
+	ProjectLoadBalancerRead:   entity.Project,
+	ProjectLoadBalancerWrite:  entity.Project,
+	ProjectSecurityGroupRead:  entity.Project,
+	ProjectSecurityGroupWrite: entity.Project,
 
 	ProjectSSHRead:  entity.Project,
 	ProjectSSHWrite: entity.Project,

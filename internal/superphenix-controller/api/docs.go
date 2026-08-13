@@ -1238,303 +1238,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/{orgId}/{projectId}/firewall": {
-            "get": {
-                "description": "Retrieve all Network Policies for a project",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "NetworkPolicy"
-                ],
-                "summary": "Retrieve all Network Policies",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Network Policies",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/view.Firewall"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a NetworkPolicy",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "v1",
-                    "NetworkPolicy"
-                ],
-                "summary": "Create a NetworkPolicy",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "NetworkPolicy info",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/netpol.CreateNetPolInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a NetworkPolicy by Effective ID",
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "v1",
-                    "NetworkPolicy"
-                ],
-                "summary": "Delete a NetworkPolicy",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "NetworkPolicy Effective ID",
-                        "name": "effectiveId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/{orgId}/{projectId}/firewall/localId/{localId}": {
-            "get": {
-                "description": "Get Network Policy by local ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "NetworkPolicy"
-                ],
-                "summary": "Get Network Policy by local ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Network Policy Local ID",
-                        "name": "localId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Network Policy",
-                        "schema": {
-                            "$ref": "#/definitions/view.Firewall"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/{orgId}/{projectId}/firewall/{effectiveId}": {
-            "get": {
-                "description": "Get Network Policy by effective ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "NetworkPolicy"
-                ],
-                "summary": "Get Network Policy by effective ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Network Policy Effective ID",
-                        "name": "effectiveId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Network Policy",
-                        "schema": {
-                            "$ref": "#/definitions/view.Firewall"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "post": {
-                "description": "Update a Network Policy",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "v1",
-                    "Network Policy"
-                ],
-                "summary": "Update a Network Policy",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "network Policy info",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/netpol.UpdateNetPolInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
         "/{orgId}/{projectId}/instance": {
             "get": {
                 "description": "Retrieve all instances for a project",
@@ -3043,7 +2746,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/view.Firewall"
+                                "$ref": "#/definitions/view.SecurityGroup"
                             }
                         }
                     },
@@ -3438,6 +3141,303 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/config.S3Config"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/{orgId}/{projectId}/security-group": {
+            "get": {
+                "description": "Retrieve all Network Policies for a project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "NetworkPolicy"
+                ],
+                "summary": "Retrieve all Network Policies",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Network Policies",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/view.SecurityGroup"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a NetworkPolicy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "v1",
+                    "NetworkPolicy"
+                ],
+                "summary": "Create a NetworkPolicy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "NetworkPolicy info",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/netpol.CreateNetPolInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a NetworkPolicy by Effective ID",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "v1",
+                    "NetworkPolicy"
+                ],
+                "summary": "Delete a NetworkPolicy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "NetworkPolicy Effective ID",
+                        "name": "effectiveId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/{orgId}/{projectId}/security-group/localId/{localId}": {
+            "get": {
+                "description": "Get Network Policy by local ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "NetworkPolicy"
+                ],
+                "summary": "Get Network Policy by local ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Network Policy Local ID",
+                        "name": "localId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Network Policy",
+                        "schema": {
+                            "$ref": "#/definitions/view.SecurityGroup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/{orgId}/{projectId}/security-group/{effectiveId}": {
+            "get": {
+                "description": "Get Network Policy by effective ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "NetworkPolicy"
+                ],
+                "summary": "Get Network Policy by effective ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Network Policy Effective ID",
+                        "name": "effectiveId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Network Policy",
+                        "schema": {
+                            "$ref": "#/definitions/view.SecurityGroup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "description": "Update a Network Policy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "v1",
+                    "Network Policy"
+                ],
+                "summary": "Update a Network Policy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "network Policy info",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/netpol.UpdateNetPolInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -5941,7 +5941,7 @@ const docTemplate = `{
                 "ports": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/netpol.FwPort"
+                        "$ref": "#/definitions/netpol.SgPort"
                     }
                 },
                 "to": {
@@ -5949,20 +5949,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/netpol.Peer"
                     }
-                }
-            }
-        },
-        "netpol.FwPort": {
-            "type": "object",
-            "properties": {
-                "endPort": {
-                    "type": "integer"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "protocol": {
-                    "type": "string"
                 }
             }
         },
@@ -5998,7 +5984,7 @@ const docTemplate = `{
                 "ports": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/netpol.FwPort"
+                        "$ref": "#/definitions/netpol.SgPort"
                     }
                 }
             }
@@ -6056,6 +6042,20 @@ const docTemplate = `{
                 },
                 "podSelector": {
                     "$ref": "#/definitions/netpol.LabelSelector"
+                }
+            }
+        },
+        "netpol.SgPort": {
+            "type": "object",
+            "properties": {
+                "endPort": {
+                    "type": "integer"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "protocol": {
+                    "type": "string"
                 }
             }
         },
@@ -13481,35 +13481,6 @@ const docTemplate = `{
                 }
             }
         },
-        "view.Firewall": {
-            "type": "object",
-            "properties": {
-                "codeAZ": {
-                    "type": "string"
-                },
-                "eid": {
-                    "description": "effective ID",
-                    "type": "string"
-                },
-                "firewall": {
-                    "$ref": "#/definitions/view.NetPolView"
-                },
-                "gitops": {
-                    "type": "string"
-                },
-                "id": {
-                    "description": "local ID",
-                    "type": "string"
-                },
-                "productName": {
-                    "description": "human-readable name",
-                    "type": "string"
-                },
-                "resourceTypeId": {
-                    "type": "string"
-                }
-            }
-        },
         "view.Instance": {
             "type": "object",
             "properties": {
@@ -14214,6 +14185,35 @@ const docTemplate = `{
                 "phase": {
                     "description": "Phase is the current phase of the Schedule\n+optional",
                     "type": "string"
+                }
+            }
+        },
+        "view.SecurityGroup": {
+            "type": "object",
+            "properties": {
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "resourceTypeId": {
+                    "type": "string"
+                },
+                "securityGroup": {
+                    "$ref": "#/definitions/view.NetPolView"
                 }
             }
         },

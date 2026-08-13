@@ -56,14 +56,14 @@ func NetPolToView(fw v1.NetworkPolicy) NetPolView {
 	return fwView
 }
 
-func (view NetPolView) ToResource() Firewall {
-	return Firewall{
+func (view NetPolView) ToResource() SecurityGroup {
+	return SecurityGroup{
 		Resource: Resource{
 			ID:          view.Labels[spxId.SpxLabelResourceLocalID],
 			EId:         view.Name,
 			ProductName: view.Labels[spxId.SpxLabelResourceName],
 			Gitops:      view.Labels[spxId.SpxLabelGitops],
 		},
-		Firewall: view,
+		SecurityGroup: view,
 	}
 }

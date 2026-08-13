@@ -65,7 +65,7 @@ Superphenix is the modern, open alternative.
 |------------------|---------------------------------------------------------------------------|
 | **Hypervisor**   | VMs with live migration, snapshots and node autoscaling                   |
 | **Storage**      | Block, file and S3-compatible storage with replication and DR             |
-| **Networking**   | VPCs, NAT gateways, BGP, load balancers, QoS and firewalling              |
+| **Networking**   | VPCs, NAT gateways, BGP, load balancers, QoS and security groups              |
 | **PaaS**         | Kubernetes as a Service for tenant clusters                               |
 | **SaaS**         | Ready-to-run services — databases, Harbor, GitLab, Nextcloud and more     |
 | **Console**      | Multi-tenant web UI spanning every AZ and region                          |

@@ -340,157 +340,6 @@ definitions:
             type: array
         type: object
     type: object
-  firewall.CreateFirewallBody:
-    properties:
-      general:
-        properties:
-          description:
-            type: string
-          productName:
-            maxLength: 63
-            type: string
-        type: object
-      spec:
-        properties:
-          egress:
-            items:
-              $ref: '#/definitions/firewall.EgressRule'
-            type: array
-          ingress:
-            items:
-              $ref: '#/definitions/firewall.IngressRule'
-            type: array
-          target:
-            $ref: '#/definitions/firewall.LabelSelector'
-        type: object
-    type: object
-  firewall.EgressRule:
-    properties:
-      allowAll:
-        type: boolean
-      denyAll:
-        type: boolean
-      ports:
-        items:
-          $ref: '#/definitions/firewall.FwPort'
-        type: array
-      to:
-        items:
-          $ref: '#/definitions/firewall.Peer'
-        type: array
-    type: object
-  firewall.FirewallFullResponse:
-    properties:
-      codeAZ:
-        type: string
-      eid:
-        description: effective ID
-        type: string
-      firewall: {}
-      gitops:
-        type: string
-      id:
-        description: local ID
-        type: string
-      productName:
-        description: human-readable name
-        type: string
-      productTypeId:
-        type: string
-    type: object
-  firewall.FwPort:
-    properties:
-      endPort:
-        type: integer
-      port:
-        type: integer
-      protocol:
-        type: string
-    type: object
-  firewall.IPBlock:
-    properties:
-      CIDR:
-        type: string
-      Except:
-        items:
-          type: string
-        type: array
-    type: object
-  firewall.IngressRule:
-    properties:
-      allowAll:
-        type: boolean
-      denyAll:
-        type: boolean
-      from:
-        items:
-          $ref: '#/definitions/firewall.Peer'
-        type: array
-      ports:
-        items:
-          $ref: '#/definitions/firewall.FwPort'
-        type: array
-    type: object
-  firewall.LabelSelector:
-    properties:
-      matchExpressions:
-        items:
-          $ref: '#/definitions/firewall.MatchExpression'
-        type: array
-      matchLabels:
-        items:
-          $ref: '#/definitions/firewall.MatchLabel'
-        type: array
-    type: object
-  firewall.MatchExpression:
-    properties:
-      key:
-        type: string
-      operator:
-        type: string
-      values:
-        items:
-          type: string
-        type: array
-    type: object
-  firewall.MatchLabel:
-    properties:
-      key:
-        type: string
-      value:
-        type: string
-    type: object
-  firewall.Peer:
-    properties:
-      IPBlock:
-        $ref: '#/definitions/firewall.IPBlock'
-      podSelector:
-        $ref: '#/definitions/firewall.LabelSelector'
-    type: object
-  firewall.UpdateFirewallBody:
-    properties:
-      general:
-        properties:
-          description:
-            type: string
-          productName:
-            maxLength: 63
-            type: string
-        type: object
-      spec:
-        properties:
-          egress:
-            items:
-              $ref: '#/definitions/firewall.EgressRule'
-            type: array
-          ingress:
-            items:
-              $ref: '#/definitions/firewall.IngressRule'
-            type: array
-          target:
-            $ref: '#/definitions/firewall.LabelSelector'
-        type: object
-    type: object
   github_com_super-phenix_superphenix_internal_superphenix-api_internal_db_model.Organization:
     properties:
       administrativeContact:
@@ -1339,6 +1188,157 @@ definitions:
       name:
         maxLength: 63
         type: string
+    type: object
+  securitygroup.CreateSecurityGroupBody:
+    properties:
+      general:
+        properties:
+          description:
+            type: string
+          productName:
+            maxLength: 63
+            type: string
+        type: object
+      spec:
+        properties:
+          egress:
+            items:
+              $ref: '#/definitions/securitygroup.EgressRule'
+            type: array
+          ingress:
+            items:
+              $ref: '#/definitions/securitygroup.IngressRule'
+            type: array
+          target:
+            $ref: '#/definitions/securitygroup.LabelSelector'
+        type: object
+    type: object
+  securitygroup.EgressRule:
+    properties:
+      allowAll:
+        type: boolean
+      denyAll:
+        type: boolean
+      ports:
+        items:
+          $ref: '#/definitions/securitygroup.SgPort'
+        type: array
+      to:
+        items:
+          $ref: '#/definitions/securitygroup.Peer'
+        type: array
+    type: object
+  securitygroup.IPBlock:
+    properties:
+      CIDR:
+        type: string
+      Except:
+        items:
+          type: string
+        type: array
+    type: object
+  securitygroup.IngressRule:
+    properties:
+      allowAll:
+        type: boolean
+      denyAll:
+        type: boolean
+      from:
+        items:
+          $ref: '#/definitions/securitygroup.Peer'
+        type: array
+      ports:
+        items:
+          $ref: '#/definitions/securitygroup.SgPort'
+        type: array
+    type: object
+  securitygroup.LabelSelector:
+    properties:
+      matchExpressions:
+        items:
+          $ref: '#/definitions/securitygroup.MatchExpression'
+        type: array
+      matchLabels:
+        items:
+          $ref: '#/definitions/securitygroup.MatchLabel'
+        type: array
+    type: object
+  securitygroup.MatchExpression:
+    properties:
+      key:
+        type: string
+      operator:
+        type: string
+      values:
+        items:
+          type: string
+        type: array
+    type: object
+  securitygroup.MatchLabel:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    type: object
+  securitygroup.Peer:
+    properties:
+      IPBlock:
+        $ref: '#/definitions/securitygroup.IPBlock'
+      podSelector:
+        $ref: '#/definitions/securitygroup.LabelSelector'
+    type: object
+  securitygroup.SecurityGroupFullResponse:
+    properties:
+      codeAZ:
+        type: string
+      eid:
+        description: effective ID
+        type: string
+      gitops:
+        type: string
+      id:
+        description: local ID
+        type: string
+      productName:
+        description: human-readable name
+        type: string
+      productTypeId:
+        type: string
+      securityGroup: {}
+    type: object
+  securitygroup.SgPort:
+    properties:
+      endPort:
+        type: integer
+      port:
+        type: integer
+      protocol:
+        type: string
+    type: object
+  securitygroup.UpdateSecurityGroupBody:
+    properties:
+      general:
+        properties:
+          description:
+            type: string
+          productName:
+            maxLength: 63
+            type: string
+        type: object
+      spec:
+        properties:
+          egress:
+            items:
+              $ref: '#/definitions/securitygroup.EgressRule'
+            type: array
+          ingress:
+            items:
+              $ref: '#/definitions/securitygroup.IngressRule'
+            type: array
+          target:
+            $ref: '#/definitions/securitygroup.LabelSelector'
+        type: object
     type: object
   snapshot.CreateSnapshotBody:
     properties:
@@ -2677,221 +2677,6 @@ paths:
       tags:
       - v1
       - Superphenix Controller
-  /{orgaId}/api/spx-ctrl/{az}/{projectId}/firewall:
-    get:
-      description: Retrieve all firewalls for a specific AZ
-      parameters:
-      - description: Organization ID
-        in: path
-        name: orgaId
-        required: true
-        type: string
-      - description: AZ Code
-        in: path
-        name: az
-        required: true
-        type: string
-      - description: Project ID
-        in: path
-        name: projectId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Firewalls
-          schema:
-            items:
-              $ref: '#/definitions/firewall.FirewallFullResponse'
-            type: array
-        "500":
-          description: Internal Server Error
-      security:
-      - Bearer:
-        - OrganizationRead
-        - ProjectFirewallRead
-      summary: Retrieve all AZ firewalls
-      tags:
-      - v1
-      - Superphenix Controller
-    post:
-      consumes:
-      - application/json
-      description: Create a new firewall
-      parameters:
-      - description: Organization ID
-        in: path
-        name: orgaId
-        required: true
-        type: string
-      - description: AZ Code
-        in: path
-        name: az
-        required: true
-        type: string
-      - description: Project ID
-        in: path
-        name: projectId
-        required: true
-        type: string
-      - description: Firewall info
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/firewall.CreateFirewallBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.CreateResponse'
-        "400":
-          description: Bad Request
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      security:
-      - Bearer:
-        - OrganizationRead
-        - ProjectFirewallWrite
-      summary: Create firewall
-      tags:
-      - v1
-      - Superphenix Controller
-  /{orgaId}/api/spx-ctrl/{az}/{projectId}/firewall/{effectiveId}:
-    delete:
-      description: Delete firewall by effective ID
-      parameters:
-      - description: Organization ID
-        in: path
-        name: orgaId
-        required: true
-        type: string
-      - description: AZ Code
-        in: path
-        name: az
-        required: true
-        type: string
-      - description: Project ID
-        in: path
-        name: projectId
-        required: true
-        type: string
-      - description: Firewall EID
-        in: path
-        name: effectiveId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      security:
-      - Bearer:
-        - OrganizationRead
-        - ProjectFirewallWrite
-      summary: Delete firewall
-      tags:
-      - v1
-      - Superphenix Controller
-    get:
-      description: Get firewall by Effective ID
-      parameters:
-      - description: Organization ID
-        in: path
-        name: orgaId
-        required: true
-        type: string
-      - description: AZ Code
-        in: path
-        name: az
-        required: true
-        type: string
-      - description: Project ID
-        in: path
-        name: projectId
-        required: true
-        type: string
-      - description: Firewall EID
-        in: path
-        name: effectiveId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Firewall
-          schema:
-            $ref: '#/definitions/firewall.FirewallFullResponse'
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      security:
-      - Bearer:
-        - OrganizationRead
-        - ProjectFirewallRead
-      summary: Get firewall
-      tags:
-      - v1
-      - Superphenix Controller
-    post:
-      consumes:
-      - application/json
-      description: Update a firewall
-      parameters:
-      - description: Organization ID
-        in: path
-        name: orgaId
-        required: true
-        type: string
-      - description: AZ Code
-        in: path
-        name: az
-        required: true
-        type: string
-      - description: Project ID
-        in: path
-        name: projectId
-        required: true
-        type: string
-      - description: Firewall info
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/firewall.UpdateFirewallBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      security:
-      - Bearer:
-        - OrganizationRead
-        - ProjectFirewallWrite
-      summary: Update firewall
-      tags:
-      - v1
-      - Superphenix Controller
   /{orgaId}/api/spx-ctrl/{az}/{projectId}/instance:
     get:
       description: Retrieve all instances for a specific AZ
@@ -4121,7 +3906,7 @@ paths:
       - Bearer:
         - OrganizationRead
         - ProjectKaaSRead
-        - ProjectFirewallRead
+        - ProjectSecurityGroupRead
       summary: Get KaaS network policies
       tags:
       - v1
@@ -4418,6 +4203,221 @@ paths:
         - OrganizationRead
         - ProjectBucketRead
       summary: Retrieve S3 configuration
+      tags:
+      - v1
+      - Superphenix Controller
+  /{orgaId}/api/spx-ctrl/{az}/{projectId}/security-group:
+    get:
+      description: Retrieve all security groups for a specific AZ
+      parameters:
+      - description: Organization ID
+        in: path
+        name: orgaId
+        required: true
+        type: string
+      - description: AZ Code
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SecurityGroups
+          schema:
+            items:
+              $ref: '#/definitions/securitygroup.SecurityGroupFullResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer:
+        - OrganizationRead
+        - ProjectSecurityGroupRead
+      summary: Retrieve all AZ security groups
+      tags:
+      - v1
+      - Superphenix Controller
+    post:
+      consumes:
+      - application/json
+      description: Create a new security group
+      parameters:
+      - description: Organization ID
+        in: path
+        name: orgaId
+        required: true
+        type: string
+      - description: AZ Code
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: SecurityGroup info
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/securitygroup.CreateSecurityGroupBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.CreateResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer:
+        - OrganizationRead
+        - ProjectSecurityGroupWrite
+      summary: Create security group
+      tags:
+      - v1
+      - Superphenix Controller
+  /{orgaId}/api/spx-ctrl/{az}/{projectId}/security-group/{effectiveId}:
+    delete:
+      description: Delete security group by effective ID
+      parameters:
+      - description: Organization ID
+        in: path
+        name: orgaId
+        required: true
+        type: string
+      - description: AZ Code
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: SecurityGroup EID
+        in: path
+        name: effectiveId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer:
+        - OrganizationRead
+        - ProjectSecurityGroupWrite
+      summary: Delete security group
+      tags:
+      - v1
+      - Superphenix Controller
+    get:
+      description: Get security group by Effective ID
+      parameters:
+      - description: Organization ID
+        in: path
+        name: orgaId
+        required: true
+        type: string
+      - description: AZ Code
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: SecurityGroup EID
+        in: path
+        name: effectiveId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SecurityGroup
+          schema:
+            $ref: '#/definitions/securitygroup.SecurityGroupFullResponse'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer:
+        - OrganizationRead
+        - ProjectSecurityGroupRead
+      summary: Get security group
+      tags:
+      - v1
+      - Superphenix Controller
+    post:
+      consumes:
+      - application/json
+      description: Update a security group
+      parameters:
+      - description: Organization ID
+        in: path
+        name: orgaId
+        required: true
+        type: string
+      - description: AZ Code
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: SecurityGroup info
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/securitygroup.UpdateSecurityGroupBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer:
+        - OrganizationRead
+        - ProjectSecurityGroupWrite
+      summary: Update security group
       tags:
       - v1
       - Superphenix Controller
@@ -5571,39 +5571,6 @@ paths:
       tags:
       - v1
       - Superphenix Controller
-  /{orgaId}/api/spx-ctrl/{projectId}/firewall:
-    get:
-      description: Retrieve all firewalls across AZ
-      parameters:
-      - description: Organization ID
-        in: path
-        name: orgaId
-        required: true
-        type: string
-      - description: Project ID
-        in: path
-        name: projectId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Firewalls
-          schema:
-            items:
-              $ref: '#/definitions/firewall.FirewallFullResponse'
-            type: array
-        "500":
-          description: Internal Server Error
-      security:
-      - Bearer:
-        - OrganizationRead
-        - ProjectFirewallRead
-      summary: Retrieve all firewalls
-      tags:
-      - v1
-      - Superphenix Controller
   /{orgaId}/api/spx-ctrl/{projectId}/instance:
     get:
       description: Retrieve all instances across AZ
@@ -5770,6 +5737,39 @@ paths:
         - OrganizationRead
         - ProjectLoadBalancerRead
       summary: Retrieve all loadBalancers
+      tags:
+      - v1
+      - Superphenix Controller
+  /{orgaId}/api/spx-ctrl/{projectId}/security-group:
+    get:
+      description: Retrieve all security groups across AZ
+      parameters:
+      - description: Organization ID
+        in: path
+        name: orgaId
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SecurityGroups
+          schema:
+            items:
+              $ref: '#/definitions/securitygroup.SecurityGroupFullResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer:
+        - OrganizationRead
+        - ProjectSecurityGroupRead
+      summary: Retrieve all security groups
       tags:
       - v1
       - Superphenix Controller

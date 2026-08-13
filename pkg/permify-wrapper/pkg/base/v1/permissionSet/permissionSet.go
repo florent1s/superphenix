@@ -29,16 +29,16 @@ const (
 	ProjectSnapshotFullAccess = "ProjectSnapshotFullAccess"
 	ProjectSnapshotReadOnly   = "ProjectSnapshotReadOnly"
 
-	ProjectVPCFullAccess          = "ProjectVPCFullAccess"
-	ProjectVPCReadOnly            = "ProjectVPCReadOnly"
-	ProjectSubnetFullAccess       = "ProjectSubnetFullAccess"
-	ProjectSubnetReadOnly         = "ProjectSubnetReadOnly"
-	ProjectEipFullAccess          = "ProjectEipFullAccess"
-	ProjectEipReadOnly            = "ProjectEipReadOnly"
-	ProjectLoadBalancerFullAccess = "ProjectLoadBalancerFullAccess"
-	ProjectLoadBalancerReadOnly   = "ProjectLoadBalancerReadOnly"
-	ProjectFirewallFullAccess     = "ProjectFirewallFullAccess"
-	ProjectFirewallReadOnly       = "ProjectFirewallReadOnly"
+	ProjectVPCFullAccess           = "ProjectVPCFullAccess"
+	ProjectVPCReadOnly             = "ProjectVPCReadOnly"
+	ProjectSubnetFullAccess        = "ProjectSubnetFullAccess"
+	ProjectSubnetReadOnly          = "ProjectSubnetReadOnly"
+	ProjectEipFullAccess           = "ProjectEipFullAccess"
+	ProjectEipReadOnly             = "ProjectEipReadOnly"
+	ProjectLoadBalancerFullAccess  = "ProjectLoadBalancerFullAccess"
+	ProjectLoadBalancerReadOnly    = "ProjectLoadBalancerReadOnly"
+	ProjectSecurityGroupFullAccess = "ProjectSecurityGroupFullAccess"
+	ProjectSecurityGroupReadOnly   = "ProjectSecurityGroupReadOnly"
 
 	ProjectSSHFullAccess = "ProjectSSHFullAccess"
 	ProjectSSHReadOnly   = "ProjectSSHReadOnly"
@@ -90,8 +90,8 @@ var PermissionSetsEntityMap = map[string]string{
 	ProjectLoadBalancerFullAccess: entity.Project,
 	ProjectLoadBalancerReadOnly:   entity.Project,
 
-	ProjectFirewallFullAccess: entity.Project,
-	ProjectFirewallReadOnly:   entity.Project,
+	ProjectSecurityGroupFullAccess: entity.Project,
+	ProjectSecurityGroupReadOnly:   entity.Project,
 
 	ProjectSSHFullAccess: entity.Project,
 	ProjectSSHReadOnly:   entity.Project,
