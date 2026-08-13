@@ -104,7 +104,7 @@ func TestCreateBucket(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setS3Config(t, tt.mapping, tt.maxSizeCap, tt.maxObjectsCap, "")
+			setS3Config(t, tt.mapping, tt.maxSizeCap, tt.maxObjectsCap)
 
 			namespace := testNamespace(t)
 			var existing []runtime.Object

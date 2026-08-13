@@ -42,13 +42,12 @@ func testEffectiveId(t *testing.T) string {
 	return m.GetResourceEffectiveID()
 }
 
-func setS3Config(t *testing.T, mapping map[string]string, maxBucketSize string, maxBucketObjects uint64, externalEndpoint string) {
+func setS3Config(t *testing.T, mapping map[string]string, maxBucketSize string, maxBucketObjects uint64) {
 	t.Helper()
 	old := config.Global.ProductsConfig.ObjectStorage
 	config.Global.ProductsConfig.ObjectStorage.StorageClassMapping = mapping
 	config.Global.ProductsConfig.ObjectStorage.MaxBucketSize = maxBucketSize
 	config.Global.ProductsConfig.ObjectStorage.MaxBucketObjects = maxBucketObjects
-	config.Global.ProductsConfig.ObjectStorage.ExternalEndpoint = externalEndpoint
 	t.Cleanup(func() { config.Global.ProductsConfig.ObjectStorage = old })
 }
 

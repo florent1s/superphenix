@@ -24,8 +24,7 @@ func GetBucket(ctx context.Context, namespace, effectiveId string) (view.Bucket,
 		return view.Bucket{}, err
 	}
 
-	endpoint := endpointOrFallback(resolveOBEndpoint(ctx, obc).Endpoint)
-	return view.BucketToResource(obc, endpoint), nil
+	return view.BucketToResource(obc, resolveOBEndpoint(ctx, obc).Endpoint), nil
 }
 
 func ListBuckets(ctx context.Context, namespace string) ([]view.Bucket, error) {
@@ -49,8 +48,7 @@ func ListBuckets(ctx context.Context, namespace string) ([]view.Bucket, error) {
 			continue
 		}
 		obName, _, _ := unstructured.NestedString(obc.Object, "spec", "objectBucketName")
-		endpoint := endpointOrFallback(getOBEndpoint(ctx, obName))
-		buckets = append(buckets, view.BucketToResource(obc, endpoint))
+		buckets = append(buckets, view.BucketToResource(obc, getOBEndpoint(ctx, obName)))
 	}
 	return buckets, nil
 }
@@ -65,7 +63,7 @@ func getOBEndpoint(ctx context.Context, obName string) string {
 	}
 	watcher, ok := informers.WatcherSet[informers.ObjectBucket]
 	if !ok {
-		log.Warn().Msg("objectbucket informer not initialized, falling back to configured endpoint")
+		log.Warn().Msg("objectbucket informer not initialized")
 		return ""
 	}
 	// ObjectBucket is cluster-scoped, the cache key is the bare name.
@@ -81,13 +79,4 @@ func getOBEndpoint(ctx context.Context, obName string) string {
 	port, _, _ := unstructured.NestedInt64(ob.Object, "spec", "endpoint", "bucketPort")
 	useTls, effectivePort := obScheme(ctx, ob, port)
 	return composeEndpoint(host, effectivePort, useTls)
-}
-
-// endpointOrFallback returns endpoint, or the configured ExternalEndpoint when
-// the OB endpoint couldn't be resolved.
-func endpointOrFallback(endpoint string) string {
-	if endpoint != "" {
-		return endpoint
-	}
-	return config.Global.ProductsConfig.ObjectStorage.ExternalEndpoint
 }

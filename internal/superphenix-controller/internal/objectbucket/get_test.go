@@ -13,18 +13,16 @@ func TestGetBucket(t *testing.T) {
 	const obName = "ob-single"
 
 	tests := []struct {
-		name             string
-		seedOB           bool
-		externalEndpoint string
-		wantEndpoint     string
+		name         string
+		seedOB       bool
+		wantEndpoint string
 	}{
-		{"endpoint from OB", true, "", "http://s3.example.com"},
-		{"fallback to external when no OB", false, "https://s3.ext", "https://s3.ext"},
-		{"empty when no OB and no external", false, "", ""},
+		{"endpoint from OB", true, "http://s3.example.com"},
+		{"empty when no OB", false, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "", 0, tt.externalEndpoint)
+			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "", 0)
 
 			namespace := testNamespace(t)
 			obc := withObjectBucketName(newOBC(t, namespace, "rook-ceph-bucket", nil, nil), obName)
@@ -131,7 +129,7 @@ func TestListBuckets(t *testing.T) {
 	namespace := testNamespace(t)
 
 	obcA := listOBC(namespace, "bucket-aaa", "ob-aaa")
-	obcB := listOBC(namespace, "bucket-bbb", "ob-bbb") // no OB -> fallback
+	obcB := listOBC(namespace, "bucket-bbb", "ob-bbb") // no OB -> empty endpoint
 	obcC := listOBC(namespace, "bucket-ccc", "ob-ccc")
 	obcD := listOBC(namespace, "bucket-ddd", "ob-ddd")
 	obA := newOB("ob-aaa", "s3.a.example", 80, "", "")
@@ -158,7 +156,7 @@ func TestListBuckets(t *testing.T) {
 			stores: []*unstructured.Unstructured{store},
 			want: map[string]string{
 				"bucket-aaa": "http://s3.a.example",     // no store -> port heuristic
-				"bucket-bbb": "https://fallback.ext",    // no OB -> config fallback
+				"bucket-bbb": "",                        // no OB -> empty endpoint
 				"bucket-ccc": "https://s3.c.example:80", // store useTls on port 80
 				"bucket-ddd": "https://s3.d.example:8443",
 			},
@@ -173,10 +171,10 @@ func TestListBuckets(t *testing.T) {
 			want: map[string]string{},
 		},
 		{
-			name:        "no OB watcher falls back to configured endpoint",
+			name:        "no OB watcher yields empty endpoint",
 			noOBWatcher: true,
 			obcs:        []*unstructured.Unstructured{obcA},
-			want:        map[string]string{"bucket-aaa": "https://fallback.ext"},
+			want:        map[string]string{"bucket-aaa": ""},
 		},
 		{
 			name:         "no OBC watcher errors",
@@ -186,7 +184,7 @@ func TestListBuckets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "", 0, "https://fallback.ext")
+			setS3Config(t, map[string]string{"standard": "rook-ceph-bucket"}, "", 0)
 
 			if tt.noOBCWatcher {
 				clearWatcher(t, informers.ObjectBucketClaim)

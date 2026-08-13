@@ -10,7 +10,7 @@ import (
 )
 
 // BucketToResource maps an OBC to the view model. endpoint is the resolved S3
-// URL (from the bound ObjectBucket, with the AZ config as fallback) and is
+// URL from the bound ObjectBucket, empty until it is generated, and is
 // passed in so this stays a pure function.
 
 type Bucket struct {
