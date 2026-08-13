@@ -59,13 +59,14 @@ type Config struct {
 	Http struct {
 		Address    string `yaml:"address"`
 		AuthSecret string `yaml:"authSecret"`
-		Webhook    struct {
-			Enabled  bool   `yaml:"enabled"`
-			Address  string `yaml:"address"`
-			CertFile string `yaml:"certFile"`
-			KeyFile  string `yaml:"keyFile"`
-		} `yaml:"webhook"`
 	} `yaml:"http"`
+
+	Webhook struct {
+		Enabled  bool   `yaml:"enabled"`
+		Address  string `yaml:"address"`
+		CertFile string `yaml:"certFile"`
+		KeyFile  string `yaml:"keyFile"`
+	} `yaml:"webhook"`
 
 	Tracing struct {
 		Enabled        bool
@@ -149,11 +150,11 @@ logging:
 http:
   address: ":8080"
   authSecret: "secret"
-  webhook:
-    enabled: false
-    address: ":8443"
-    certFile: ""
-    keyFile: ""
+webhook:
+  enabled: false
+  address: ":8443"
+  certFile: ""
+  keyFile: ""
 tracing:
   enabled: false
   address: "http://94.23.250.59:14268/api/traces"

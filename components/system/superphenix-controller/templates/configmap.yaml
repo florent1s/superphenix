@@ -9,9 +9,7 @@ data:
     {{- $config := .Values.superphenixController.config | default dict -}}
     {{- if .Values.webhook.enabled -}}
       {{- $webhook := dict "enabled" true "address" ":8443" "certFile" "/etc/superphenix-controller/certs/tls.crt" "keyFile" "/etc/superphenix-controller/certs/tls.key" -}}
-      {{- $http := default dict $config.http -}}
-      {{- $_ := set $http "webhook" $webhook -}}
-      {{- $_ := set $config "http" $http -}}
+      {{- $_ := set $config "webhook" $webhook -}}
     {{- end -}}
     {{- toYaml $config | nindent 4 }}
 
