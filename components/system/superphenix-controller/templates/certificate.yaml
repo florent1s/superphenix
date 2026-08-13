@@ -10,7 +10,7 @@ spec:
     - {{ include "superphenix-controller.fullname" . }}-webhook.{{ .Release.Namespace }}.svc
     - {{ include "superphenix-controller.fullname" . }}-webhook.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
-    kind: {{ .Values.webhook.certManager.issuerRef.kind | default "ClusterIssuer" }}
-    name: {{ .Values.webhook.certManager.issuerRef.name | default "selfsigned-issuer" }}
+    kind: {{ .Values.webhook.certManager.issuerRef.kind | default "Issuer" }}
+    name: {{ .Values.webhook.certManager.issuerRef.name | default (printf "%s-webhook-issuer" (include "superphenix-controller.fullname" .)) }}
   secretName: {{ include "superphenix-controller.fullname" . }}-webhook-cert
 {{- end }}

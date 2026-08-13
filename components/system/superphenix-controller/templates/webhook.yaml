@@ -11,6 +11,9 @@ metadata:
   {{- end }}
 webhooks:
   - name: volumesnapshot-mutator.superphenix.net
+    matchConditions:
+      - name: 'exclude-already-set-class'
+        expression: '!has(object.spec.volumeSnapshotClassName)'
     admissionReviewVersions: ["v1"]
     clientConfig:
       service:
@@ -26,6 +29,6 @@ webhooks:
         apiGroups: ["snapshot.storage.k8s.io"]
         apiVersions: ["v1"]
         resources: ["volumesnapshots"]
-    failurePolicy: {{ .Values.webhook.failurePolicy | default "Ignore" }}
+    failurePolicy: {{ .Values.webhook.failurePolicy | default "Fail" }}
     sideEffects: None
 {{- end }}

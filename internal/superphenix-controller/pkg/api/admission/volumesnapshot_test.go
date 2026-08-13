@@ -94,6 +94,60 @@ func TestMutateVolumeSnapshot(t *testing.T) {
 	}
 }
 
+func TestMutateVolumeSnapshot_AlreadySet(t *testing.T) {
+	// Mock VolumeSnapshot with already set class
+	vs := v1.VolumeSnapshot{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-snapshot",
+			Namespace: "default",
+		},
+		Spec: v1.VolumeSnapshotSpec{
+			VolumeSnapshotClassName: ptrTo("already-set-class"),
+			Source: v1.VolumeSnapshotSource{
+				PersistentVolumeClaimName: ptrTo("test-pvc"),
+			},
+		},
+	}
+	vsRaw, _ := json.Marshal(vs)
+
+	admissionReview := admissionv1.AdmissionReview{
+		Request: &admissionv1.AdmissionRequest{
+			UID: "test-uid",
+			Kind: metav1.GroupVersionKind{
+				Group:   "snapshot.storage.k8s.io",
+				Version: "v1",
+				Kind:    "VolumeSnapshot",
+			},
+			Operation: admissionv1.Create,
+			Namespace: "default",
+			Object: runtime.RawExtension{
+				Raw: vsRaw,
+			},
+		},
+	}
+	body, _ := json.Marshal(admissionReview)
+
+	req := httptest.NewRequest("POST", "/mutate", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	MutateVolumeSnapshot(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
+	}
+
+	var response admissionv1.AdmissionReview
+	json.NewDecoder(w.Body).Decode(&response)
+
+	if !response.Response.Allowed {
+		t.Errorf("Expected admission to be allowed")
+	}
+
+	if response.Response.Patch != nil {
+		t.Errorf("Expected no patch when class is already set, got %s", response.Response.Patch)
+	}
+}
+
 func ptrTo[T any](v T) *T {
 	return &v
 }

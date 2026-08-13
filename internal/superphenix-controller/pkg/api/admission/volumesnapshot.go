@@ -1,6 +1,7 @@
 package admission
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -38,58 +39,10 @@ func MutateVolumeSnapshot(w http.ResponseWriter, r *http.Request) {
 		Allowed: true,
 	}
 
-	if request.Kind.Kind == "VolumeSnapshot" && (request.Operation == admissionv1.Create) {
-		var vs v1.VolumeSnapshot
-		if err := json.Unmarshal(request.Object.Raw, &vs); err != nil {
-			log.Err(err).Msg("Failed to unmarshal VolumeSnapshot")
-			response.Result = &metav1.Status{
-				Message: fmt.Sprintf("Failed to unmarshal VolumeSnapshot: %v", err),
-			}
-			goto respond
-		}
-
-		if vs.Spec.Source.PersistentVolumeClaimName != nil {
-			pvcName := *vs.Spec.Source.PersistentVolumeClaimName
-			namespace := request.Namespace
-
-			pvc, err := config.K8sClient.CoreV1().PersistentVolumeClaims(namespace).Get(r.Context(), pvcName, metav1.GetOptions{})
-			if err != nil {
-				log.Err(err).Str("namespace", namespace).Str("pvc", pvcName).Msg("Failed to get PVC")
-				// We don't block the creation if we can't find the PVC, just log it.
-				// Alternatively, we could fail the admission.
-				goto respond
-			}
-
-			if pvc.Spec.StorageClassName != nil {
-				scName := *pvc.Spec.StorageClassName
-				log.Info().Str("namespace", namespace).Str("vs", vs.Name).Str("pvc", pvcName).Str("storageClass", scName).Msg("Setting VolumeSnapshotClassName")
-
-				patch := []struct {
-					Op    string `json:"op"`
-					Path  string `json:"path"`
-					Value string `json:"value"`
-				}{
-					{
-						Op:    "add",
-						Path:  "/spec/volumeSnapshotClassName",
-						Value: scName,
-					},
-				}
-
-				patchBytes, err := json.Marshal(patch)
-				if err != nil {
-					log.Err(err).Msg("Failed to marshal patch")
-					goto respond
-				}
-
-				pt := admissionv1.PatchTypeJSONPatch
-				response.PatchType = &pt
-				response.Patch = patchBytes
-			}
-		}
+	if request.Kind.Kind == "VolumeSnapshot" && request.Operation == admissionv1.Create {
+		handleVolumeSnapshotMutation(r.Context(), request, response)
 	}
 
-respond:
 	admissionReview.Response = response
 	admissionReview.Request = nil // Optional: clear request to reduce response size
 
@@ -97,4 +50,64 @@ respond:
 	if err := json.NewEncoder(w).Encode(admissionReview); err != nil {
 		log.Err(err).Msg("Failed to encode AdmissionReview response")
 	}
+}
+
+func handleVolumeSnapshotMutation(ctx context.Context, request *admissionv1.AdmissionRequest, response *admissionv1.AdmissionResponse) {
+	log := logger.GetLogger(ctx)
+
+	var vs v1.VolumeSnapshot
+	if err := json.Unmarshal(request.Object.Raw, &vs); err != nil {
+		log.Err(err).Msg("Failed to unmarshal VolumeSnapshot")
+		response.Result = &metav1.Status{
+			Message: fmt.Sprintf("Failed to unmarshal VolumeSnapshot: %v", err),
+		}
+		return
+	}
+
+	if vs.Spec.VolumeSnapshotClassName != nil && *vs.Spec.VolumeSnapshotClassName != "" {
+		return
+	}
+
+	if vs.Spec.Source.PersistentVolumeClaimName == nil {
+		return
+	}
+
+	pvcName := *vs.Spec.Source.PersistentVolumeClaimName
+	namespace := request.Namespace
+
+	pvc, err := config.K8sClient.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, pvcName, metav1.GetOptions{})
+	if err != nil {
+		log.Err(err).Str("namespace", namespace).Str("pvc", pvcName).Msg("Failed to get PVC")
+		// We don't block the creation if we can't find the PVC, just log it.
+		return
+	}
+
+	if pvc.Spec.StorageClassName == nil {
+		return
+	}
+
+	scName := *pvc.Spec.StorageClassName
+	log.Info().Str("namespace", namespace).Str("vs", vs.Name).Str("pvc", pvcName).Str("storageClass", scName).Msg("Setting VolumeSnapshotClassName")
+
+	patch := []struct {
+		Op    string `json:"op"`
+		Path  string `json:"path"`
+		Value string `json:"value"`
+	}{
+		{
+			Op:    "add",
+			Path:  "/spec/volumeSnapshotClassName",
+			Value: scName,
+		},
+	}
+
+	patchBytes, err := json.Marshal(patch)
+	if err != nil {
+		log.Err(err).Msg("Failed to marshal patch")
+		return
+	}
+
+	pt := admissionv1.PatchTypeJSONPatch
+	response.PatchType = &pt
+	response.Patch = patchBytes
 }
