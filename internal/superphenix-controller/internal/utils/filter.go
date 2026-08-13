@@ -20,7 +20,6 @@ var (
 
 	excludedLabels = []string{
 		"superphenix.net/ignoreNetworkPolicies",
-		"superphenix.net/workloadClass",
 	}
 
 	allowedAnnotationKeyList = []string{

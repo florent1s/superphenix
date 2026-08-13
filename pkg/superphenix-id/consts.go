@@ -17,6 +17,7 @@ const (
 	SpxLabelResourceEffectiveID = "superphenix.net/resourceEffectiveID"
 	SpxLabelResourceName        = "superphenix.net/resourceName" // used in gitops resources
 	SpxLabelGitops              = "superphenix.net/gitops"
+	SpxLabelWorkloadClass       = "superphenix.net/workloadClass"
 )
 
 const (

@@ -50,10 +50,11 @@ func TestFilterLabels(t *testing.T) {
 			labels: map[string]string{
 				spxId.SpxLabelPrefix + "keep-me":        "yes",
 				"superphenix.net/ignoreNetworkPolicies": "true",
-				"superphenix.net/workloadClass":         "app",
+				spxId.SpxLabelWorkloadClass:             "app",
 			},
 			expected: map[string]string{
 				spxId.SpxLabelPrefix + "keep-me": "yes",
+				spxId.SpxLabelWorkloadClass:      "app",
 			},
 		},
 		{
@@ -69,16 +70,17 @@ func TestFilterLabels(t *testing.T) {
 		{
 			name: "Mix of labels",
 			labels: map[string]string{
-				spxId.SpxLabelPrefix + "owner":  "admin",
-				CustomLabelPrefix + "env":       "prod",
-				"velero.io/backup-name":         "daily",
-				"superphenix.net/workloadClass": "system",
-				"unrelated":                     "data",
+				spxId.SpxLabelPrefix + "owner": "admin",
+				CustomLabelPrefix + "env":      "prod",
+				"velero.io/backup-name":        "daily",
+				spxId.SpxLabelWorkloadClass:    "system",
+				"unrelated":                    "data",
 			},
 			expected: map[string]string{
 				spxId.SpxLabelPrefix + "owner": "admin",
 				CustomLabelPrefix + "env":      "prod",
 				"velero.io/backup-name":        "daily",
+				spxId.SpxLabelWorkloadClass:    "system",
 			},
 		},
 	}
