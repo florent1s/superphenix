@@ -95,6 +95,20 @@ func TestMutateVolumeSnapshot(t *testing.T) {
 }
 
 func TestMutateVolumeSnapshot_AlreadySet(t *testing.T) {
+	// Mock PVC
+	pvc := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-pvc",
+			Namespace: "default",
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			StorageClassName: ptrTo("test-storage-class"),
+		},
+	}
+
+	// Setup fake client
+	config.K8sClient = fake.NewSimpleClientset(pvc)
+
 	// Mock VolumeSnapshot with already set class
 	vs := v1.VolumeSnapshot{
 		ObjectMeta: metav1.ObjectMeta{
@@ -143,8 +157,19 @@ func TestMutateVolumeSnapshot_AlreadySet(t *testing.T) {
 		t.Errorf("Expected admission to be allowed")
 	}
 
-	if response.Response.Patch != nil {
-		t.Errorf("Expected no patch when class is already set, got %s", response.Response.Patch)
+	if response.Response.PatchType == nil || *response.Response.PatchType != admissionv1.PatchTypeJSONPatch {
+		t.Errorf("Expected patch type %s, got %v", admissionv1.PatchTypeJSONPatch, response.Response.PatchType)
+	}
+
+	var patch []map[string]any
+	json.Unmarshal(response.Response.Patch, &patch)
+
+	if len(patch) != 1 {
+		t.Errorf("Expected 1 patch operation, got %d", len(patch))
+	}
+
+	if patch[0]["op"] != "add" || patch[0]["path"] != "/spec/volumeSnapshotClassName" || patch[0]["value"] != "test-storage-class" {
+		t.Errorf("Unexpected patch: %v", patch)
 	}
 }
 

@@ -64,10 +64,6 @@ func handleVolumeSnapshotMutation(ctx context.Context, request *admissionv1.Admi
 		return
 	}
 
-	if vs.Spec.VolumeSnapshotClassName != nil && *vs.Spec.VolumeSnapshotClassName != "" {
-		return
-	}
-
 	if vs.Spec.Source.PersistentVolumeClaimName == nil {
 		return
 	}
