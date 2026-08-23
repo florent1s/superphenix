@@ -40,3 +40,7 @@ skills-lock.json
 
 # Folder that contains all configurations for local deployment
 /hacks/compose/local/*
+
+# Swagger generated files (json and yaml are ignored, go is kept)
+**/api/swagger.json
+**/api/swagger.yaml
