@@ -11,7 +11,7 @@ build: prebuild
 	@echo "+ $@"
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o bin/main cmd/main.go
 	go install github.com/swaggo/swag/cmd/swag
-	(swag fmt -d . && swag init --pd --pdl 3 --parseInternal  -d ./pkg/api,./internal -g ./api.go -o api)
+	(swag fmt -d . && swag init --pd --pdl 3 --parseInternal  -d ./pkg/api,./internal -g ./api.go -o api --outputTypes go)
 
 install-deps:
 	@echo "+ $@"

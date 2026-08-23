@@ -32,8 +32,13 @@ To install `swag` :
 go install github.com/swaggo/swag/cmd/swag
 ```
 
-To update swagger information :
+To update swagger information (Go only):
 ```bash
-swag fmt -d ./internal/api && swag init --pd --pdl 1 --parseInternal -d ./internal/api -g ./api.go -o api
+swag fmt -d ./internal/api && swag init --pd --pdl 1 --parseInternal -d ./internal/api -g ./api.go -o api --outputTypes go
+```
+
+To generate Swagger JSON/YAML for local development (to look at the routes):
+```bash
+swag fmt -d ./internal/api && swag init --pd --pdl 1 --parseInternal -d ./internal/api -g ./api.go -o api --outputTypes go,json,yaml
 ```
 

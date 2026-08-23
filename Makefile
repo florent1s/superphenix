@@ -248,11 +248,12 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 
 INTERNAL_PROJECTS := internal/superphenix-api internal/superphenix-controller
 # You need swag installed: go install github.com/swaggo/swag/cmd/swag
+# To generate swagger json/yaml files locally (ignored by git), add --outputTypes go,json,yaml to the swag init command
 .PHONY: swagger
 swagger:
 	@for dir in $(INTERNAL_PROJECTS); do \
 		echo "Updating swagger for $$dir..."; \
-		cd $(CURDIR)/$$dir && swag fmt -d . && swag init --pd --pdl 3 --parseInternal -d ./pkg/api -g ./api.go -o api; \
+		cd $(CURDIR)/$$dir && swag fmt -d . && swag init --pd --pdl 3 --parseInternal -d ./pkg/api -g ./api.go -o api --outputTypes go; \
 	done
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
