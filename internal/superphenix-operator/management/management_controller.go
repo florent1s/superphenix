@@ -15,8 +15,8 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/storage/driver"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -148,21 +148,24 @@ func (r *Reconciler) configMapPredicate() predicate.Predicate {
 func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
+	// In CNI-less mode, we must ensure ArgoCD is NOT self-managed,
+	// because ArgoCD would otherwise revert the hostNetwork and affinity settings.
+	if r.InstallWithoutCNI {
+		if err := r.ensureArgoCDNotSelfManaged(ctx); err != nil {
+			return fmt.Errorf("failed to ensure ArgoCD is not self-managed: %w", err)
+		}
+	}
+
 	// Install ArgoCD using Helm.
 	if err := r.ensureInitialHelmInstall(ctx); err != nil {
 		return fmt.Errorf("failed to ensure initial ArgoCD install: %w", err)
 	}
 
-	// If requested, patch redis for hostNetwork (required in CNI-less environments).
-	if r.InstallWithoutCNI {
-		if err := r.patchRedisForHostNetwork(ctx); err != nil {
-			return fmt.Errorf("failed to patch redis for hostNetwork: %w", err)
-		}
-	}
-
 	// Give back control to ArgoCD itself.
-	if err := r.ensureArgoCDSelfManaged(ctx); err != nil {
-		return fmt.Errorf("failed to ensure ArgoCD is self-managed: %w", err)
+	if !r.InstallWithoutCNI {
+		if err := r.ensureArgoCDSelfManaged(ctx); err != nil {
+			return fmt.Errorf("failed to ensure ArgoCD is self-managed: %w", err)
+		}
 	}
 
 	log.Info("Successfully reconciled ArgoCD")
@@ -226,12 +229,24 @@ func (r *Reconciler) initHelmActionConfig(ctx context.Context, helmSettings *cli
 		return nil, fmt.Errorf("failed to initialize Helm action configuration: %w", err)
 	}
 
+	// Initialize the registry client to support OCI repositories.
+	registryClient, err := registry.NewClient(
+		registry.ClientOptDebug(helmSettings.Debug),
+		registry.ClientOptEnableCache(true),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(helmSettings.RegistryConfig),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create registry client: %w", err)
+	}
+	actionConfig.RegistryClient = registryClient
+
 	return actionConfig, nil
 }
 
 // locateAndLoadArgoCDChart resolves, downloads, and loads the argo-cd Helm chart into memory.
-func locateAndLoadArgoCDChart(chartPathOptions *action.ChartPathOptions, helmSettings *cli.EnvSettings) (*chart.Chart, error) {
-	cp, err := chartPathOptions.LocateChart("argo-cd", helmSettings)
+func locateAndLoadArgoCDChart(chartName string, chartPathOptions *action.ChartPathOptions, helmSettings *cli.EnvSettings) (*chart.Chart, error) {
+	cp, err := chartPathOptions.LocateChart(chartName, helmSettings)
 	if err != nil {
 		return nil, fmt.Errorf("failed to locate ArgoCD chart: %w", err)
 	}
@@ -301,7 +316,7 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 		Kind:    "Application",
 	})
 	err := r.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: r.OperatorNamespace}, app)
-	if err == nil {
+	if err == nil && !r.InstallWithoutCNI {
 		log.Info("ArgoCD is already self-managed (Application exists), skipping initial Helm install")
 		return nil
 	}
@@ -325,12 +340,20 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 
 	log.Info("Performing initial ArgoCD Helm upgrade+install", "chart", "argo-cd", "version", r.ArgoCDChartVersion)
 
-	chartPathOptions := &action.ChartPathOptions{
-		RepoURL: r.ArgoCDChartURL,
-		Version: r.ArgoCDChartVersion,
+	// Use action.NewInstall to get a ChartPathOptions with the registry client initialized.
+	// We only use it to locate and load the chart here.
+	c := action.NewInstall(actionConfig)
+	c.Version = r.ArgoCDChartVersion
+
+	chartName := "argo-cd"
+	if strings.HasPrefix(r.ArgoCDChartURL, "oci://") {
+		// For OCI repositories, the full chart URL is required.
+		chartName = fmt.Sprintf("%s/%s", strings.TrimSuffix(r.ArgoCDChartURL, "/"), "argo-cd")
+	} else {
+		c.RepoURL = r.ArgoCDChartURL
 	}
 
-	ch, err := locateAndLoadArgoCDChart(chartPathOptions, helmSettings)
+	ch, err := locateAndLoadArgoCDChart(chartName, &c.ChartPathOptions, helmSettings)
 	if err != nil {
 		return err
 	}
@@ -438,6 +461,33 @@ func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
 	return r.createOrUpdateArgoCDApplication(ctx, r.buildArgoCDApplication(values))
 }
 
+// ensureArgoCDNotSelfManaged removes the ArgoCD Application that hands ArgoCD's lifecycle to itself.
+func (r *Reconciler) ensureArgoCDNotSelfManaged(ctx context.Context) error {
+	log := logf.FromContext(ctx)
+
+	app := &unstructured.Unstructured{}
+	app.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "argoproj.io",
+		Version: "v1alpha1",
+		Kind:    "Application",
+	})
+
+	err := r.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: r.OperatorNamespace}, app)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to get ArgoCD Application for removal: %w", err)
+	}
+
+	log.Info("Removing ArgoCD Application to avoid ruining patches (CNI-less mode)", "name", ArgoCDApp)
+	if err := r.Delete(ctx, app); err != nil {
+		return fmt.Errorf("failed to delete ArgoCD Application: %w", err)
+	}
+
+	return nil
+}
+
 // loadYAMLFileValues reads the YAML file at path and unmarshals it into a map.
 // Returns (nil, false, nil) when the file does not exist.
 func loadYAMLFileValues(path string) (map[string]interface{}, bool, error) {
@@ -534,31 +584,4 @@ func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, c
 	return merged, nil
 }
 
-// patchRedisForHostNetwork patches the ArgoCD redis deployment to use hostNetwork.
-func (r *Reconciler) patchRedisForHostNetwork(ctx context.Context) error {
-	log := logf.FromContext(ctx)
-	deploymentName := ArgoCDApp + "-redis"
-
-	deployment := &appsv1.Deployment{}
-	if err := r.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: r.OperatorNamespace}, deployment); err != nil {
-		if apierrors.IsNotFound(err) {
-			log.Info("Redis deployment not found, skipping patch", "deployment", deploymentName)
-			return nil
-		}
-		return fmt.Errorf("failed to get redis deployment: %w", err)
-	}
-
-	if deployment.Spec.Template.Spec.HostNetwork {
-		return nil
-	}
-
-	patch := client.MergeFrom(deployment.DeepCopy())
-	deployment.Spec.Template.Spec.HostNetwork = true
-	if err := r.Patch(ctx, deployment, patch); err != nil {
-		return fmt.Errorf("failed to patch redis deployment for hostNetwork: %w", err)
-	}
-
-	log.Info("Successfully patched redis deployment for hostNetwork", "deployment", deploymentName)
-	return nil
-}
 

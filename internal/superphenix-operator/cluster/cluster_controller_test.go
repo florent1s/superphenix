@@ -1158,6 +1158,10 @@ var _ = Describe("Cluster Controller", func() {
 			forceManual, found, _ := unstructured.NestedBool(app.Object, "spec", "source", "helm", "valuesObject", "forceManual")
 			Expect(found).To(BeTrue())
 			Expect(forceManual).To(BeTrue())
+
+			isLocal, found, _ := unstructured.NestedBool(app.Object, "spec", "source", "helm", "valuesObject", "cluster", "local")
+			Expect(found).To(BeTrue())
+			Expect(isLocal).To(BeTrue())
 		})
 
 		It("should set cleanupOnDeletion to true in Helm values and add finalizer when CleanupOnDeletion is true", func() {
@@ -1237,6 +1241,36 @@ var _ = Describe("Cluster Controller", func() {
 			cleanupOnDeletion, found, _ = unstructured.NestedBool(app.Object, "spec", "source", "helm", "valuesObject", "cleanupOnDeletion")
 			Expect(found).To(BeTrue())
 			Expect(cleanupOnDeletion).To(BeFalse())
+		})
+
+		It("should set cluster.local correctly in Helm values", func() {
+			r := &Reconciler{
+				OperatorNamespace: "default",
+			}
+
+			localCluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{Name: "local"},
+				Spec: operatorv1alpha1.ClusterSpec{
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeLocal,
+					},
+				},
+			}
+			values := r.generateApplicationValues(localCluster)
+			clusterValues := values["cluster"].(map[string]interface{})
+			Expect(clusterValues["local"]).To(BeTrue())
+
+			remoteCluster := &operatorv1alpha1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{Name: "remote"},
+				Spec: operatorv1alpha1.ClusterSpec{
+					Connection: &operatorv1alpha1.ClusterConnectionSpec{
+						Mode: operatorv1alpha1.ConnectionModeRemote,
+					},
+				},
+			}
+			values = r.generateApplicationValues(remoteCluster)
+			clusterValues = values["cluster"].(map[string]interface{})
+			Expect(clusterValues["local"]).To(BeFalse())
 		})
 	})
 })

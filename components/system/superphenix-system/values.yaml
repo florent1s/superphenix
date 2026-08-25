@@ -2,9 +2,11 @@
 # The pair (`deploymentTopology`, `type`) determines the "effective mode" used
 # to filter the `apps` entries (see the `apps.*.modes` field).
 cluster:
-  # -- Name of the target cluster. When set to "management" the
-  # Applications are deployed to the local Argo CD cluster ("in-cluster").
+  # -- Name of the target cluster.
   name: "in-cluster"
+  # -- Whether the cluster is the local cluster on which the operator is deployed. When true, the
+  # Applications are deployed to "in-cluster" instead of a remote cluster.
+  local: true
   # -- Geographical region the cluster belongs to (informational).
   region: ""
   # -- Availability zone the cluster belongs to (informational).
@@ -830,7 +832,7 @@ apps:
       releaseName: "rook-local-cluster"
       values:
         operatorNamespace: rook-system
-        clusterName: "invalid"
+        clusterName: "{{ $.Values.cluster.name | quote }}"
         toolbox:
           enabled: true
         monitoring:
@@ -884,7 +886,7 @@ apps:
           network:
             # Use host networking for performance and to expose the daemons to remote Ceph clients.
             provider: host
-            # Ceph runs on IPv6 only; bind the daemons on IPv6 addresses.
+            # Specify which protocol we bind to.
             ipFamily: IPv6
             # Must be overridden per cluster with the IPv6 ranges dedicated to storage traffic.
             addressRanges:
@@ -995,7 +997,7 @@ apps:
       chart: "volume-replicator"
       releaseName: "volume-replicator"
       values:
-        exclusionRegex: "^prime-.*$"
+        exclusionRegex: "^prime-.*$|^tmp-.*$"
 
   # -- spx-policies: Kyverno policies that enforce Superphenix RFCs and protect against known bugs and attacks.
   policies:
@@ -1186,7 +1188,6 @@ apps:
         # Own generated snapshots via ownerReferences so they are garbage-collected
         # if the parent SnapshotSchedule is ever deleted.
         enableOwnerReferences: true
-
 
   ###########################################################################
   #                        KAAS CONTROLLER SYSTEM                           #
@@ -1649,18 +1650,18 @@ apps:
               flows:
                 recovery:
                   enabled: true
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/ui/recovery"
+                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/recovery"
                   after:
                     hooks:
                       - hook: revoke_active_sessions
                 verification:
                   enabled: true
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/ui/verification"
+                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/verification"
                   use: code
                   lifespan: "1h"
                   notify_unknown_recipients: false
                 registration:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/ui/registration"
+                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/registration"
                   after:
                     password:
                       hooks:
@@ -1672,14 +1673,14 @@ apps:
                       hooks:
                         - hook: show_verification_ui
                 login:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/ui/login"
+                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/login"
                   after:
                     hooks:
                       - hook: require_verified_address
                 error:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/ui/error"
+                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/error"
                 settings:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/ui/settings"
+                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/settings"
                   # Force re-authentication before a password change if the session is older than 15 minutes.
                   privileged_session_max_age: 15m
 
@@ -1773,6 +1774,9 @@ apps:
       releaseName: permify
       values:
         app:
+          # -- Number of instances of Permify to run.
+          replicaCount: 1
+
           # -- Database connection used to store Permify tuples and schemas.
           database:
             engine: postgres

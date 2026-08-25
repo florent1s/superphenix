@@ -75,9 +75,9 @@ spec:
       {{- end }}
     {{- end }}
   destination:
-    {{- /* The management cluster is Argo CD's own cluster, so we target "in-cluster" instead of a remote cluster registration. */}}
+    {{- /* If the cluster is local, we target "in-cluster" instead of a remote cluster registration. */}}
     {{- $destination := $cluster.name }}
-    {{- if eq $cluster.name "management" }}
+    {{- if $cluster.local }}
     {{- $destination = "in-cluster" }}
     {{- end }}
     name: {{ $destination | quote }}

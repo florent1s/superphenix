@@ -114,7 +114,7 @@ func main() {
 	flag.BoolVar(&disableTelemetry, "disable-telemetry", false, "Disable sending anonymous telemetry to the Superphenix open-source project")
 	flag.StringVar(&telemetryEndpoint, "telemetry-endpoint", telemetry.DefaultEndpoint, "URL of the telemetry ingest endpoint")
 	flag.BoolVar(&disableVersionValidation, "disable-version-validation", false, "Disable validation of versions entirely")
-	flag.BoolVar(&installWithoutCNI, "install-without-cni", false, "Whether to install components without CNI (enables hostNetwork for redis)")
+	flag.BoolVar(&installWithoutCNI, "install-without-cni", false, "Whether to install components without a CNI. Necessary when deploying the operator on a cluster without a CNI.")
 	opts := zap.Options{
 		Development: true,
 	}

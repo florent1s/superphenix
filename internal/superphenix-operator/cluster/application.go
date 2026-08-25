@@ -154,6 +154,7 @@ func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster
 	values := map[string]interface{}{
 		"cluster": map[string]interface{}{
 			"name":               cluster.Name,
+			"local":              cluster.Spec.Connection.Mode == operatorv1alpha1.ConnectionModeLocal,
 			"region":             cluster.Spec.Region,
 			"availabilityZone":   cluster.Spec.AvailabilityZone,
 			"deploymentTopology": string(cluster.Spec.DeploymentTopology),
