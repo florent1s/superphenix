@@ -182,8 +182,6 @@ data:
     redis:
       {{- if .Values.installOnClusterWithoutCNI }}
       hostNetwork: true
-      auth:
-        enabled: false
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
