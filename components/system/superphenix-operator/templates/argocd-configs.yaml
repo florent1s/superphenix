@@ -194,6 +194,11 @@ data:
             topologyKey: kubernetes.io/hostname
       {{- end }}
 
+    {{- if .Values.installOnClusterWithoutCNI }}
+    redisSecretInit:
+      hostNetwork: true
+    {{- end }}
+
     applicationSet:
       metrics:
         enabled: true

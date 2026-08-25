@@ -4925,6 +4925,7 @@ false
 {
   "availabilityZone": "",
   "deploymentTopology": "",
+  "local": true,
   "name": "in-cluster",
   "region": "",
   "type": ""
@@ -4952,13 +4953,22 @@ false
 			<td>Deployment topology. One of: "Hyperconverged", "Decoupled".</td>
 		</tr>
 		<tr>
+			<td>cluster.local</td>
+			<td>bool</td>
+			<td><pre lang="json">
+true
+</pre>
+</td>
+			<td>Whether the cluster is the local Argo CD cluster. When true, the Applications are deployed to "in-cluster" instead of a remote cluster.</td>
+		</tr>
+		<tr>
 			<td>cluster.name</td>
 			<td>string</td>
 			<td><pre lang="json">
 "in-cluster"
 </pre>
 </td>
-			<td>Name of the target cluster. When set to "management" the Applications are deployed to the local Argo CD cluster ("in-cluster").</td>
+			<td>Name of the target cluster.</td>
 		</tr>
 		<tr>
 			<td>cluster.region</td>

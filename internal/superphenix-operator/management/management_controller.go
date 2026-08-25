@@ -15,8 +15,8 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/storage/driver"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -161,13 +161,6 @@ func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 		return fmt.Errorf("failed to ensure initial ArgoCD install: %w", err)
 	}
 
-	// If requested, patch redis for hostNetwork (required in CNI-less environments).
-	if r.InstallWithoutCNI {
-		if err := r.patchRedisForHostNetwork(ctx); err != nil {
-			return fmt.Errorf("failed to patch redis for hostNetwork: %w", err)
-		}
-	}
-
 	// Give back control to ArgoCD itself.
 	if !r.InstallWithoutCNI {
 		if err := r.ensureArgoCDSelfManaged(ctx); err != nil {
@@ -236,12 +229,24 @@ func (r *Reconciler) initHelmActionConfig(ctx context.Context, helmSettings *cli
 		return nil, fmt.Errorf("failed to initialize Helm action configuration: %w", err)
 	}
 
+	// Initialize the registry client to support OCI repositories.
+	registryClient, err := registry.NewClient(
+		registry.ClientOptDebug(helmSettings.Debug),
+		registry.ClientOptEnableCache(true),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(helmSettings.RegistryConfig),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create registry client: %w", err)
+	}
+	actionConfig.RegistryClient = registryClient
+
 	return actionConfig, nil
 }
 
 // locateAndLoadArgoCDChart resolves, downloads, and loads the argo-cd Helm chart into memory.
-func locateAndLoadArgoCDChart(chartPathOptions *action.ChartPathOptions, helmSettings *cli.EnvSettings) (*chart.Chart, error) {
-	cp, err := chartPathOptions.LocateChart("argo-cd", helmSettings)
+func locateAndLoadArgoCDChart(chartName string, chartPathOptions *action.ChartPathOptions, helmSettings *cli.EnvSettings) (*chart.Chart, error) {
+	cp, err := chartPathOptions.LocateChart(chartName, helmSettings)
 	if err != nil {
 		return nil, fmt.Errorf("failed to locate ArgoCD chart: %w", err)
 	}
@@ -335,12 +340,20 @@ func (r *Reconciler) ensureInitialHelmInstall(ctx context.Context) error {
 
 	log.Info("Performing initial ArgoCD Helm upgrade+install", "chart", "argo-cd", "version", r.ArgoCDChartVersion)
 
-	chartPathOptions := &action.ChartPathOptions{
-		RepoURL: r.ArgoCDChartURL,
-		Version: r.ArgoCDChartVersion,
+	// Use action.NewInstall to get a ChartPathOptions with the registry client initialized.
+	// We only use it to locate and load the chart here.
+	c := action.NewInstall(actionConfig)
+	c.Version = r.ArgoCDChartVersion
+
+	chartName := "argo-cd"
+	if strings.HasPrefix(r.ArgoCDChartURL, "oci://") {
+		// For OCI repositories, the full chart URL is required.
+		chartName = fmt.Sprintf("%s/%s", strings.TrimSuffix(r.ArgoCDChartURL, "/"), "argo-cd")
+	} else {
+		c.RepoURL = r.ArgoCDChartURL
 	}
 
-	ch, err := locateAndLoadArgoCDChart(chartPathOptions, helmSettings)
+	ch, err := locateAndLoadArgoCDChart(chartName, &c.ChartPathOptions, helmSettings)
 	if err != nil {
 		return err
 	}
@@ -571,61 +584,4 @@ func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, c
 	return merged, nil
 }
 
-// patchRedisForHostNetwork patches the ArgoCD redis deployment to use hostNetwork
-// and removes password requirement in CNI-less environments.
-func (r *Reconciler) patchRedisForHostNetwork(ctx context.Context) error {
-	log := logf.FromContext(ctx)
-	deploymentName := ArgoCDApp + "-redis"
-
-	deployment := &appsv1.Deployment{}
-	if err := r.Get(ctx, types.NamespacedName{Name: deploymentName, Namespace: r.OperatorNamespace}, deployment); err != nil {
-		if apierrors.IsNotFound(err) {
-			log.Info("Redis deployment not found, skipping patch", "deployment", deploymentName)
-			return nil
-		}
-		return fmt.Errorf("failed to get redis deployment: %w", err)
-	}
-
-	patch := client.MergeFrom(deployment.DeepCopy())
-	deployment.Spec.Template.Spec.HostNetwork = true
-
-	// Patch the redis container to remove password requirement when running without CNI.
-	for i := range deployment.Spec.Template.Spec.Containers {
-		container := &deployment.Spec.Template.Spec.Containers[i]
-		if container.Name == "redis" {
-			// Remove --requirepass $(REDIS_PASSWORD) from args.
-			// It can be a single arg "--requirepass $(REDIS_PASSWORD)" or two args "--requirepass" and "$(REDIS_PASSWORD)".
-			newArgs := make([]string, 0, len(container.Args))
-			for i := 0; i < len(container.Args); i++ {
-				arg := container.Args[i]
-				if arg == "--requirepass $(REDIS_PASSWORD)" {
-					continue
-				}
-				if arg == "--requirepass" && i+1 < len(container.Args) && container.Args[i+1] == "$(REDIS_PASSWORD)" {
-					i++ // Skip next arg too
-					continue
-				}
-				newArgs = append(newArgs, arg)
-			}
-			container.Args = newArgs
-
-			// Remove REDIS_PASSWORD from env.
-			newEnv := make([]corev1.EnvVar, 0, len(container.Env))
-			for _, env := range container.Env {
-				if env.Name == "REDIS_PASSWORD" {
-					continue
-				}
-				newEnv = append(newEnv, env)
-			}
-			container.Env = newEnv
-		}
-	}
-
-	if err := r.Patch(ctx, deployment, patch); err != nil {
-		return fmt.Errorf("failed to patch redis deployment: %w", err)
-	}
-
-	log.Info("Successfully patched redis deployment", "deployment", deploymentName)
-	return nil
-}
 

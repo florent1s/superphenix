@@ -125,6 +125,10 @@ config:
   enableHTTP2: false
 
   argocd:
+    # -- Override the ArgoCD chart location and version.
+    chart:
+      url: ""
+      version: ""
     # -- ArgoCD configuration.
     ha:
       # -- Enable HA mode for ArgoCD deployment.

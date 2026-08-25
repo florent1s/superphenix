@@ -2,9 +2,11 @@
 # The pair (`deploymentTopology`, `type`) determines the "effective mode" used
 # to filter the `apps` entries (see the `apps.*.modes` field).
 cluster:
-  # -- Name of the target cluster. When set to "management" the
-  # Applications are deployed to the local Argo CD cluster ("in-cluster").
+  # -- Name of the target cluster.
   name: "in-cluster"
+  # -- Whether the cluster is the local cluster on which the operator is deployed. When true, the
+  # Applications are deployed to "in-cluster" instead of a remote cluster.
+  local: true
   # -- Geographical region the cluster belongs to (informational).
   region: ""
   # -- Availability zone the cluster belongs to (informational).
@@ -995,7 +997,7 @@ apps:
       chart: "volume-replicator"
       releaseName: "volume-replicator"
       values:
-        exclusionRegex: "^prime-.*$"
+        exclusionRegex: "^prime-.*$|^tmp-.*$"
 
   # -- spx-policies: Kyverno policies that enforce Superphenix RFCs and protect against known bugs and attacks.
   policies:
