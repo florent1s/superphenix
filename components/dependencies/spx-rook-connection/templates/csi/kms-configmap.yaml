@@ -6,18 +6,19 @@ metadata:
   namespace: {{ .Values.rookOperatorNamespace }}
 data:
 {{- range .Values.clusters }}
-{{- $cluster := .name }}
-{{- range .pools }}
+{{- $clusterObj := . }}
+{{- $clusterName := .name }}
+{{- range .blockPools }}
 {{- range .storageClasses }}
 {{- if and .encryption .encryption.enabled }}
-  {{- $scName := .fullName | default (printf "%s.%s" $cluster .name) }}
+  {{- $scName := .fullName | default (printf "%s.%s" $clusterName .name) }}
   {{- $kmsType := .encryption.kmsType | default "metadata" }}
   {{ $scName }}: |-
     {
       "encryptionKMSType": {{ $kmsType | quote }}
       {{- if eq $kmsType "metadata" }},
       "secretName": {{ (printf "%s-encryption" $scName) | quote }},
-      "secretNamespace": {{ $cluster | quote }}
+      "secretNamespace": {{ ($clusterObj.csi | default dict).secretNamespace | default $clusterName | quote }}
       {{- end }}
       {{- range $key, $value := .encryption.extraKMSParameters }},
       {{ $key | quote }}: {{ $value | quote }}

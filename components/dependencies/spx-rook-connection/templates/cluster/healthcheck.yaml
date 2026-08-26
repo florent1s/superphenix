@@ -1,4 +1,5 @@
 {{- range .Values.clusters }}
+{{- if not .local }}
 ---
 apiVersion: v1
 kind: Secret
@@ -12,4 +13,5 @@ stringData:
   ceph-secret: {{ .healthCheck.token | quote }}
   admin-secret: ""
   mon-secret: "mon-secret"
+{{- end }}
 {{- end }}

@@ -1,4 +1,5 @@
 {{- range .Values.clusters }}
+{{- if not .local }}
 {{- $cluster := .name }}
 
 ---
@@ -18,4 +19,5 @@ spec:
         disabled: false
         interval: 45s
 
+{{- end }}
 {{- end }}

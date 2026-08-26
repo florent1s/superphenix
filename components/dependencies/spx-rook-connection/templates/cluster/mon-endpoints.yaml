@@ -1,4 +1,5 @@
 {{- range .Values.clusters }}
+{{- if not .local }}
 {{- $protocol := .bootstrapMon.protocol | default "IPv6" }}
 {{- $port := .bootstrapMon.port | default "6789" }}
 ---
@@ -15,4 +16,5 @@ data:
   {{- end }}
   mapping: "{}"
   maxMonId: "2"
+{{- end }}
 {{- end }}

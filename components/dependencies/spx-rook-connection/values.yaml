@@ -1,10 +1,38 @@
 rookOperatorNamespace: "rook-system"
 mapping: ""
-clusters: []
+clusters:
+  # -- This is the configuration for the local Ceph cluster
+  # It isn't needed for Decoupled Virtualization clusters, but must be
+  # present on Hyperconverged or Decoupled Storage clusters.
+  # If you're adding an override to connect another Ceph cluster, remember to copy
+  # and paste this configuration to avoid losing the default values.
+  - name: "spx-storage"
+    local: true
+    clusterID: "spx-storage"
+    csi:
+      secretNamespace: "spx-storage"
+      rbdNodeSecretName: "rook-csi-rbd-node"
+      rbdProvisionerSecretName: "rook-csi-rbd-provisioner"
+    blockPools:
+      - name: "spx-rbd-3x"
+        storageClasses:
+          - name: "spx-rbd-3x"
+            fs: "ext4"
+            default: true
 #  - name: "spx-aq01-test01-storage01"
-#    # -- Ceph cluster ID (FSID)
+#    # -- Whether the cluster is local or remote
+#    local: false
+#    # -- Ceph cluster ID (FSID) or namespace for local clusters
 #    # e.g e2a62ea1-6428-496e-a5bf-366936a8c833
 #    clusterID: ""
+#    # -- CSI-related configuration
+#    csi:
+#      # -- Namespace where the CSI secrets are located (defaults to cluster name)
+#      secretNamespace: ""
+#      # -- Name of the CSI node secret (defaults to cluster name)
+#      rbdNodeSecretName: ""
+#      # -- Name of the CSI provisioner secret (defaults to cluster name)
+#      rbdProvisionerSecretName: ""
 #    username: "spx-aq01-test01-virt01.local-block"
 #    token: "test"
 #    # -- Initial MON we will contact to retrieve the entire MON list
@@ -23,7 +51,7 @@ clusters: []
 #      username: "client.csi-health"
 #      # -- Token associated with the account
 #      token: ""
-#    pools:
+#    blockPools:
 #      - name: "test"
 #        # Create StorageClasses
 #        storageClasses:
@@ -31,6 +59,8 @@ clusters: []
 #            # fullName: ""
 #            # -- Data pool specified for erasure coded storage classes
 #            dataPool: ""
+#            # -- Filesystem type for the StorageClass
+#            fs: "xfs"
 #            default: true
 #            reclaimPolicy: Delete
 #            # -- Enable encryption for the StorageClass
