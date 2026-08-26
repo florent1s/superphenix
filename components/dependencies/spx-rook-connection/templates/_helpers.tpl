@@ -60,3 +60,13 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Check if a cluster is enabled.
+A cluster is enabled if .enabled is not false (bool), "false" (string) or "" (string).
+*/}}
+{{- define "spx-ceph-conn.clusterEnabled" -}}
+{{- if and (ne .enabled false) (ne .enabled "false") (ne .enabled "") -}}
+true
+{{- end -}}
+{{- end -}}

@@ -1,4 +1,5 @@
 {{- range .Values.clusters }}
+{{- if include "spx-ceph-conn.clusterEnabled" . }}
 {{- $cluster := .name }}
 {{- range .objectStores }}
 {{- $storeName := .name }}
@@ -14,6 +15,7 @@ reclaimPolicy: {{ .reclaimPolicy | default "Delete" }}
 parameters:
   objectStoreName: {{ printf "%s.%s" $cluster $storeName }}
   objectStoreNamespace: {{ $cluster }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

@@ -1,4 +1,5 @@
 {{- range .Values.clusters }}
+{{- if include "spx-ceph-conn.clusterEnabled" . }}
 ---
 apiVersion: v1
 kind: Namespace
@@ -6,4 +7,5 @@ metadata:
   name: {{ .name }}
   labels:
     pod-security.kubernetes.io/enforce: privileged
+{{- end }}
 {{- end }}
