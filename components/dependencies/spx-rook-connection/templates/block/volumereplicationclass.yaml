@@ -1,5 +1,6 @@
 {{- range .Values.clusters }}
 {{- $cluster := .name }}
+{{- $csi := .csi | default dict }}
 {{- range $name, $class := .replicationClasses }}
 
 ---
@@ -19,8 +20,8 @@ spec:
     flattenMode: force
     schedulingInterval: {{ .schedulingInterval | default "24h" }}
     schedulingStartTime: {{ .schedulingStartTime | default "22:00:00" }}
-    replication.storage.openshift.io/replication-secret-name: {{ $cluster }}
-    replication.storage.openshift.io/replication-secret-namespace: {{ $cluster }}
+    replication.storage.openshift.io/replication-secret-name: {{ $csi.rbdProvisionerSecretName | default $cluster }}
+    replication.storage.openshift.io/replication-secret-namespace: {{ $csi.secretNamespace | default $cluster }}
 
 {{- end }}
 {{- end }}

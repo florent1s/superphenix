@@ -1,6 +1,7 @@
 {{- range .Values.clusters }}
 {{- $cluster := .name }}
-{{- range .pools }}
+{{- $csi := .csi | default dict }}
+{{- range .blockPools }}
 {{- $pool := .name }}
 {{- range .storageClasses }}
 {{- $scName := .fullName | default (printf "%s.%s" $cluster .name) }}
@@ -16,14 +17,14 @@ metadata:
   labels:
     replication.superphenix.net/storageClassGroup: "{{ $cluster }}"
 parameters:
-  clusterID: {{ $cluster }}
+  clusterID: {{ .clusterID | default $cluster }}
   csi.storage.k8s.io/fstype: {{ .fs | default "xfs" }}
-  csi.storage.k8s.io/node-stage-secret-name: {{ $cluster }}
-  csi.storage.k8s.io/node-stage-secret-namespace: {{ $cluster }}
-  csi.storage.k8s.io/controller-expand-secret-name: {{ $cluster }}
-  csi.storage.k8s.io/controller-expand-secret-namespace: {{ $cluster }}
-  csi.storage.k8s.io/provisioner-secret-name: {{ $cluster }}
-  csi.storage.k8s.io/provisioner-secret-namespace: {{ $cluster }}
+  csi.storage.k8s.io/node-stage-secret-name: {{ $csi.rbdNodeSecretName | default $cluster }}
+  csi.storage.k8s.io/node-stage-secret-namespace: {{ $csi.secretNamespace | default $cluster }}
+  csi.storage.k8s.io/controller-expand-secret-name: {{ $csi.rbdProvisionerSecretName | default $cluster }}
+  csi.storage.k8s.io/controller-expand-secret-namespace: {{ $csi.secretNamespace | default $cluster }}
+  csi.storage.k8s.io/provisioner-secret-name: {{ $csi.rbdProvisionerSecretName | default $cluster }}
+  csi.storage.k8s.io/provisioner-secret-namespace: {{ $csi.secretNamespace | default $cluster }}
   imageFeatures: {{ .features | default "layering,fast-diff,object-map,deep-flatten,exclusive-lock" }}
   imageFormat: {{ .imageFormat | default "2" | quote }}
   mapOptions: "krbd:rxbounce" # Necessary for Windows (https://kubevirt.io/monitoring/runbooks/VMStorageClassWarning.html)

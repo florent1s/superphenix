@@ -898,55 +898,17 @@ apps:
         cephFileSystems: []
         cephObjectStores: []
         cephBlockPools:
-          # Override the built-in ".mgr" pool to pin it to the "nvme" device class
-          # (Rook does not set a device class on that pool by default).
-          # TODO: remove once Rook exposes this natively.
-          - name: mgr
-            spec:
-              name: .mgr
-              failureDomain: host
-              deviceClass: nvme
-              replicated:
-                size: 3
-                requireSafeReplicaSize: true
-              parameters:
-                compression_mode: none
-              mirroring:
-                enabled: false
-              enableCrushUpdates: true
-            storageClass:
-              enabled: false
-
-          # Block-storage pool used locally by the storage cluster for its own transient needs.
-          # Uses EXT4 (XFS can deadlock in a hyperconverged setup) and a replica-2 configuration
-          # since the data (logs, metrics, ...) is considered non-critical.
-          - name: spx-scratchpad
+          # Default block-storage pool.
+          # It isn't pinned to a particular device class, so the backing disks may be diverse (NVMe, HDD...)
+          - name: spx-rbd-3x
             spec:
               failureDomain: host
               enableRBDStats: true
-              deviceClass: nvme
               replicated:
-                size: 2
+                size: 3
               enableCrushUpdates: true
             storageClass:
-              enabled: true
-              name: spx-scratchpad
-              isDefault: true
-              reclaimPolicy: Delete
-              allowVolumeExpansion: true
-              volumeBindingMode: "Immediate"
-              parameters:
-                imageFormat: "2"
-                imageFeatures: layering,fast-diff,object-map,deep-flatten,exclusive-lock
-                csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
-                csi.storage.k8s.io/provisioner-secret-namespace: "spx-storage"
-                csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
-                csi.storage.k8s.io/controller-expand-secret-namespace: "spx-storage"
-                csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
-                csi.storage.k8s.io/node-stage-secret-namespace: "spx-storage"
-                csi.storage.k8s.io/fstype: ext4
-              mountOptions:
-                - discard
+              enabled: false
 
   # -- Rook connection to an external (decoupled) Ceph cluster.
   # Deployed on workload clusters that consume storage from a remote storage cluster.

@@ -1,6 +1,7 @@
 {{- range .Values.clusters }}
 {{- $cluster := .name }}
-{{- range .pools }}
+{{- $csi := .csi | default dict }}
+{{- range .blockPools }}
 {{- $pool := .name }}
 {{- range .storageClasses }}
 
@@ -19,9 +20,9 @@ metadata:
   {{- end }}
 driver: {{ $.Values.rookOperatorNamespace }}.rbd.csi.ceph.com
 parameters:
-  clusterID: {{ $cluster }}
-  csi.storage.k8s.io/snapshotter-secret-name: {{ $cluster }}
-  csi.storage.k8s.io/snapshotter-secret-namespace: {{ $cluster }}
+  clusterID: {{ .clusterID | default $cluster }}
+  csi.storage.k8s.io/snapshotter-secret-name: {{ $csi.rbdProvisionerSecretName | default $cluster }}
+  csi.storage.k8s.io/snapshotter-secret-namespace: {{ $csi.secretNamespace | default $cluster }}
 deletionPolicy: {{ .reclaimPolicy | default "Delete" }}
 
 {{- end }}
