@@ -907,15 +907,35 @@ apps:
               replicated:
                 size: 3
               enableCrushUpdates: true
+            # The rook-connection settings will create a storage class to consume the pool locally
+            # on hyperconverged clusters (including the snapshots, replications...).
+            # For storage clusters, we have a default basic storage class for system PVCs (Prometheus, Loki...)
             storageClass:
-              enabled: false
+              enabled: '{{- eq $.Values.cluster.deploymentTopology "DecoupledStorage" | ternary "true" "" -}}'
+              name: spx-storage.spx-rbd-3x
+              isDefault: true
+              reclaimPolicy: Delete
+              allowVolumeExpansion: true
+              volumeBindingMode: "Immediate"
+              parameters:
+                imageFormat: "2"
+                imageFeatures: layering,fast-diff,object-map,deep-flatten,exclusive-lock
+                csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+                csi.storage.k8s.io/provisioner-secret-namespace: "spx-storage"
+                csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+                csi.storage.k8s.io/controller-expand-secret-namespace: "spx-storage"
+                csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+                csi.storage.k8s.io/node-stage-secret-namespace: "spx-storage"
+                csi.storage.k8s.io/fstype: ext4
+              mountOptions:
+                - discard
 
-  # -- Rook connection to an external (decoupled) Ceph cluster.
-  # Deployed on workload clusters that consume storage from a remote storage cluster.
+  # -- Rook connection to a Ceph cluster.
+  # Deployed on hyperconverged clusters and workload clusters that consume storage from a remote storage cluster.
   rook-connection:
     enabled: true
     wave: "0"
-    modes: [DecoupledWorkload]
+    modes: [Hyperconverged, DecoupledWorkload]
     automation:
       enabled: true
       selfHeal: true
@@ -941,6 +961,25 @@ apps:
     helm:
       chart: "spx-rook-connection"
       releaseName: "spx-rook-connection"
+      values:
+        clusters:
+          # -- This is the configuration for the local Ceph cluster when running hyperconverged.
+          # If you're adding an override to connect another Ceph cluster, remember to copy
+          # and paste this configuration to avoid losing the default values.
+          - name: "spx-storage"
+            enabled: '{{- eq $.Values.cluster.deploymentTopology "Hyperconverged" | ternary "true" "false" -}}'
+            clusterID: "spx-storage"
+            local: true
+            csi:
+              secretNamespace: "spx-storage"
+              rbdNodeSecretName: "rook-csi-rbd-node"
+              rbdProvisionerSecretName: "rook-csi-rbd-provisioner"
+            blockPools:
+              - name: "spx-rbd-3x"
+                storageClasses:
+                  - name: "spx-rbd-3x"
+                    fs: "ext4"
+                    default: true
 
   # -- volume-replicator: Kubernetes controller that automates RBD mirroring between Ceph clusters (disaster-recovery).
   volume-replicator:
@@ -1564,8 +1603,8 @@ apps:
                   enabled: true
                   allow_credentials: true
                   allowed_origins:
-                    - "https://*.{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}"
-                    - "https://*.{{ (index $.Values.apps \"superphenix-api\").helm.values.domain }}"
+                    - 'https://*.{{ (index $.Values.apps "superphenix-console").helm.values.domain }}'
+                    - 'https://*.{{ (index $.Values.apps "superphenix-api").helm.values.domain }}'
                   allowed_methods:
                     - POST
                     - GET
@@ -1602,28 +1641,28 @@ apps:
                     lifespan: "15m"
 
               # -- Default post-flow redirect target.
-              default_browser_return_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/"
+              default_browser_return_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/'
 
               # -- Allowed post-flow redirect targets (glob-based).
               allowed_return_urls:
-                - "https://*.{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/"
+                - 'https://*.{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/'
 
               # -- Kratos self-service flow configuration (login, registration, recovery, ...).
               flows:
                 recovery:
                   enabled: true
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/recovery"
+                  ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/recovery'
                   after:
                     hooks:
                       - hook: revoke_active_sessions
                 verification:
                   enabled: true
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/verification"
+                  ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/verification'
                   use: code
                   lifespan: "1h"
                   notify_unknown_recipients: false
                 registration:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/registration"
+                  ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/registration'
                   after:
                     password:
                       hooks:
@@ -1635,14 +1674,14 @@ apps:
                       hooks:
                         - hook: show_verification_ui
                 login:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/login"
+                  ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/login'
                   after:
                     hooks:
                       - hook: require_verified_address
                 error:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/error"
+                  ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/error'
                 settings:
-                  ui_url: "https://{{ (index $.Values.apps \"superphenix-console\").helm.values.domain }}/auth/settings"
+                  ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/settings'
                   # Force re-authentication before a password change if the session is older than 15 minutes.
                   privileged_session_max_age: 15m
 
@@ -1742,7 +1781,7 @@ apps:
           # -- Database connection used to store Permify tuples and schemas.
           database:
             engine: postgres
-            uri: "postgres://superphenix:{{ (index $.Values.apps \"postgres\").helm.values.auth.password }}@postgres.{{ $.Release.Namespace }}:5432/permify"
+            uri: 'postgres://superphenix:{{ (index $.Values.apps "postgres").helm.values.auth.password }}@postgres.{{ $.Release.Namespace }}:5432/permify'
             garbage_collection:
               enabled: false
 

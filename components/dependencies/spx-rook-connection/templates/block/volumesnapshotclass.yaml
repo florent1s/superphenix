@@ -1,4 +1,5 @@
 {{- range .Values.clusters }}
+{{- if include "spx-ceph-conn.clusterEnabled" . }}
 {{- $cluster := .name }}
 {{- $csi := .csi | default dict }}
 {{- range .blockPools }}
@@ -25,6 +26,7 @@ parameters:
   csi.storage.k8s.io/snapshotter-secret-namespace: {{ $csi.secretNamespace | default $cluster }}
 deletionPolicy: {{ .reclaimPolicy | default "Delete" }}
 
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

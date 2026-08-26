@@ -1,4 +1,5 @@
 {{- range .Values.clusters }}
+{{- if include "spx-ceph-conn.clusterEnabled" . }}
 {{- $cluster := .name }}
 {{- $csi := .csi | default dict }}
 {{- range .blockPools }}
@@ -77,6 +78,7 @@ spec:
     accessModes:
     - ReadWriteOnce
 
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
