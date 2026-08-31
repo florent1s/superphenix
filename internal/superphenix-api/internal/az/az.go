@@ -10,15 +10,14 @@ import (
 var ErrAZNotFound = errors.New("az not found")
 
 func GetByCode(code string, orgaId string) (config.AZConfig, error) {
-	for _, az := range config.Global.AZs {
-		if az.Code == code {
-			if len(az.Whitelist) > 0 && !slices.Contains(az.Whitelist, orgaId) {
-				return config.AZConfig{}, ErrAZNotFound
-			}
-			return az, nil
-		}
+	az, ok := config.Global.AZs[code]
+	if !ok {
+		return config.AZConfig{}, ErrAZNotFound
 	}
-	return config.AZConfig{}, ErrAZNotFound
+	if len(az.Whitelist) > 0 && !slices.Contains(az.Whitelist, orgaId) {
+		return config.AZConfig{}, ErrAZNotFound
+	}
+	return az, nil
 }
 
 func FindAll(orgaId string) []config.AZConfig {
