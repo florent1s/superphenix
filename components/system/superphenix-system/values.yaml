@@ -777,7 +777,7 @@ apps:
       releaseName: "rook-local-cluster"
       values:
         operatorNamespace: rook-system
-        clusterName: "{{ $.Values.cluster.name | quote }}"
+        clusterName: "{{ $.Values.cluster.name }}"
         toolbox:
           enabled: true
         monitoring:
@@ -1483,7 +1483,6 @@ apps:
             - secretName: superphenix-console-tls
               hosts:
                 - *consoleDomain
-
 
   # -- Superphenix API: backend serving the console and CLI, persists to PostgreSQL and delegates auth to Permify/Kratos.
   superphenix-api:
