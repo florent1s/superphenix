@@ -103,7 +103,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 
 	// Check if ArgoCD CRDs are installed on the management cluster, as we can't proceed without them.
 	if err := argocd.CheckCRDs(ctx, r.RESTMapper()); err != nil {
-		log.Error(err, "ArgoCD CRDs are missing on the management cluster")
+		log.Info("ArgoCD CRDs are missing on the management cluster")
 		return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
 	}
 
@@ -148,14 +148,6 @@ func (r *Reconciler) configMapPredicate() predicate.Predicate {
 func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	log := logf.FromContext(ctx)
 
-	// In CNI-less mode, we must ensure ArgoCD is NOT self-managed,
-	// because ArgoCD would otherwise revert the hostNetwork and affinity settings.
-	if r.InstallWithoutCNI {
-		if err := r.ensureArgoCDNotSelfManaged(ctx); err != nil {
-			return fmt.Errorf("failed to ensure ArgoCD is not self-managed: %w", err)
-		}
-	}
-
 	// Install ArgoCD using Helm.
 	if err := r.ensureInitialHelmInstall(ctx); err != nil {
 		return fmt.Errorf("failed to ensure initial ArgoCD install: %w", err)
@@ -165,6 +157,24 @@ func (r *Reconciler) reconcileManagementArgoCD(ctx context.Context) error {
 	if !r.InstallWithoutCNI {
 		if err := r.ensureArgoCDSelfManaged(ctx); err != nil {
 			return fmt.Errorf("failed to ensure ArgoCD is self-managed: %w", err)
+		}
+	} else {
+		// In CNI-less mode, we must ensure the ArgoCD Application is NOT present,
+		// as it might try to manage ArgoCD with settings that require a CNI.
+		app := &unstructured.Unstructured{}
+		app.SetGroupVersionKind(schema.GroupVersionKind{
+			Group:   "argoproj.io",
+			Version: "v1alpha1",
+			Kind:    "Application",
+		})
+		err := r.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: r.OperatorNamespace}, app)
+		if err == nil {
+			log.Info("Deleting ArgoCD Application in CNI-less mode", "name", ArgoCDApp)
+			if err := r.Delete(ctx, app); err != nil {
+				return fmt.Errorf("failed to delete ArgoCD Application in CNI-less mode: %w", err)
+			}
+		} else if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to check for ArgoCD Application in CNI-less mode: %w", err)
 		}
 	}
 
@@ -461,33 +471,6 @@ func (r *Reconciler) ensureArgoCDSelfManaged(ctx context.Context) error {
 	return r.createOrUpdateArgoCDApplication(ctx, r.buildArgoCDApplication(values))
 }
 
-// ensureArgoCDNotSelfManaged removes the ArgoCD Application that hands ArgoCD's lifecycle to itself.
-func (r *Reconciler) ensureArgoCDNotSelfManaged(ctx context.Context) error {
-	log := logf.FromContext(ctx)
-
-	app := &unstructured.Unstructured{}
-	app.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "argoproj.io",
-		Version: "v1alpha1",
-		Kind:    "Application",
-	})
-
-	err := r.Get(ctx, types.NamespacedName{Name: ArgoCDApp, Namespace: r.OperatorNamespace}, app)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return nil
-		}
-		return fmt.Errorf("failed to get ArgoCD Application for removal: %w", err)
-	}
-
-	log.Info("Removing ArgoCD Application to avoid ruining patches (CNI-less mode)", "name", ArgoCDApp)
-	if err := r.Delete(ctx, app); err != nil {
-		return fmt.Errorf("failed to delete ArgoCD Application: %w", err)
-	}
-
-	return nil
-}
-
 // loadYAMLFileValues reads the YAML file at path and unmarshals it into a map.
 // Returns (nil, false, nil) when the file does not exist.
 func loadYAMLFileValues(path string) (map[string]interface{}, bool, error) {
@@ -583,5 +566,3 @@ func (r *Reconciler) mergeValues(ctx context.Context, defaultConfig, haConfig, c
 
 	return merged, nil
 }
-
-
