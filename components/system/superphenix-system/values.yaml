@@ -411,61 +411,6 @@ apps:
           - --kubelet-insecure-tls
           - --metric-resolution=15s
 
-  # -- ingress-nginx ingress controller.
-  # TODO: phase out ingress-nginx and rely on Traefik only.
-  ingress-nginx:
-    enabled: true
-    wave: "-10"
-    modes: [DecoupledStorage]
-    automation:
-      enabled: true
-      selfHeal: true
-      prune: true
-      cleanupOnDeletion: false
-      syncOptions: {}
-    namespace: "ingress-nginx-system"
-    nsLabels:
-      pod-security.kubernetes.io/enforce: privileged
-    repoURL: "https://kubernetes.github.io/ingress-nginx"
-    targetRevision: "4.13.3"
-    helm:
-      chart: "ingress-nginx"
-      releaseName: "ingress-nginx"
-      values:
-        controller:
-          hostNetwork: true
-          ingressClassResource:
-            name: "spx-nginx"
-          ingressClass: "spx-nginx"
-          kind: DaemonSet
-          containerPort:
-            http: 80
-            https: 443
-          service:
-            type: ClusterIP
-            ports:
-              http: 80
-              https: 443
-            targetPorts:
-              http: 8080
-              https: 8443
-          config:
-            hsts: "false"
-            use-forwarded-headers: "true"
-            enable-real-ip: "true"
-            log-format-upstream: '{"msec": "$msec", "connection": "$connection", "connection_requests": "$connection_requests", "pid": "$pid", "request_id": "$request_id", "request_length": "$request_length", "remote_addr": "$remote_addr", "remote_user": "$remote_user", "remote_port": "$remote_port", "time_local": "$time_local", "time_iso8601": "$time_iso8601", "request": "$request", "request_uri": "$request_uri", "args": "$args", "status": "$status", "body_bytes_sent": "$body_bytes_sent", "bytes_sent": "$bytes_sent", "http_referer": "$http_referer", "http_user_agent": "$http_user_agent", "http_x_forwarded_for": "$http_x_forwarded_for", "http_host": "$http_host", "server_name": "$server_name", "request_time": "$request_time", "upstream": "$upstream_addr", "upstream_connect_time": "$upstream_connect_time", "upstream_header_time": "$upstream_header_time", "upstream_response_time": "$upstream_response_time", "upstream_response_length": "$upstream_response_length", "upstream_cache_status": "$upstream_cache_status", "ssl_protocol": "$ssl_protocol", "ssl_cipher": "$ssl_cipher", "scheme": "$scheme", "request_method": "$request_method", "server_protocol": "$server_protocol", "pipe": "$pipe", "gzip_ratio": "$gzip_ratio", "http_cf_ray": "$http_cf_ray"}'
-          metrics:
-            enabled: true
-            serviceMonitor:
-              enabled: true
-              additionalLabels:
-                release: prometheus
-          # Tolerate control-plane taint so the DaemonSet can run on master nodes.
-          tolerations:
-            - key: "node-role.kubernetes.io/master"
-              operator: "Exists"
-              effect: "NoSchedule"
-
   # -- cert-manager: issues and renews TLS certificates, including via Let's Encrypt ACME.
   cert-manager:
     enabled: true
@@ -1375,11 +1320,11 @@ apps:
     directory:
       recurse: true
 
-  # -- Traefik: primary Ingress and Gateway API controller. Successor to ingress-nginx.
+  # -- Traefik: primary Ingress and Gateway API controller.
   traefik:
     enabled: true
     wave: "0"
-    modes: [Hyperconverged, DecoupledWorkload]
+    modes: [Hyperconverged, DecoupledWorkload, DecoupledStorage]
     automation:
       enabled: true
       selfHeal: true
