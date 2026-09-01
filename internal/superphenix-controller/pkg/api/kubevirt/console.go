@@ -61,6 +61,10 @@ type TermConn struct {
 	con     net.Conn
 	wsDone  chan struct{} // ws is closed, only close this chan in ws reader
 	ptyDone chan struct{} // pty is closed, close this chan in pty reader
+	wsMu    sync.Mutex    // protects concurrent writes to ws
+
+	closeWsDone  sync.Once
+	closeptyDone sync.Once
 }
 
 // Periodically send ping message to detect the status of the ws
@@ -74,8 +78,10 @@ out:
 	for {
 		select {
 		case <-ticker.C:
+			tc.wsMu.Lock()
 			err := tc.ws.WriteControl(websocket.PingMessage,
 				[]byte{}, time.Now().Add(writeWait))
+			tc.wsMu.Unlock()
 
 			if err != nil {
 				log.Err(err).Msg("Failed to write ping message")
@@ -119,7 +125,7 @@ func (tc *TermConn) wsToStdin(wg *sync.WaitGroup) {
 			if err != nil {
 				log.Err(err).Msg("Failed to receive data from ws")
 				close(bufChan) // close chan by producer
-				close(tc.wsDone)
+				tc.closeWsDone.Do(func() { close(tc.wsDone) })
 				break
 			}
 
@@ -168,7 +174,7 @@ func (tc *TermConn) stdoutToWs(wg *sync.WaitGroup) {
 			if err != nil {
 				log.Err(err).Msg("Failed to read from pty stdout")
 				close(bufChan)
-				close(tc.ptyDone)
+				tc.closeptyDone.Do(func() { close(tc.ptyDone) })
 				break
 			}
 
@@ -183,16 +189,21 @@ out:
 		select {
 		case buf, ok := <-bufChan:
 			if !ok {
+				tc.wsMu.Lock()
 				tc.ws.SetWriteDeadline(time.Now().Add(writeWait))
 				tc.ws.WriteMessage(websocket.CloseMessage,
 					websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Pty closed"))
+				tc.wsMu.Unlock()
 
 				break out
 			}
 			// We could add ws to viewers as well (then we can use io.MultiWriter),
 			// but we want to handle errors differently
+			tc.wsMu.Lock()
 			tc.ws.SetWriteDeadline(time.Now().Add(writeWait))
-			if err := tc.ws.WriteMessage(websocket.BinaryMessage, buf); err != nil {
+			err := tc.ws.WriteMessage(websocket.TextMessage, buf)
+			tc.wsMu.Unlock()
+			if err != nil {
 				log.Err(err).Msg("Failed to write message")
 				break out
 			}
@@ -226,7 +237,12 @@ out:
 //	@Failure		404
 //	@Router			/{orgId}/{projectId}/instance/{effectiveId}/serial [get]
 func serialConsoleWS(w http.ResponseWriter, r *http.Request, namespace, name string) {
-	con, _ := config.VirtClient.VirtualMachineInstance(namespace).SerialConsole(name, &v1.SerialConsoleOptions{ConnectionTimeout: time.Duration(timeout) * time.Minute})
+	con, err := config.VirtClient.VirtualMachineInstance(namespace).SerialConsole(name, &v1.SerialConsoleOptions{ConnectionTimeout: time.Duration(timeout) * time.Minute})
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to open serial console")
+		http.Error(w, "Failed to open serial console", http.StatusInternalServerError)
+		return
+	}
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -237,6 +253,7 @@ func serialConsoleWS(w http.ResponseWriter, r *http.Request, namespace, name str
 
 	tc := TermConn{ws: ws}
 	tc.con = con.AsConn()
+	defer tc.con.Close()
 	tc.wsDone = make(chan struct{})
 	tc.ptyDone = make(chan struct{})
 

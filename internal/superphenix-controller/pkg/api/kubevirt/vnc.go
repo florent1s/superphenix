@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
+	"time"
 
 	httpError "github.com/super-phenix/superphenix/pkg/utils/error"
 	logger "github.com/super-phenix/superphenix/pkg/utils/log"
@@ -21,9 +23,12 @@ import (
 
 const (
 	// Maximum message size allowed from peer.
-	maxMessageSizeVNC  = 8192
-	readBufferSizeVNC  = 1024
-	WriteBufferSizeVNC = 1024
+	maxMessageSizeVNC  = 64 * 1024
+	readBufferSizeVNC  = 16 * 1024
+	WriteBufferSizeVNC = 16 * 1024
+
+	// VNC read buffer size for reading from the KubeVirt VNC stream.
+	vncReadBufSize = 16 * 1024
 )
 
 // Simple function to check origin.
@@ -36,9 +41,10 @@ func checkOriginVNC(r *http.Request) bool {
 }
 
 var upgraderVNC = websocket.Upgrader{
-	ReadBufferSize:  readBufferSizeVNC,
-	WriteBufferSize: WriteBufferSizeVNC,
-	CheckOrigin:     checkOriginVNC,
+	ReadBufferSize:    readBufferSizeVNC,
+	WriteBufferSize:   WriteBufferSizeVNC,
+	CheckOrigin:       checkOriginVNC,
+	EnableCompression: true,
 }
 
 // VNCWS
@@ -81,8 +87,43 @@ func VNCWS(w http.ResponseWriter, r *http.Request, namespace, name string) {
 	vncConn := vncStream.AsConn()
 	defer vncConn.Close()
 
+	var wsMu sync.Mutex
+	done := make(chan struct{})
+
+	// Setup ping/pong keepalive
+	wsConn.SetReadDeadline(time.Now().Add(pongWait))
+	wsConn.SetPongHandler(func(string) error {
+		wsConn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
+
+	// Ping routine
+	go func() {
+		ticker := time.NewTicker(pingPeriod)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				wsMu.Lock()
+				err := wsConn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeWait))
+				wsMu.Unlock()
+				if err != nil {
+					log.Err(err).Msg("VNC ping failed")
+					return
+				}
+			case <-done:
+				return
+			}
+		}
+	}()
+
 	// Browser -> VNC
 	go func() {
+		defer func() {
+			// Signal done and close vncConn to unblock the VNC->Browser loop
+			close(done)
+			vncConn.Close()
+		}()
 		for {
 			messageType, data, err := wsConn.ReadMessage()
 			if err != nil {
@@ -105,7 +146,7 @@ func VNCWS(w http.ResponseWriter, r *http.Request, namespace, name string) {
 	}()
 
 	// VNC -> Browser
-	buf := make([]byte, 1024)
+	buf := make([]byte, vncReadBufSize)
 	for {
 		n, err := vncConn.Read(buf)
 		if err != nil {
@@ -114,7 +155,10 @@ func VNCWS(w http.ResponseWriter, r *http.Request, namespace, name string) {
 			}
 			return
 		}
+		wsMu.Lock()
+		wsConn.SetWriteDeadline(time.Now().Add(writeWait))
 		err = wsConn.WriteMessage(websocket.BinaryMessage, buf[:n])
+		wsMu.Unlock()
 		if err != nil {
 			log.Error().Err(err).Msg("writeMessage error")
 			return
