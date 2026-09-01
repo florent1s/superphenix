@@ -331,7 +331,6 @@ var _ = Describe("Management Controller", func() {
 			Expect(vals["otherKey"]).To(Equal("otherValue"))
 		})
 
-
 		It("should NOT create the ArgoCD Application in CNI-less mode", func() {
 			const argoNamespace = "argocd-no-cni-test-1"
 			ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: argoNamespace}}

@@ -146,6 +146,12 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return ctrl.Result{}, err
 	}
 
+	// Check if ArgoCD CRDs are installed, as we can't proceed without them.
+	if err := argocd.CheckCRDs(ctx, r.RESTMapper()); err != nil {
+		logf.FromContext(ctx).Info("ArgoCD is not installed, skipping reconciliation")
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
+	}
+
 	// Examine DeletionTimestamp to determine if the cluster is under deletion
 	if !cluster.ObjectMeta.DeletionTimestamp.IsZero() {
 		// The cluster is being deleted and the finalizer is present, so clean it up
@@ -301,7 +307,7 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 
 		if err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: r.OperatorNamespace}, existing); err != nil {
 			if !apierrors.IsNotFound(err) {
-				log.Error(err, "failed to get ArgoCD Application %s", name)
+				log.Error(err, "failed to get ArgoCD Application", "name", name)
 				reconcileErr = err
 			} else {
 				exists = false
@@ -311,7 +317,7 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		if exists && reconcileErr == nil {
 			// Application exists, deleting it:
 			if err := r.Delete(ctx, existing); err != nil {
-				log.Error(err, "failed to delete ArgoCD Application %s", name)
+				log.Error(err, "failed to delete ArgoCD Application %s", "name", name)
 				reconcileErr = err
 			}
 		}

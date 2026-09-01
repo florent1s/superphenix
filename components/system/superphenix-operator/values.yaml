@@ -12,6 +12,7 @@ fullnameOverride: ""
 # 1. Adds tolerations to the operator deployment so it can be scheduled on 'NotReady' nodes.
 # 2. Configures the operator pod to use the host network (`hostNetwork: true`).
 # 3. Configures the managed ArgoCD instance to use the host network (`hostNetwork: true`).
+# 4. Sets the deployment strategy to 'Recreate' to avoid port conflicts during updates.
 #
 # IMPORTANT: This should be set to false once the Superphenix cluster has been fully installed
 # and a CNI is available and functional.

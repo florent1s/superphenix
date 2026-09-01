@@ -5,6 +5,10 @@ metadata:
   labels:
     {{- include "superphenix-operator.labels" . | nindent 4 }}
 spec:
+  {{- if .Values.installOnClusterWithoutCNI }}
+  strategy:
+    type: Recreate
+  {{- end }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:

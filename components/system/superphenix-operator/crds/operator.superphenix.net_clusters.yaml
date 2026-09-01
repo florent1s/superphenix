@@ -197,7 +197,7 @@ spec:
             type: object
             x-kubernetes-validations:
             - message: Type must be Management when topology is empty
-              rule: '!has(self.deploymentTopology) || self.deploymentTopology == ”
+              rule: '!has(self.deploymentTopology) || self.deploymentTopology == ''''
                 ? has(self.type) && string(self.type) == ''Management'' : true'
             - message: Type must be Storage or Workload when topology is Decoupled
               rule: 'has(self.deploymentTopology) && self.deploymentTopology == ''Decoupled''
