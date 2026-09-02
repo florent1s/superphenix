@@ -68,12 +68,23 @@ data:
                 end
               end
               return hs
+          networking.k8s.io/Ingress:
+            health.lua: |
+              hs = {}
+              hs.status = "Healthy"
+              return hs
+          Service:
+            health.lua: |
+              hs = {}
+              hs.status = "Healthy"
+              return hs
 
       # Parameters injected to ArgoCD
       params:
         # The default behavior of the ApplicationSet controller is unsatisfactory when it comes to globbing, patch it
         # https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Git-File-Globbing/
         applicationsetcontroller.enable.new.git.file.globbing: "true"
+        server.insecure: true
 
       # Override ArgoCD style to differentiate this ArgoCD from others
       styles: |
@@ -150,12 +161,11 @@ data:
             argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
       ingress:
         enabled: true
-        hostname: "superphenix.net"
+        hostname: "argocd.superphenix.net"
         tls: true
         annotations:
-          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+          cert-manager.io/cluster-issuer: letsencrypt
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
 
     repoServer:
       {{- if .Values.installOnClusterWithoutCNI }}

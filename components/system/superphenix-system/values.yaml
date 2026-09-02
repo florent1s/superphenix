@@ -43,7 +43,7 @@ apps:
   # -- Superphenix controller deployed on every availability-zone cluster.
   superphenix-controller:
     enabled: true
-    wave: "-10"
+    wave: "10"
     modes: [Hyperconverged, DecoupledWorkload]
     automation:
       enabled: true
@@ -459,7 +459,7 @@ apps:
   # -- kube-prometheus-stack: metrics collection, storage and Grafana dashboards.
   prometheus-stack:
     enabled: true
-    wave: "-5"
+    wave: "100"
     modes: [Hyperconverged, DecoupledStorage, DecoupledWorkload]
     automation:
       enabled: true
@@ -552,8 +552,8 @@ apps:
   # TODO: This chart is deprecated. This component is non-critical, but we should phase it out.
   # It went EOL on Grafana's side and should be replaced by Alloy.
   promtail:
-    enabled: true
-    wave: "0"
+    enabled: false
+    wave: "100"
     modes: [Hyperconverged, DecoupledStorage, DecoupledWorkload]
     automation:
       enabled: true
@@ -579,8 +579,8 @@ apps:
 
   # -- Loki: log aggregation backend with a Prometheus-like query language (LogQL).
   loki:
-    enabled: true
-    wave: "-5"
+    enabled: false
+    wave: "100"
     modes: [Hyperconverged, DecoupledStorage, DecoupledWorkload]
     automation:
       enabled: true
@@ -788,11 +788,11 @@ apps:
             annotations:
               cert-manager.io/cluster-issuer: letsencrypt
             host:
-              name: "invalid"
+              name: "ceph.example.org"
               path: "/"
             tls:
               - hosts:
-                  - "invalid"
+                  - "ceph.example.org"
                 secretName: ceph-dashboard-tls
 
         cephClusterSpec:
@@ -804,8 +804,6 @@ apps:
               rbd_move_to_trash_on_remove: "true"
               # Grace period before trashed RBD images are purged (7d in seconds).
               rbd_move_to_trash_on_remove_expire_seconds: "604800"
-              # Delay before propagating a mirroring-relationship deletion to the remote cluster (7d in seconds).
-              rbd_mirroring_delete_delay: "604800"
               # Maximum number of mirroring snapshots kept on the remote cluster before pruning.
               rbd_mirroring_max_mirroring_snapshots: "30"
 
@@ -821,24 +819,26 @@ apps:
                 enabled: true
 
           storage:
-            useAllDevices: false
-            deviceFilter: ""
+            useAllDevices: true
+            # Use a regex here to filter the name of the disks (e.g., "nvme*|sd*")
+            # deviceFilter: ""
 
           crashCollector:
             disable: false
-            daysToRetain: 365
+            daysToRetain: 30
 
           network:
             # Use host networking for performance and to expose the daemons to remote Ceph clients.
             provider: host
             # Specify which protocol we bind to.
-            ipFamily: IPv6
-            # Must be overridden per cluster with the IPv6 ranges dedicated to storage traffic.
-            addressRanges:
-              public:
-                - invalid
-              cluster:
-                - invalid
+            ipFamily: IPv4
+            # Must be overridden per cluster with the IP ranges dedicated to storage traffic if you
+            # wish to ensure no sensitive traffic transits on untrusted networks.
+            # addressRanges:
+            #  public:
+            #    - invalid
+            #  cluster:
+            #    - invalid
 
         cephFileSystems: []
         cephObjectStores: []
@@ -912,7 +912,7 @@ apps:
           # If you're adding an override to connect another Ceph cluster, remember to copy
           # and paste this configuration to avoid losing the default values.
           - name: "spx-storage"
-            enabled: '{{- eq $.Values.cluster.deploymentTopology "Hyperconverged" | ternary "true" "false" -}}'
+            enabled: '{{ eq $.Values.cluster.deploymentTopology "Hyperconverged" }}'
             clusterID: "spx-storage"
             local: true
             csi:
@@ -1468,7 +1468,7 @@ apps:
       values:
         # -- Public domain the console is exposed on.
         # TODO: move ingress templating into the superphenix-console chart itself.
-        domain: &consoleDomain console.superphenix.net
+        domain: &consoleDomain console.example.org
 
         ingress:
           enabled: true
@@ -1500,7 +1500,7 @@ apps:
       releaseName: superphenix-api
       values:
         # -- Public domain the API is exposed on.
-        domain: api.superphenix.net
+        domain: api.example.org
 
         config:
           # -- Database storing users, organizations, projects and other API state.
@@ -1542,7 +1542,7 @@ apps:
             # -- Kratos public/admin listener configuration.
             serve:
               public:
-                base_url: https://auth.console.superphenix.net
+                base_url: https://auth.console.example.org
                 cors:
                   enabled: true
                   allow_credentials: true
@@ -1718,10 +1718,10 @@ apps:
       chart: permify
       releaseName: permify
       values:
-        app:
-          # -- Number of instances of Permify to run.
-          replicaCount: 1
+        # -- Number of instances of Permify to run.
+        replicaCount: 1
 
+        app:
           # -- Database connection used to store Permify tuples and schemas.
           database:
             engine: postgres

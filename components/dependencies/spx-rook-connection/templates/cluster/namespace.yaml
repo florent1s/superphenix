@@ -1,5 +1,5 @@
 {{- range .Values.clusters }}
-{{- if include "spx-ceph-conn.clusterEnabled" . }}
+{{- if .enabled }}
 ---
 apiVersion: v1
 kind: Namespace
