@@ -149,7 +149,7 @@ spec:
         cidr: "::/0"
   {{- end }}
   {{- if eq $workersEgressNetPol "strict" }}
-  # Allow workers to talk to controlplane and WWW on HTTP/S ports only
+  # Allow workers to talk to controlplane and WWW on DNS and HTTP/S ports only
   - to:
     - ipBlock:
         cidr: 0.0.0.0/0
@@ -161,6 +161,9 @@ spec:
     - port: {{ $controlPlaneDefaults.network.apiServer.proxyPort }}
     - port: 80
     - port: 443
+    - port: 53
+    - port: 53
+      protocol: UDP
   {{- end }}
 
 {{- end }}
