@@ -1,5 +1,5 @@
 {{- range .Values.clusters }}
-{{- if include "spx-ceph-conn.clusterEnabled" . }}
+{{- if .enabled }}
 {{- $cluster := .name }}
 {{- range .objectStores }}
 ---

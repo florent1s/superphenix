@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.rookOperatorNamespace }}
 data:
 {{- range .Values.clusters }}
-{{- if include "spx-ceph-conn.clusterEnabled" . }}
+{{- if .enabled }}
 {{- $clusterObj := . }}
 {{- $clusterName := .name }}
 {{- range .blockPools }}

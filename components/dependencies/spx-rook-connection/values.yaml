@@ -2,7 +2,7 @@ rookOperatorNamespace: "rook-system"
 mapping: ""
 clusters:
 #  - name: "spx-aq01-test01-storage01"
-#    # -- Whether the cluster is enabled. Can be a boolean or the string "false".
+#    # -- Whether the cluster is enabled.
 #    enabled: true
 #    # -- Whether the cluster is local or remote
 #    local: false
