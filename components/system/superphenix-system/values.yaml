@@ -1330,6 +1330,7 @@ apps:
           kamaji:
             version: v0.19.0 # https://github.com/clastix/cluster-api-control-plane-provider-kamaji/releases
 
+
   # -- etcd-operator: manages the etcd datastores backing Kamaji control planes.
   etcd-operator:
     enabled: true
