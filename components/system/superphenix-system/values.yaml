@@ -1369,6 +1369,12 @@ apps:
         accessLog:
           enabled: true
 
+        # Enable scrapping Prometheus metrics.
+        metrics:
+          prometheus:
+            serviceMonitor:
+              enabled: true
+
         # Grant NET_BIND_SERVICE so we can bind to ports < 1024 (80 and 443).
         securityContext:
           capabilities:
@@ -1457,7 +1463,7 @@ apps:
     enabled: true
     modes: [Management]
     repoURL: "oci://ghcr.io/super-phenix/charts/superphenix-console"
-    targetRevision: "0.2.1"
+    targetRevision: "0.4.2"
     automation:
       enabled: true
       prune: true
@@ -1472,7 +1478,6 @@ apps:
 
         ingress:
           enabled: true
-          # className: ""
           # annotations:
           #  cert-manager.io/cluster-issuer: letsencrypt
           hosts:
@@ -1537,18 +1542,17 @@ apps:
             # -- Kratos signing secrets. MUST be overridden per environment with a strong random value.
             secrets:
               default:
-                - "base64=="
+                - "change-me-to-something-random-at-least-16-char-long"
 
             # -- Kratos public/admin listener configuration.
             serve:
               public:
-                base_url: https://auth.console.example.org
+                base_url: https://console.example.org
                 cors:
                   enabled: true
                   allow_credentials: true
                   allowed_origins:
                     - 'https://*.{{ (index $.Values.apps "superphenix-console").helm.values.domain }}'
-                    - 'https://*.{{ (index $.Values.apps "superphenix-api").helm.values.domain }}'
                   allowed_methods:
                     - POST
                     - GET
@@ -1600,7 +1604,7 @@ apps:
                     hooks:
                       - hook: revoke_active_sessions
                 verification:
-                  enabled: true
+                  enabled: false
                   ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/verification'
                   use: code
                   lifespan: "1h"
@@ -1619,9 +1623,9 @@ apps:
                         - hook: show_verification_ui
                 login:
                   ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/login'
-                  after:
-                    hooks:
-                      - hook: require_verified_address
+                  # after:
+                  #  hooks:
+                  #    - hook: require_verified_address
                 error:
                   ui_url: 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/auth/error'
                 settings:
