@@ -1583,7 +1583,7 @@ apps:
                 # -- URL on which Kratos will listen, defaults to the same as the console
                 # The ingress adds a path prefix, that is not passed to Kratos. It is only used
                 # to avoid routing conflicts between the different elements of the console.
-                base_url: https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}
+                base_url: https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/accounts
                 cors:
                   enabled: true
                   allowed_origins:
@@ -1620,11 +1620,9 @@ apps:
             # It must be specified, even if not in use.
             courier:
               smtp:
-                courier:
-                  smtp:
-                    connection_uri: smtps://dummy@example.org:password@localhost:465/
-                    from_address: superphenix@example.org
-                    from_name: "Superphenix Console"
+                connection_uri: smtps://dummy@example.org:password@localhost:465/
+                from_address: superphenix@example.org
+                from_name: "Superphenix Console"
 
             selfservice:
               # -- Enable code-based (one-time code) authentication.
