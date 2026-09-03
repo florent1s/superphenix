@@ -1,8 +1,8 @@
 package kubevirt
 
 import (
-	"fmt"
-	"net"
+	"errors"
+	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -22,207 +22,37 @@ import (
 )
 
 const (
-	// Time allowed to write a message to the peer.
-	readWait  = 10 * time.Second
-	writeWait = 10 * time.Second
-
-	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
-
-	timeout = 5
-
-	// Maximum message size allowed from peer.
-	maxMessageSize  = 8192
-	readBufferSize  = 1024
-	WriteBufferSize = 1024
-
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = (pongWait * 9) / 10
+	writeWait         = 10 * time.Second
+	pongWait          = 60 * time.Second
+	pingPeriod        = (pongWait * 9) / 10
+	serialMaxMsgSize  = 8192
+	serialTimeout     = 5
+	serialReadBufSize = 4096
 )
 
-// Simple function to check origin.
-// origin header is always set by the browser.
-// As it is, we authorize all origins since we're using Superphenix API anyway.
-func checkOrigin(r *http.Request) bool {
-	origin := r.Header.Get("Origin")
-	fmt.Printf("Incoming connection from : %s\n", origin)
-	return true
+var serialUpgrader = websocket.Upgrader{
+	ReadBufferSize:  4096,
+	WriteBufferSize: 4096,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  readBufferSize,
-	WriteBufferSize: WriteBufferSize,
-	CheckOrigin:     checkOrigin,
+// wsReader is an interface for reading websocket messages directly.
+// The KubeVirt AsConn() wraps the websocket with a binaryReader that only
+// handles BinaryMessage frames. Serial consoles send TextMessage frames,
+// so we need direct access to ReadMessage() on the underlying websocket.
+type wsReader interface {
+	ReadMessage() (messageType int, p []byte, err error)
 }
 
-// TermConn represents the connected websocket and pty.
-type TermConn struct {
-	ws      *websocket.Conn
-	con     net.Conn
-	wsDone  chan struct{} // ws is closed, only close this chan in ws reader
-	ptyDone chan struct{} // pty is closed, close this chan in pty reader
-	wsMu    sync.Mutex    // protects concurrent writes to ws
-
-	closeWsDone  sync.Once
-	closeptyDone sync.Once
-}
-
-// Periodically send ping message to detect the status of the ws
-func (tc *TermConn) ping(wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	ticker := time.NewTicker(pingPeriod)
-	defer ticker.Stop()
-
-out:
-	for {
-		select {
-		case <-ticker.C:
-			tc.wsMu.Lock()
-			err := tc.ws.WriteControl(websocket.PingMessage,
-				[]byte{}, time.Now().Add(writeWait))
-			tc.wsMu.Unlock()
-
-			if err != nil {
-				log.Err(err).Msg("Failed to write ping message")
-				break out
-			}
-		case <-tc.ptyDone:
-			log.Info().Msg("Exit ping routine as pty is going away")
-			break out
-
-		case <-tc.wsDone:
-			log.Info().Msg("Exit ping routine as ws is going away")
-			break out
-		}
-	}
-
-	log.Info().Msg("Ping routine exited")
-}
-
-// shovel data from websocket to pty stdin
-func (tc *TermConn) wsToStdin(wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	tc.ws.SetReadLimit(maxMessageSize)
-
-	// set the readdeadline. The idea here is simple,
-	// as long as we keep receiving pong message,
-	// the readdeadline will keep updating. Otherwise
-	// read will timeout.
-	tc.ws.SetReadDeadline(time.Now().Add(pongWait))
-	tc.ws.SetPongHandler(func(string) error {
-		tc.ws.SetReadDeadline(time.Now().Add(pongWait))
-		return nil
-	})
-
-	bufChan := make(chan []byte)
-
-	go func() { //create a goroutine to read from ws
-		for {
-			bufType, buf, err := tc.ws.ReadMessage()
-
-			if err != nil {
-				log.Err(err).Msg("Failed to receive data from ws")
-				close(bufChan) // close chan by producer
-				tc.closeWsDone.Do(func() { close(tc.wsDone) })
-				break
-			}
-
-			if bufType != websocket.BinaryMessage {
-				bufChan <- buf
-			}
-		}
-	}()
-	// we do not need to forward user input to viewers, only the stdout
-out:
-	for {
-		select {
-		case buf, ok := <-bufChan:
-			if !ok {
-				log.Error().Msg("Exit wsToPtyStdin routine pty stdin error")
-				break out
-			}
-			_, err := tc.con.Write(buf)
-
-			if err != nil {
-				log.Err(err).Msg("Failed to send data to pty stdin")
-				break out
-			}
-		case <-tc.wsDone:
-			log.Info().Msg("Exit wsToPtyStdin routine as ws is going away")
-			break out
-		case <-tc.ptyDone:
-			log.Info().Msg("Exit wsToPtyStdin routine as pty is going away")
-			break out
-		}
-	}
-
-	log.Info().Msg("wsToPtyStdin routine exited")
-}
-
-// shovel data from pty Stdout to WS
-func (tc *TermConn) stdoutToWs(wg *sync.WaitGroup) {
-	defer wg.Done()
-	bufChan := make(chan []byte)
-
-	go func() { //create a goroutine to read from pty
-		for {
-			readBuf := make([]byte, 1024) //pty reads in 1024 blocks
-			n, err := tc.con.Read(readBuf)
-
-			if err != nil {
-				log.Err(err).Msg("Failed to read from pty stdout")
-				close(bufChan)
-				tc.closeptyDone.Do(func() { close(tc.ptyDone) })
-				break
-			}
-
-			readBuf = readBuf[0:n] // slice the buffer so that it is exact the size of data read.
-			bufChan <- readBuf
-		}
-	}()
-
-out:
-	for {
-		// handle viewers, we want to use non-blocking receive
-		select {
-		case buf, ok := <-bufChan:
-			if !ok {
-				tc.wsMu.Lock()
-				tc.ws.SetWriteDeadline(time.Now().Add(writeWait))
-				tc.ws.WriteMessage(websocket.CloseMessage,
-					websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Pty closed"))
-				tc.wsMu.Unlock()
-
-				break out
-			}
-			// We could add ws to viewers as well (then we can use io.MultiWriter),
-			// but we want to handle errors differently
-			tc.wsMu.Lock()
-			tc.ws.SetWriteDeadline(time.Now().Add(writeWait))
-			err := tc.ws.WriteMessage(websocket.TextMessage, buf)
-			tc.wsMu.Unlock()
-			if err != nil {
-				log.Err(err).Msg("Failed to write message")
-				break out
-			}
-
-		case <-tc.wsDone:
-			log.Info().Msg("Exit ptyStdoutToWs routine as ws is going away")
-			break out
-
-		case <-tc.ptyDone:
-			log.Info().Msg("Exit ptyStdoutToWs routine as pty is going away")
-			break out // do not block on these two channels
-		}
-
-	}
-
-	log.Info().Msg("ptyStdoutToWs routine exited")
-}
-
-// serialConsoleWS
+// serialConsoleWS bridges a browser WebSocket to a KubeVirt serial console.
+// It reads from the KubeVirt websocket using ReadMessage() directly (via the
+// promoted method on the net.Conn returned by AsConn()) to handle both text
+// and binary frames. KubeVirt serial console sends text frames, which the
+// default AsConn().Read() silently discards.
+// Binary messages from the browser (e.g. resize events) are skipped since
+// serial consoles do not support terminal resize.
 //
 //	@Summary		Websocket to Serial
 //	@Description	Websocket to Serial Console of an instance
@@ -237,39 +67,140 @@ out:
 //	@Failure		404
 //	@Router			/{orgId}/{projectId}/instance/{effectiveId}/serial [get]
 func serialConsoleWS(w http.ResponseWriter, r *http.Request, namespace, name string) {
-	con, err := config.VirtClient.VirtualMachineInstance(namespace).SerialConsole(name, &v1.SerialConsoleOptions{ConnectionTimeout: time.Duration(timeout) * time.Minute})
+	log.Info().Str("namespace", namespace).Str("name", name).Msg("[serial] Opening serial console connection")
+
+	stream, err := config.VirtClient.VirtualMachineInstance(namespace).SerialConsole(name, &v1.SerialConsoleOptions{
+		ConnectionTimeout: time.Duration(serialTimeout) * time.Minute,
+	})
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to open serial console")
+		log.Error().Err(err).Msg("[serial] Failed to open serial console")
 		http.Error(w, "Failed to open serial console", http.StatusInternalServerError)
 		return
 	}
+	log.Info().Msg("[serial] KubeVirt serial console stream obtained")
 
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Err(err).Msg("failed to upgrade connection")
+	serialConn := stream.AsConn()
+	defer serialConn.Close()
+
+	// The net.Conn from AsConn() embeds *websocket.Conn, so ReadMessage() is
+	// promoted. We need it because the default Read() only handles binary
+	// frames, but serial console sends text frames.
+	kvWSReader, ok := serialConn.(wsReader)
+	if !ok {
+		log.Error().Msg("[serial] KubeVirt conn does not support ReadMessage(); falling back will not work for text frames")
+		http.Error(w, "Incompatible KubeVirt stream", http.StatusInternalServerError)
 		return
 	}
-	defer ws.Close()
 
-	tc := TermConn{ws: ws}
-	tc.con = con.AsConn()
-	defer tc.con.Close()
-	tc.wsDone = make(chan struct{})
-	tc.ptyDone = make(chan struct{})
+	browserWS, err := serialUpgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Error().Err(err).Msg("[serial] Failed to upgrade browser WebSocket")
+		return
+	}
+	defer browserWS.Close()
+	log.Info().Msg("[serial] Browser WebSocket upgraded successfully")
 
-	// main event loop to shovel data between ws and pty
-	// do not call ptyStdoutToWs in this goroutine, otherwise
-	// the websocket will not close. This is because ptyStdoutToWs
-	// is usually blocked in the pty.Read
-	var wg sync.WaitGroup
-	wg.Add(3)
+	browserWS.SetReadLimit(serialMaxMsgSize)
+	browserWS.SetReadDeadline(time.Now().Add(pongWait))
+	browserWS.SetPongHandler(func(string) error {
+		browserWS.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 
-	go tc.ping(&wg)
-	go tc.stdoutToWs(&wg)
-	go tc.wsToStdin(&wg)
+	var wsMu sync.Mutex
+	done := make(chan struct{})
+	var closeOnce sync.Once
+	closeDone := func() { closeOnce.Do(func() { close(done) }) }
 
-	wg.Wait()
+	// Ping routine — keeps the browser WebSocket alive
+	go func() {
+		ticker := time.NewTicker(pingPeriod)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				wsMu.Lock()
+				err := browserWS.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeWait))
+				wsMu.Unlock()
+				if err != nil {
+					log.Warn().Err(err).Msg("[serial] Ping failed")
+					closeDone()
+					return
+				}
+			case <-done:
+				return
+			}
+		}
+	}()
 
+	// Browser → KubeVirt: read from browser WS, write to serial conn
+	go func() {
+		defer func() {
+			closeDone()
+			serialConn.Close()
+		}()
+		log.Info().Msg("[serial] Browser→KubeVirt goroutine started")
+		for {
+			msgType, data, err := browserWS.ReadMessage()
+			if err != nil {
+				if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) || errors.Is(err, io.EOF) {
+					log.Info().Msg("[serial] Browser WebSocket closed normally")
+				} else {
+					log.Warn().Err(err).Msg("[serial] Browser WebSocket read error")
+				}
+				return
+			}
+
+			// Skip binary messages (resize events) — serial consoles do not support resize
+			if msgType != websocket.TextMessage {
+				log.Debug().Int("type", msgType).Msg("[serial] Skipping non-text browser message (e.g. resize)")
+				continue
+			}
+
+			if _, err := serialConn.Write(data); err != nil {
+				log.Error().Err(err).Msg("[serial] Failed to write to KubeVirt serial conn")
+				return
+			}
+		}
+	}()
+
+	// KubeVirt → Browser: read from KubeVirt websocket, write to browser WS.
+	// We use ReadMessage() directly instead of Read() because the KubeVirt
+	// serial console sends text frames, and the binaryReader inside AsConn()
+	// silently discards non-binary frames.
+	log.Info().Msg("[serial] KubeVirt→Browser loop started")
+	for {
+		msgType, data, err := kvWSReader.ReadMessage()
+		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) || errors.Is(err, io.EOF) {
+				log.Info().Msg("[serial] KubeVirt stream closed")
+			} else {
+				log.Warn().Err(err).Msg("[serial] KubeVirt read error")
+			}
+			closeDone()
+			return
+		}
+
+		if msgType == websocket.CloseMessage {
+			log.Info().Msg("[serial] KubeVirt sent close frame")
+			closeDone()
+			return
+		}
+
+		if len(data) == 0 {
+			continue
+		}
+
+		wsMu.Lock()
+		browserWS.SetWriteDeadline(time.Now().Add(writeWait))
+		err = browserWS.WriteMessage(msgType, data)
+		wsMu.Unlock()
+		if err != nil {
+			log.Error().Err(err).Msg("[serial] Failed to write to browser WebSocket")
+			closeDone()
+			return
+		}
+	}
 }
 
 func SerialEndpoint(router chi.Router) {
@@ -289,7 +220,7 @@ func SerialEndpoint(router chi.Router) {
 			httpError.Http(w, r, http.StatusNotFound).Msg(http.StatusText(http.StatusNotFound))
 			return
 		}
-		l.Info().Msgf("Asking connection from : %s for [%s, %s]", r.RequestURI, namespace, effectiveId)
+		l.Info().Msgf("Asking serial console connection from : %s for [%s, %s]", r.URL.Path, namespace, effectiveId)
 		serialConsoleWS(w, r, namespace, effectiveId)
 	})
 }
