@@ -1533,6 +1533,9 @@ apps:
             username: superphenix
             password: "{{ $.Values.apps.postgres.helm.values.auth.password }}"
 
+          swagger:
+            baseURL: '{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/api'
+
           # -- Permify endpoint used for authorization checks.
           permify:
             url: "permify.{{ $.Release.Namespace }}.svc:3478"

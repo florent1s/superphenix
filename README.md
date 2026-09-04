@@ -1,13 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/SPX_white.svg">
-    <source media="(prefers-color-scheme: light)" srcset="assets/SPX_black.svg">
-    <img alt="Superphenix" src="assets/SPX_white.svg" width="400" height="200">
+    <img alt="Superphenix" src="assets/logo.svg" width="600" height="100">
   </picture>
-</p>
-
-<p align="center">
-  <strong>Build your own cloud platform with Superphenix</strong>
 </p>
 
 <p align="center">
