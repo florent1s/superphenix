@@ -105,9 +105,7 @@ type Config struct {
 		JwtIssuer      string
 		JwtSecret      string
 		KratosCookie   string
-		KratosCallback string
 		KratosEndpoint string
-		RedirectURL    string
 	}
 
 	Swagger struct {
@@ -233,7 +231,7 @@ readinessProbe:
   address: ":9000"
 superAdmins: []
 tracing:
-  enabled: true
+  enabled: false	
   address: "http://<tracing-host>:<tracing-port>/api/traces"
   cleanupTimeout: "5s"
   batchTimeout: "10s"
@@ -246,9 +244,7 @@ authentication:
   jwtIssuer: "superphenix-api"
   jwtSecret: "secret"
   kratosCookie: "ory_kratos_session"
-  kratosCallback: "http://<kratos-callback-host>/v1/auth/link/%s/callback"
   kratosEndpoint: "https://<kratos-public-host>"
-  redirectUrl: "https://<kratos-public-host>/self-service/login/browser?refresh=true&return_to=%s"
 swagger:
   baseURL: "localhost:8080"
 userSettings:
