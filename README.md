@@ -1,6 +1,6 @@
 <p align="center">
   <picture>
-    <img alt="Superphenix" src="assets/logo.svg" width="600" height="100">
+    <img alt="Superphenix" src="assets/logo.svg" width="600" height="250">
   </picture>
 </p>
 
@@ -51,19 +51,19 @@ Superphenix is the modern, open alternative.
 - **Full-stack, one platform**: Compute, storage, network, PaaS and SaaS, designed to work together.
 - **GitOps-native**: Every cluster, tenant and VM can be declared as code, auditable end to end.
 - **Built for resilience**: Multi-AZ and multi-region, with cross-site replication and disaster recovery.
-- **A foundation on which to build**: Superphenix can be used to build a public or private cloud, and it has already been proved.
+- **A foundation on which to build**: Superphenix can be used to build a public or private cloud, and it has already been proved in production.
 
 ## What's in the box
 
-| Layer            | Capabilities                                                              |
-|------------------|---------------------------------------------------------------------------|
-| **Hypervisor**   | VMs with live migration, snapshots and node autoscaling                   |
-| **Storage**      | Block, file and S3-compatible storage with replication and DR             |
-| **Networking**   | VPCs, NAT gateways, BGP, load balancers, QoS and security groups              |
-| **PaaS**         | Kubernetes as a Service for tenant clusters                               |
-| **SaaS**         | Ready-to-run services — databases, Harbor, GitLab, Nextcloud and more     |
-| **Console**      | Multi-tenant web UI spanning every AZ and region                          |
-| **Lifecycle**    | GitOps-driven install, upgrade and resource provisioning                  |
+| Layer            | Capabilities                                                                 |
+|------------------|------------------------------------------------------------------------------|
+| **Hypervisor**   | VMs with live migration, snapshots and node autoscaling                      |
+| **Storage**      | Block, file and S3-compatible storage with replication and disaster recovery |
+| **Networking**   | VPCs, NAT gateways, BGP, load balancers, QoS and security groups             |
+| **PaaS**         | Kubernetes as a Service for tenant clusters                                  |
+| **SaaS**         | Ready-to-run services (soon)                                                 |
+| **Console**      | Multi-tenant web UI spanning every AZ and region                             |
+| **Lifecycle**    | GitOps-driven install, upgrade and resource provisioning                     |
 
 ## Built for any scale
 
