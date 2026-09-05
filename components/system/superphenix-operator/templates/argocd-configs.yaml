@@ -98,11 +98,12 @@ data:
             display: none;
         }
         .sidebar__logo {
-            background: url(https://docs.superphenix.net/assets/SPX_white.svg);
+            background: url(https://docs.superphenix.net/assets/spx.svg);
             background-size: 80%;
             background-repeat: no-repeat;
             padding-left: 1rem !important;
             margin-left: 10px !important;
+            filter: invert(1);
         }
 
     controller:

@@ -112,7 +112,7 @@ const (
 )
 
 // ClusterSpec defines the desired state of Cluster.
-// +kubebuilder:validation:XValidation:rule="!has(self.deploymentTopology) || self.deploymentTopology == ” ? has(self.type) && string(self.type) == 'Management' : true",message="Type must be Management when topology is empty"
+// +kubebuilder:validation:XValidation:rule="!has(self.deploymentTopology) || self.deploymentTopology == '' ? has(self.type) && string(self.type) == 'Management' : true",message="Type must be Management when topology is empty"
 // +kubebuilder:validation:XValidation:rule="has(self.deploymentTopology) && self.deploymentTopology == 'Decoupled' ? has(self.type) && (string(self.type) == 'Storage' || string(self.type) == 'Workload') : true",message="Type must be Storage or Workload when topology is Decoupled"
 type ClusterSpec struct {
 	// DeploymentTopology defines whether the cluster is hyperconverged or decoupled.
@@ -148,15 +148,9 @@ type ClusterSpec struct {
 	// +optional
 	SystemConfiguration *apiextensionsv1.JSON `json:"systemConfiguration,omitempty"`
 
-	// RepoURL is the URL of the repository where the Superphenix system chart is located.
-	// If not specified, the default value from the controller configuration is used.
+	// SystemLocation specifies the location of the Superphenix system chart.
 	// +optional
-	RepoURL string `json:"repoURL,omitempty"`
-
-	// ChartName is the name of the Superphenix system chart.
-	// If not specified, the default value from the controller configuration is used.
-	// +optional
-	ChartName string `json:"chartName,omitempty"`
+	SystemLocation *SystemLocationSpec `json:"systemLocation,omitempty"`
 
 	// Version is the Superphenix version for this cluster.
 	// It must follow semantic versioning.
@@ -169,11 +163,31 @@ type ClusterSpec struct {
 	// +kubebuilder:validation:Required
 	Connection *ClusterConnectionSpec `json:"connection"`
 
-	// PauseSync allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
+	// Lifecycle defines the lifecycle settings for the cluster.
+	// +optional
+	Lifecycle *ClusterLifecycleSpec `json:"lifecycle,omitempty"`
+}
+
+// SystemLocationSpec defines the location of the Superphenix system chart.
+type SystemLocationSpec struct {
+	// RepoURL is the URL of the repository where the Superphenix system chart is located.
+	// If not specified, the default value from the controller configuration is used.
+	// +optional
+	RepoURL string `json:"repoURL,omitempty"`
+
+	// ChartName is the name of the Superphenix system chart.
+	// If not specified, the default value from the controller configuration is used.
+	// +optional
+	ChartName string `json:"chartName,omitempty"`
+}
+
+// ClusterLifecycleSpec defines the lifecycle settings for the cluster.
+type ClusterLifecycleSpec struct {
+	// Pause allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
 	// When set to true, an ArgoCD sync window is added to the cluster's project to prevent any automated or manual sync.
 	// +optional
 	// +kubebuilder:default=false
-	PauseSync bool `json:"pauseSync,omitempty"`
+	Pause bool `json:"pause,omitempty"`
 
 	// Manual allows to disable the autosync of all applications on this cluster.
 	// When set to true, "forceManual" is passed to the Superphenix system chart.

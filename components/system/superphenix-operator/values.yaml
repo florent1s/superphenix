@@ -170,22 +170,25 @@ management:
   # Defaults to "management".
   availabilityZone: ""
 
-  # -- Override the default Superphenix system chart repository.
+  # -- Override the default Superphenix system chart location.
   # This is useful if you want to use a custom chart.
-  repoURL: ""
-  # -- Override the default Superphenix system chart name.
-  # This is useful if you want to use a custom chart.
-  chartName: ""
+  systemLocation:
+    # -- Override the default Superphenix system chart repository.
+    repoURL: ""
+    # -- Override the default Superphenix system chart name.
+    chartName: ""
   # -- Override the default Superphenix system chart version.
   # This is useful if you want to use a custom chart.
   version: ""
 
-  # -- Whether to pause the synchronization of the Superphenix stack on the management cluster.
-  pauseSync: false
-  # -- Whether to disable the autosync of all applications on the management cluster.
-  manual: false
-  # -- Whether to clean up resources deployed by the management stack applications when they get deleted.
-  cleanupOnDeletion: true
+  # -- Lifecycle settings for the management cluster.
+  lifecycle:
+    # -- Whether to pause the synchronization of the Superphenix stack on the management cluster.
+    pause: false
+    # -- Whether to disable the autosync of all applications on the management cluster.
+    manual: false
+    # -- Whether to clean up the cluster when it gets deleted.
+    cleanupOnDeletion: false
 
   # -- System configuration for the management stack.
   # This configuration is passed to the superphenix-system chart.
@@ -218,11 +221,12 @@ clusters: {}
 #    # Version is the Superphenix version to deploy for this cluster.
 #    # version: v1.0.0
 #
-#    # RepoURL is the URL of the repository where the Superphenix system chart is located.
-#    # repoURL: ghcr.io/super-phenix/charts
-#
-#    # ChartName is the name of the Superphenix system chart.
-#    # chartName: superphenix-system
+#    # SystemLocation defines the location of the Superphenix system chart.
+#    systemLocation:
+#      # RepoURL is the URL of the repository where the Superphenix system chart is located.
+#      # repoURL: ghcr.io/super-phenix/charts
+#      # ChartName is the name of the Superphenix system chart.
+#      # chartName: superphenix-system
 #
 #    # SystemConfiguration is a YAML dict of values that will be passed to the system configuration chart.
 #    # systemConfiguration:
@@ -258,11 +262,14 @@ clusters: {}
 #      #   insecure: false
 #      #   serverName: ""
 #
-#    # PauseSync allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
-#    # pauseSync: false
-#
-#    # Manual allows to disable the autosync of all applications on this cluster.
-#    # manual: false
+#    # Lifecycle defines the lifecycle settings for the cluster.
+#    lifecycle:
+#      # Pause allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
+#      # pause: false
+#      # Manual allows to disable the autosync of all applications on this cluster.
+#      # manual: false
+#      # CleanupOnDeletion allows the cleanup of the cluster when it gets deleted.
+#      # cleanupOnDeletion: true
 #
 #    # Optional labels and annotations for the Cluster resource
 #    # labels: {}

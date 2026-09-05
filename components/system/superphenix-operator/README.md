@@ -46,6 +46,10 @@ The Superphenix Operator is the core component responsible for managing the life
 			<td><pre lang="json">
 {
   "argocd": {
+    "chart": {
+      "url": "",
+      "version": ""
+    },
     "ha": {
       "enabled": false
     },
@@ -54,6 +58,7 @@ The Superphenix Operator is the core component responsible for managing the life
   "clustersConfigMap": {
     "name": "superphenix-clusters-config"
   },
+  "disableVersionValidation": false,
   "enableHTTP2": false,
   "syncPeriod": "5m",
   "syncTimeout": "15m",
@@ -78,6 +83,18 @@ The Superphenix Operator is the core component responsible for managing the life
 </pre>
 </td>
 			<td>Superphenix operator configuration</td>
+		</tr>
+		<tr>
+			<td>config.argocd.chart</td>
+			<td>object</td>
+			<td><pre lang="json">
+{
+  "url": "",
+  "version": ""
+}
+</pre>
+</td>
+			<td>Override the ArgoCD chart location and version.</td>
 		</tr>
 		<tr>
 			<td>config.argocd.ha</td>
@@ -118,6 +135,15 @@ false
 </pre>
 </td>
 			<td>ConfigMap where all clusters will append their configuration.</td>
+		</tr>
+		<tr>
+			<td>config.disableVersionValidation</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Disable validation of versions entirely.</td>
 		</tr>
 		<tr>
 			<td>config.enableHTTP2</td>
@@ -304,6 +330,15 @@ false
 			<td>Secrets for pulling the operator image.</td>
 		</tr>
 		<tr>
+			<td>installOnClusterWithoutCNI</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Install the operator on a Kubernetes cluster with no CNI configured.  This setting is required when bootstrapping a Superphenix cluster where the operator is responsible for installing the CNI (e.g. via the superphenix-system chart). Without a CNI, Kubernetes nodes are marked as 'NotReady' and pods cannot get an IP address from the pod network. Enabling this option: 1. Adds tolerations to the operator deployment so it can be scheduled on 'NotReady' nodes. 2. Configures the operator pod to use the host network (`hostNetwork: true`). 3. Configures the managed ArgoCD instance to use the host network (`hostNetwork: true`). 4. Sets the deployment strategy to 'Recreate' to avoid port conflicts during updates.  IMPORTANT: This should be set to false once the Superphenix cluster has been fully installed and a CNI is available and functional.</td>
+		</tr>
+		<tr>
 			<td>leaderElection.enabled</td>
 			<td>bool</td>
 			<td><pre lang="json">
@@ -318,13 +353,17 @@ true
 			<td><pre lang="json">
 {
   "availabilityZone": "",
-  "chartName": "",
-  "cleanupOnDeletion": true,
-  "manual": false,
-  "pauseSync": false,
+  "lifecycle": {
+    "cleanupOnDeletion": true,
+    "manual": false,
+    "pause": false
+  },
   "region": "",
-  "repoURL": "",
   "systemConfiguration": {},
+  "systemLocation": {
+    "chartName": "",
+    "repoURL": ""
+  },
   "version": ""
 }
 </pre>
@@ -341,16 +380,20 @@ true
 			<td>Availability zone where the management cluster is located. This is optional, as the cluster will not be visible to end users. Defaults to "management".</td>
 		</tr>
 		<tr>
-			<td>management.chartName</td>
-			<td>string</td>
+			<td>management.lifecycle</td>
+			<td>object</td>
 			<td><pre lang="json">
-""
+{
+  "cleanupOnDeletion": true,
+  "manual": false,
+  "pause": false
+}
 </pre>
 </td>
-			<td>Override the default Superphenix system chart name. This is useful if you want to use a custom chart.</td>
+			<td>Lifecycle settings for the management cluster.</td>
 		</tr>
 		<tr>
-			<td>management.cleanupOnDeletion</td>
+			<td>management.lifecycle.cleanupOnDeletion</td>
 			<td>bool</td>
 			<td><pre lang="json">
 true
@@ -359,7 +402,7 @@ true
 			<td>Whether to clean up resources deployed by the management stack applications when they get deleted.</td>
 		</tr>
 		<tr>
-			<td>management.manual</td>
+			<td>management.lifecycle.manual</td>
 			<td>bool</td>
 			<td><pre lang="json">
 false
@@ -368,7 +411,7 @@ false
 			<td>Whether to disable the autosync of all applications on the management cluster.</td>
 		</tr>
 		<tr>
-			<td>management.pauseSync</td>
+			<td>management.lifecycle.pause</td>
 			<td>bool</td>
 			<td><pre lang="json">
 false
@@ -386,15 +429,6 @@ false
 			<td>Region where the management cluster is located. This is optional, as the cluster will not be visible to end users. Defaults to "management".</td>
 		</tr>
 		<tr>
-			<td>management.repoURL</td>
-			<td>string</td>
-			<td><pre lang="json">
-""
-</pre>
-</td>
-			<td>Override the default Superphenix system chart repository. This is useful if you want to use a custom chart.</td>
-		</tr>
-		<tr>
 			<td>management.systemConfiguration</td>
 			<td>object</td>
 			<td><pre lang="json">
@@ -402,6 +436,36 @@ false
 </pre>
 </td>
 			<td>System configuration for the management stack. This configuration is passed to the superphenix-system chart.</td>
+		</tr>
+		<tr>
+			<td>management.systemLocation</td>
+			<td>object</td>
+			<td><pre lang="json">
+{
+  "chartName": "",
+  "repoURL": ""
+}
+</pre>
+</td>
+			<td>Override the default Superphenix system chart location. This is useful if you want to use a custom chart.</td>
+		</tr>
+		<tr>
+			<td>management.systemLocation.chartName</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Override the default Superphenix system chart name.</td>
+		</tr>
+		<tr>
+			<td>management.systemLocation.repoURL</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Override the default Superphenix system chart repository.</td>
 		</tr>
 		<tr>
 			<td>management.version</td>
