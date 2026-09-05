@@ -187,8 +187,8 @@ management:
     pause: false
     # -- Whether to disable the autosync of all applications on the management cluster.
     manual: false
-    # -- Whether to clean up resources deployed by the management stack applications when they get deleted.
-    cleanupOnDeletion: true
+    # -- Whether to clean up the cluster when it gets deleted.
+    cleanupOnDeletion: false
 
   # -- System configuration for the management stack.
   # This configuration is passed to the superphenix-system chart.
