@@ -100,7 +100,7 @@ func (r *Reconciler) buildAppProjectSpec(cluster *operatorv1alpha1.Cluster) map[
 		},
 	}
 
-	if cluster.Spec.PauseSync {
+	if cluster.Spec.Lifecycle != nil && cluster.Spec.Lifecycle.Pause {
 		spec["syncWindows"] = []interface{}{
 			map[string]interface{}{
 				"kind":         "deny",

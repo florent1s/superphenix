@@ -29,11 +29,9 @@ spec:
   {{- if $cluster.version }}
   version: {{ $cluster.version }}
   {{- end }}
-  {{- if $cluster.repoURL }}
-  repoURL: {{ $cluster.repoURL }}
-  {{- end }}
-  {{- if $cluster.chartName }}
-  chartName: {{ $cluster.chartName }}
+  {{- if $cluster.systemLocation }}
+  systemLocation:
+    {{- toYaml $cluster.systemLocation | nindent 4 }}
   {{- end }}
   {{- if $cluster.systemConfiguration }}
   systemConfiguration:
@@ -58,10 +56,8 @@ spec:
       {{- end }}
     {{- end }}
     {{- end }}
-  {{- if hasKey $cluster "pauseSync" }}
-  pauseSync: {{ $cluster.pauseSync }}
-  {{- end }}
-  {{- if hasKey $cluster "manual" }}
-  manual: {{ $cluster.manual }}
+  {{- if $cluster.lifecycle }}
+  lifecycle:
+    {{- toYaml $cluster.lifecycle | nindent 4 }}
   {{- end }}
 {{- end }}

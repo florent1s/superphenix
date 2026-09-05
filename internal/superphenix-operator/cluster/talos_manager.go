@@ -211,7 +211,7 @@ func (r *Reconciler) reconcileTalosManager(ctx context.Context, cluster *operato
 			// Handle finalizers based on CleanupOnDeletion
 			// This finalizer propagates the deletion of the app to the resources it manages
 			finalizer := "resources-finalizer.argocd.argoproj.io"
-			if cluster.Spec.CleanupOnDeletion {
+			if cluster.Spec.Lifecycle != nil && cluster.Spec.Lifecycle.CleanupOnDeletion {
 				controllerutil.AddFinalizer(app, finalizer)
 			} else {
 				controllerutil.RemoveFinalizer(app, finalizer)

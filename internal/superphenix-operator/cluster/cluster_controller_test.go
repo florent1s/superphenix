@@ -1004,7 +1004,7 @@ var _ = Describe("Cluster Controller", func() {
 			Expect(requests).To(BeEmpty())
 		})
 
-		It("should pause synchronization when PauseSync is true", func() {
+		It("should pause synchronization when Pause is true", func() {
 			clusterName := "paused-cluster"
 			clusterNamespace := "default"
 			clusterNamespacedName := types.NamespacedName{
@@ -1025,7 +1025,9 @@ var _ = Describe("Cluster Controller", func() {
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},
-					PauseSync: true,
+					Lifecycle: &operatorv1alpha1.ClusterLifecycleSpec{
+						Pause: true,
+					},
 				},
 			}
 			Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
@@ -1122,7 +1124,9 @@ var _ = Describe("Cluster Controller", func() {
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},
-					Manual: true,
+					Lifecycle: &operatorv1alpha1.ClusterLifecycleSpec{
+						Manual: true,
+					},
 				},
 			}
 			Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
@@ -1185,7 +1189,9 @@ var _ = Describe("Cluster Controller", func() {
 					Connection: &operatorv1alpha1.ClusterConnectionSpec{
 						Mode: operatorv1alpha1.ConnectionModeLocal,
 					},
-					CleanupOnDeletion: true,
+					Lifecycle: &operatorv1alpha1.ClusterLifecycleSpec{
+						CleanupOnDeletion: true,
+					},
 				},
 			}
 			Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
@@ -1228,7 +1234,7 @@ var _ = Describe("Cluster Controller", func() {
 
 			By("Setting CleanupOnDeletion to false")
 			Expect(k8sClient.Get(ctx, clusterNamespacedName, cluster)).To(Succeed())
-			cluster.Spec.CleanupOnDeletion = false
+			cluster.Spec.Lifecycle.CleanupOnDeletion = false
 			Expect(k8sClient.Update(ctx, cluster)).To(Succeed())
 
 			_, err = controllerReconciler.Reconcile(ctx, reconcile.Request{

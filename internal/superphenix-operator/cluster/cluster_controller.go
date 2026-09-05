@@ -263,7 +263,7 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 		return res, err
 	}
 
-	if !cluster.Spec.PauseSync && !cluster.Spec.Manual {
+	if cluster.Spec.Lifecycle == nil || (!cluster.Spec.Lifecycle.Pause && !cluster.Spec.Lifecycle.Manual) {
 		// Periodically resync sub-applications to address drifts.
 		// We resync if:
 		// - There is no error (normal operation)

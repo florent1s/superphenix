@@ -27,7 +27,7 @@ Phases:
 - Deployed: ArgoCD Application is Synced and Health is Healthy (or at least not Degraded).
 - OutOfSync: ArgoCD Application is OutOfSync.
 - Error: Health check failed, ArgoCD sync failed, or ArgoCD health is Degraded.
-- Paused: Synchronization is paused (PauseSync: true).
+- Paused: Synchronization is paused (Pause: true).
 - Unknown: ArgoCD sync status is Unknown, or health is Suspended/Missing.
 
 Transitions:
@@ -37,9 +37,9 @@ Transitions:
 2. Deploying -> Deployed:
    - When Spec.Version == SuperphenixVersion AND ArgoCD sync status is "Synced".
 3. Any -> Paused:
-   - When Spec.PauseSync is true.
+   - When Spec.Pause is true.
 4. Paused -> Any:
-   - When Spec.PauseSync is false (returns to previous state on next reconcile).
+   - When Spec.Pause is false (returns to previous state on next reconcile).
 5. Deployed -> OutOfSync:
    - When ArgoCD sync status becomes "OutOfSync".
 6. Any -> Error:
@@ -153,12 +153,12 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	}
 
 	// If we have an ArgoCD application, propagate its status
-	if app != nil && !cluster.Spec.PauseSync {
+	if app != nil && (cluster.Spec.Lifecycle == nil || !cluster.Spec.Lifecycle.Pause) {
 		r.applyApplicationStatus(cluster, app)
 	}
 
-	// Handle PauseSync condition
-	if cluster.Spec.PauseSync {
+	// Handle Pause condition
+	if cluster.Spec.Lifecycle != nil && cluster.Spec.Lifecycle.Pause {
 		r.setCondition(&cluster.Status.Conditions, metav1.Condition{
 			Type:    operatorv1alpha1.ConditionTypePaused,
 			Status:  metav1.ConditionTrue,
@@ -178,7 +178,7 @@ func (r *Reconciler) syncStatus(ctx context.Context, cluster *operatorv1alpha1.C
 	// Transitions based on status
 	if reconcileErr != nil {
 		phase = "Error"
-	} else if cluster.Spec.PauseSync {
+	} else if cluster.Spec.Lifecycle != nil && cluster.Spec.Lifecycle.Pause {
 		phase = "Paused"
 	} else if r.isSynced(cluster) {
 		// If Synced, we can move to Deployed

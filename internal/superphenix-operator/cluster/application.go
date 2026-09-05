@@ -34,7 +34,7 @@ func (r *Reconciler) reconcileApplication(ctx context.Context, cluster *operator
 		// Handle finalizers based on CleanupOnDeletion
 		// This finalizer propagates the deletion of the app to the resources it manages
 		finalizer := "resources-finalizer.argocd.argoproj.io"
-		if cluster.Spec.CleanupOnDeletion {
+		if cluster.Spec.Lifecycle != nil && cluster.Spec.Lifecycle.CleanupOnDeletion {
 			controllerutil.AddFinalizer(app, finalizer)
 		} else {
 			controllerutil.RemoveFinalizer(app, finalizer)
@@ -95,13 +95,13 @@ func (r *Reconciler) setApplicationOwnership(cluster *operatorv1alpha1.Cluster, 
 // buildApplicationSpec creates the specs of the cluster application.
 func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map[string]interface{} {
 	repoURL := r.SystemChartURL
-	if cluster.Spec.RepoURL != "" {
-		repoURL = cluster.Spec.RepoURL
+	if cluster.Spec.SystemLocation != nil && cluster.Spec.SystemLocation.RepoURL != "" {
+		repoURL = cluster.Spec.SystemLocation.RepoURL
 	}
 
 	chartName := r.SystemChartName
-	if cluster.Spec.ChartName != "" {
-		chartName = cluster.Spec.ChartName
+	if cluster.Spec.SystemLocation != nil && cluster.Spec.SystemLocation.ChartName != "" {
+		chartName = cluster.Spec.SystemLocation.ChartName
 	}
 
 	targetRevision := r.SystemChartVersion
@@ -109,9 +109,14 @@ func (r *Reconciler) buildApplicationSpec(cluster *operatorv1alpha1.Cluster) map
 		targetRevision = cluster.Spec.Version
 	}
 
+	enabled := true
+	if cluster.Spec.Lifecycle != nil {
+		enabled = !cluster.Spec.Lifecycle.Pause && !cluster.Spec.Lifecycle.Manual
+	}
+
 	syncPolicy := map[string]interface{}{
 		"automated": map[string]interface{}{
-			"enabled":  !cluster.Spec.PauseSync && !cluster.Spec.Manual,
+			"enabled":  enabled,
 			"prune":    true,
 			"selfHeal": true,
 		},
@@ -163,8 +168,8 @@ func (r *Reconciler) generateApplicationValues(cluster *operatorv1alpha1.Cluster
 			"namespace": r.OperatorNamespace,
 			"project":   cluster.Name,
 		},
-		"forceManual":       cluster.Spec.Manual,
-		"cleanupOnDeletion": cluster.Spec.CleanupOnDeletion,
+		"forceManual":       cluster.Spec.Lifecycle != nil && cluster.Spec.Lifecycle.Manual,
+		"cleanupOnDeletion": cluster.Spec.Lifecycle != nil && cluster.Spec.Lifecycle.CleanupOnDeletion,
 	}
 
 	if cluster.Spec.Type != nil {

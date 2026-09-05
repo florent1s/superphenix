@@ -74,19 +74,6 @@ spec:
                   within the region.
                 minLength: 1
                 type: string
-              chartName:
-                description: |-
-                  ChartName is the name of the Superphenix system chart.
-                  If not specified, the default value from the controller configuration is used.
-                type: string
-              cleanupOnDeletion:
-                default: false
-                description: |-
-                  CleanupOnDeletion allows the cleanup of the cluster when it gets deleted.
-                  When set to true, deleting the cluster resource will automatically propagate the deletion
-                  to the target, with every application getting cascade deleted. This option is dangerous
-                  and should usually be set to true only before a deletion is planned to avoid any accident.
-                type: boolean
               connection:
                 description: Connection defines the parameters to connect to the remote
                   cluster.
@@ -132,32 +119,54 @@ spec:
                 description: DeploymentTopology defines whether the cluster is hyperconverged
                   or decoupled.
                 type: string
-              manual:
-                default: false
-                description: |-
-                  Manual allows to disable the autosync of all applications on this cluster.
-                  When set to true, "forceManual" is passed to the Superphenix system chart.
-                type: boolean
-              pauseSync:
-                default: false
-                description: |-
-                  PauseSync allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
-                  When set to true, an ArgoCD sync window is added to the cluster's project to prevent any automated or manual sync.
-                type: boolean
+              lifecycle:
+                description: Lifecycle defines the lifecycle settings for the cluster.
+                properties:
+                  cleanupOnDeletion:
+                    default: false
+                    description: |-
+                      CleanupOnDeletion allows the cleanup of the cluster when it gets deleted.
+                      When set to true, deleting the cluster resource will automatically propagate the deletion
+                      to the target, with every application getting cascade deleted. This option is dangerous
+                      and should usually be set to true only before a deletion is planned to avoid any accident.
+                    type: boolean
+                  manual:
+                    default: false
+                    description: |-
+                      Manual allows to disable the autosync of all applications on this cluster.
+                      When set to true, "forceManual" is passed to the Superphenix system chart.
+                    type: boolean
+                  pause:
+                    default: false
+                    description: |-
+                      Pause allows to temporarily pause the synchronization of the Superphenix stack on this cluster.
+                      When set to true, an ArgoCD sync window is added to the cluster's project to prevent any automated or manual sync.
+                    type: boolean
+                type: object
               region:
                 description: Region is the geographic region where this cluster is
                   located.
                 minLength: 1
                 type: string
-              repoURL:
-                description: |-
-                  RepoURL is the URL of the repository where the Superphenix system chart is located.
-                  If not specified, the default value from the controller configuration is used.
-                type: string
               systemConfiguration:
                 description: SystemConfiguration is a YAML dict of unknown values
                   that will be passed to the system configuration chart.
                 x-kubernetes-preserve-unknown-fields: true
+              systemLocation:
+                description: SystemLocation specifies the location of the Superphenix
+                  system chart.
+                properties:
+                  chartName:
+                    description: |-
+                      ChartName is the name of the Superphenix system chart.
+                      If not specified, the default value from the controller configuration is used.
+                    type: string
+                  repoURL:
+                    description: |-
+                      RepoURL is the URL of the repository where the Superphenix system chart is located.
+                      If not specified, the default value from the controller configuration is used.
+                    type: string
+                type: object
               talosManagementMode:
                 allOf:
                 - enum:
@@ -197,7 +206,7 @@ spec:
             type: object
             x-kubernetes-validations:
             - message: Type must be Management when topology is empty
-              rule: '!has(self.deploymentTopology) || self.deploymentTopology == ”
+              rule: '!has(self.deploymentTopology) || self.deploymentTopology == ''''
                 ? has(self.type) && string(self.type) == ''Management'' : true'
             - message: Type must be Storage or Workload when topology is Decoupled
               rule: 'has(self.deploymentTopology) && self.deploymentTopology == ''Decoupled''
