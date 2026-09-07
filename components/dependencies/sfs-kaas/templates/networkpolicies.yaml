@@ -5,11 +5,6 @@
 {{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
 {{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
 
-{{- $cpIngressNetPol := ((($cluster.controlPlane).network).defaultPolicies).ingress | default "default" }}
-{{- if and (ne $cpIngressNetPol "default") (ne $cpIngressNetPol "none") }}
-{{- fail "controlPlane.network.defaultPolicies.ingress must be one of [default, none]." }}
-{{- end }}
-
 {{- $workersIngressNetPol := (($cluster.workers.network).defaultPolicies).ingress | default "default" }}
 {{- if and (ne $workersIngressNetPol "strict") (ne $workersIngressNetPol "default") (ne $workersIngressNetPol "none") }}
 {{- fail "workers.network.defaultPolicies.ingress must be one of [default, strict, none]." }}
@@ -44,12 +39,13 @@ spec:
   - Ingress
   - Egress
   ingress:
-  # Make controlplane accessible from internal cluster (default) subnet
+  # Make controlplanes accessible from anywhere
+  # Public IP restrictions need to be handled by the ingress controller
   - from:
     - ipBlock:
-        cidr: 10.0.0.0/12
+        cidr: 0.0.0.0/0
     - ipBlock:
-        cidr: "fd00:100::/96"
+        cidr: "::/0"
     ports:
     - port: 10257
     - port: 10259
@@ -58,18 +54,6 @@ spec:
     - port: {{ $controlPlaneDefaults.network.konnectivity.port }}
     - port: {{ $controlPlaneDefaults.network.apiServer.port }}
     - port: {{ $controlPlaneDefaults.network.apiServer.proxyPort }}
-  {{- if eq $cpIngressNetPol "default" }}
-  # Make controlplane's public ports acessible from anywhere
-  - from:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-    - ipBlock:
-        cidr: "::/0"
-    ports:
-    - port: {{ $controlPlaneDefaults.network.konnectivity.port }}
-    - port: {{ $controlPlaneDefaults.network.apiServer.port }}
-    - port: {{ $controlPlaneDefaults.network.apiServer.proxyPort }}
-  {{- end }}
   egress:
   # Allow controlplane pods to talk to each other, datastores and coredns
   - to:
