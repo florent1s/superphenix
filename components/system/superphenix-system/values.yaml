@@ -757,7 +757,7 @@ apps:
               # big VMs that are hard to migrate, but also risks interrupting workload.
               # The timeout to switch to a disrupting migration is defined by 'completionTimeoutPerGiB'.
               allowWorkloadDisruption: true
-  
+
               # Timeout in seconds per GiB of memory before we switch to a disrupting migration.
               # For a VM of 10Gi, it will take 1200s for the non-disrupting migration to timeout
               # and switch to a disrupting method.
@@ -810,21 +810,21 @@ apps:
                 - HotplugVolumes
                 #- DeclarativeHotplugVolumes
 
-            # Defines how we upgrade KubeVirt's controlplane and VMIs.
-            workloadUpdateStrategy:
-              # Methods used to upgrade the running VMIs due to an upgrade of KubeVirt, or because
-              # the VM has been modified and needs to hotplug CPU, RAM, storage and more.
-              # We only upgrade using live migrations, updating the virt-launcher pods in the process.
-              # This is because we do not want any interruption of the workload during the upgrade of KubeVirt.
-              workloadUpdateMethods:
-                - LiveMigrate
+          # Defines how we upgrade KubeVirt's controlplane and VMIs.
+          workloadUpdateStrategy:
+            # Methods used to upgrade the running VMIs due to an upgrade of KubeVirt, or because
+            # the VM has been modified and needs to hotplug CPU, RAM, storage and more.
+            # We only upgrade using live migrations, updating the virt-launcher pods in the process.
+            # This is because we do not want any interruption of the workload during the upgrade of KubeVirt.
+            workloadUpdateMethods:
+              - LiveMigrate
 
-            # Prometheus configuration
-            monitorAccount: prometheus-kube-prometheus-prometheus
-            monitorNamespace: prometheus-system
-            serviceMonitorNamespace: kubevirt
+          # Prometheus configuration
+          monitorAccount: prometheus-kube-prometheus-prometheus
+          monitorNamespace: prometheus-system
+          serviceMonitorNamespace: kubevirt
 
-            imagePullPolicy: IfNotPresent
+          imagePullPolicy: IfNotPresent
 
   # -- Containerized Data Importer (CDI) for KubeVirt. Provisions VM disks from images, PVCs or uploads.
   cdi:
@@ -1158,7 +1158,7 @@ apps:
           # Superphenix-specific backup/restore actions.
           - name: velero-plugin-for-superphenix
             image: ghcr.io/super-phenix/superphenix-velero-plugin:v0.1.0
-            imagePullPolicy: Always
+            imagePullPolicy: IfNotPresent
             volumeMounts:
               - mountPath: /target
                 name: plugins
