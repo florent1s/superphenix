@@ -64,7 +64,7 @@ webhook:
       kind: Issuer
       name: ""
 
-superphenixController: {}
+config: {}
 
 ingress:
   enabled: false

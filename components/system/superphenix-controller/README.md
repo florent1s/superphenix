@@ -44,7 +44,7 @@ Helm chart to deploy the Superphenix AZ controller
 | serviceMonitor.relabelings | list | `[]` |  |
 | serviceMonitor.scheme | string | `""` |  |
 | serviceMonitor.tlsConfig | object | `{}` |  |
-| superphenixController | object | `{}` |  |
+| config | object | `{}` |  |
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------

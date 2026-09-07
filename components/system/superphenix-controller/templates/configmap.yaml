@@ -6,7 +6,7 @@ metadata:
     {{- include "superphenix-controller.labels" . | nindent 4 }}
 data:
   config.yaml: |-
-    {{- $config := .Values.superphenixController.config | default dict -}}
+    {{- $config := .Values.config | default dict -}}
     {{- if .Values.webhook.enabled -}}
       {{- $webhook := dict "enabled" true "address" ":8443" "certFile" "/etc/superphenix-controller/certs/tls.crt" "keyFile" "/etc/superphenix-controller/certs/tls.key" -}}
       {{- $_ := set $config "webhook" $webhook -}}
