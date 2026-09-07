@@ -59,7 +59,22 @@ apps:
     helm:
       chart: superphenix-controller
       releaseName: superphenix-controller
-      values: {}
+      values:
+        http:
+          authSecret: "secret!"
+        containerDiskCatalog:
+          windows-virtio-drivers:
+            displayName: "Windows VirtIO Driver"
+            image: quay.io/kubevirt/virtio-container-disk:v1.7.0
+            bus: sata
+            recommended: true
+            supportedOS:
+              - windows
+
+        productsConfig:
+          blockStorage:
+            storageClassMapping:
+              default: spx-storage.spx-rbd-3x
 
   # -- CoreDNS used for DNS resolution within the Kubernetes clusters
   coredns:
@@ -1463,7 +1478,7 @@ apps:
     enabled: true
     modes: [Management]
     repoURL: "oci://ghcr.io/super-phenix/charts/superphenix-console"
-    targetRevision: "0.4.3"
+    targetRevision: "0.4.4"
     automation:
       enabled: true
       prune: true
@@ -1536,6 +1551,8 @@ apps:
           swagger:
             baseURL: '{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/api'
 
+          argoCdUrl: "https://argocd.example.org"
+
           # -- Permify endpoint used for authorization checks.
           permify:
             url: "permify.{{ $.Release.Namespace }}.svc:3478"
@@ -1550,6 +1567,13 @@ apps:
             cors:
               allowedOrigins:
                 - 'https://{{ (index $.Values.apps "superphenix-console").helm.values.domain }}'
+
+          azs:
+            local:
+              name: "Local AZ"
+              controllerUrl: "http://superphenix-controller.{{ $.Release.Namespace }}.svc.cluster.local:8080"
+              authSecret: "secret!"
+              destination: "in-cluster"
 
           userSettings:
             userIsActiveOnCreate: true
