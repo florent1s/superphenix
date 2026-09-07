@@ -701,6 +701,130 @@ apps:
     directory:
       recurse: true
 
+  # -- KubeVirt configuration injected into the operator.
+  kubevirt-config:
+    enabled: true
+    wave: "5"
+    modes: [Hyperconverged, DecoupledWorkload]
+    automation:
+      enabled: true
+      selfHeal: true
+      prune: true
+      cleanupOnDeletion: false
+      syncOptions: {}
+    namespace: "kubevirt"
+    repoURL: "docker pull ghcr.io/super-phenix/charts/kubevirt"
+    targetRevision: "0.1.0"
+    helm:
+      chart: "kubevirt"
+      releaseName: "kubevirt-config"
+      values:
+        configuration:
+          # CPU model compatible with every node on the cluster
+          # Change this to the most performant CPU model for your cluster, but compatible with
+          # all your nodes.
+          cpuModel: Broadwell-noTSX-IBRS
+
+          # Apply a CPU limit for VMs on every customer namespace
+          autoCPULimitNamespaceLabelSelector:
+            matchExpressions:
+              - key: superphenix.net/projectID
+                operator: Exists
+
+          # Maximum amount of VMs per node
+          virtualMachineInstancesPerNode: 100
+
+          # Storageclass used to store TPM/EFI and more (VM backend storage)
+          vmStateStorageClass: default.spx-rbd-3x
+
+          # Defines how VMs are evicted from a node when it is drained.
+          # We run live migrations of the VMs to prevent interruptions.
+          evictionStrategy: LiveMigrate
+
+          # Defines how VMs are updated when modifying live-updatables fields
+          # like CPU sockets, memory and more.
+          vmRolloutStrategy: LiveUpdate
+
+          # Enable KSM on every node to reduce memory usage by optimizing VM pages
+          ksmConfiguration:
+            nodeLabelSelector: {}
+
+          # Live migration configuration for VMs
+          migrations:
+            # If the VM cannot be migrated within an acceptable time using non-disrupting
+            # methods, we switch to a migration that allows for disruptions. This helps with
+            # big VMs that are hard to migrate, but also risks interrupting workload.
+            # The timeout to switch to a disrupting migration is defined by 'completionTimeoutPerGiB'.
+            allowWorkloadDisruption: true
+
+            # Timeout in seconds per GiB of memory before we switch to a disrupting migration.
+            # For a VM of 10Gi, it will take 1200s for the non-disrupting migration to timeout
+            # and switch to a disrupting method.
+            completionTimeoutPerGiB: 120
+
+            # Post-copy migrations poses risks of data loss, which we want to avoid at all cost.
+            # Setting this value to false makes disrupting migrations use the "paused mode" which
+            # may freeze the VM but guarantees no data loss.
+            allowPostCopy: false
+
+            # Do not throttle VMs to optimize VM live migrations
+            allowAutoConverge: false
+
+            # Max bandwidth allocated per migration.
+            bandwidthPerMigration: 64Mi
+
+            # Number of parallel migrations that can happen cluster wide.
+            # Useful to prevent overloads.
+            parallelMigrationsPerCluster: 10
+
+            # How many migrations can happen outbound from a node.
+            # Prevents overloads when draining a node.
+            parallelOutboundMigrationsPerNode: 10
+
+            # Maximum amount of time where no copying happens during the migration.
+            # Once the timeout is reached, we consider the migration to be failed.
+            progressTimeout: 150
+
+          # Default network configuration of the VMs
+          network:
+            # How we bind the network of the virt-launcher with the VM
+            binding:
+              # Kube-OVN uses managedTap to expose its own DHCP to the VM
+              managedtap:
+                domainAttachmentType: managedTap
+
+          developerConfiguration:
+            # Ratio of how many CPU is requested (and reserved) by each virt-launcher for
+            # each vCPU allocated to the VM. A VM requesting 10 vCPU will request and reserve
+            # 1 physical CPU on the host.
+            cpuAllocationRatio: 10
+            # Overcommit memory by 200%. For a VM with guest memory set to 16G, we'll request and
+            # reserve only 8G on the node.
+            memoryOvercommit: 200
+            # Feature gates enabled
+            featureGates:
+              - BlockVolume
+              - ExpandDisks
+              - Snapshot
+              - HotplugVolumes
+              #- DeclarativeHotplugVolumes
+
+          # Defines how we upgrade KubeVirt's controlplane and VMIs.
+          workloadUpdateStrategy:
+            # Methods used to upgrade the running VMIs due to an upgrade of KubeVirt, or because
+            # the VM has been modified and needs to hotplug CPU, RAM, storage and more.
+            # We only upgrade using live migrations, updating the virt-launcher pods in the process.
+            # This is because we do not want any interruption of the workload during the upgrade of KubeVirt.
+            workloadUpdateMethods:
+              - LiveMigrate
+
+          # Prometheus configuration
+          monitorAccount: prometheus-kube-prometheus-prometheus
+          monitorNamespace: prometheus-system
+          serviceMonitorNamespace: kubevirt
+
+          imagePullPolicy: IfNotPresent
+
   # -- Containerized Data Importer (CDI) for KubeVirt. Provisions VM disks from images, PVCs or uploads.
   cdi:
     enabled: true
@@ -1552,6 +1676,8 @@ apps:
             baseURL: '{{ (index $.Values.apps "superphenix-console").helm.values.domain }}/api'
 
           argoCdUrl: "https://argocd.example.org"
+          argoController:
+            appProjectNamespace: "{{ $.Release.Namespace }}"
 
           # -- Permify endpoint used for authorization checks.
           permify:
