@@ -1739,6 +1739,10 @@ apps:
             secrets:
               default:
                 - "change-me-to-something-random-at-least-16-char-long"
+              cookie:
+                - "change-me-to-something-random-at-least-16-char-long"
+              cipher:
+                - "change-me-to-something-random-at-least-16-char-long"
 
             # -- Kratos public/admin listener configuration.
             serve:
@@ -1848,6 +1852,9 @@ apps:
           # -- Run database migrations automatically on Kratos upgrades.
           automigration:
             enabled: true
+
+          secret:
+            secretAnnotations: null
 
           # -- Contents of the identity schema files referenced by `config.identity.schemas`.
           identitySchemas:
