@@ -18,16 +18,21 @@ controlPlane:
       proxyPort: 7444
 
 kubevirtCsi:
+  # https://kubernetes.io/docs/concepts/storage/storage-classes/
   storageClasses: {}
     # default:
     #   isDefaultClass: true
     #   tenantClass: default
     #   infraClass: default
+    #   reclaimPolicy: Delete
+    #   allowVolumeExpansion: true
+  # https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/
   snapshotclasses: {}
     # default:
     #   isDefaultClass: true
     #   tenantClass: default
     #   infraClass: default
+    #   deletionPolicy: Delete
   
   versions:
     # https://github.com/kubernetes-csi/node-driver-registrar/releases

@@ -323,10 +323,11 @@ metadata:
   annotations:
     storageclass.kubernetes.io/is-default-class: {{ $class.isDefaultClass | default false | quote }}
 provisioner: csi.kubevirt.io
-allowVolumeExpansion: true
+allowVolumeExpansion: {{ $class.allowVolumeExpansion | default true }}
 parameters:
   infraStorageClassName: {{ $class.infraClass }}
   bus: scsi
+reclaimPolicy: {{ $class.reclaimPolicy | default "Delete" }}
 {{- end }}
 {{- range $key, $class := .snapshotClasses }}
 ---
@@ -337,7 +338,7 @@ metadata:
   annotations:
     snapshot.storage.kubernetes.io/is-default-class: {{ $class.isDefaultClass | default false | quote }}
 driver: csi.kubevirt.io
-deletionPolicy: Delete
+deletionPolicy: {{ $class.deletionPolicy | default "Delete" }}
 parameters:
   infraSnapshotClassName: {{ $class.infraClass }}
 {{- end }}
