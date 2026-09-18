@@ -5,14 +5,14 @@
 {{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) }}
 {{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
 
-{{- $workersIngressNetPol := (($cluster.workers.network).defaultPolicies).ingress | default "default" }}
+{{- $workersIngressNetPol := (($cluster.workers.network).policies).ingress | default "default" }}
 {{- if and (ne $workersIngressNetPol "strict") (ne $workersIngressNetPol "default") (ne $workersIngressNetPol "none") }}
-{{- fail "workers.network.defaultPolicies.ingress must be one of [default, strict, none]." }}
+{{- fail "workers.network.policies.ingress must be one of [default, strict, none]." }}
 {{- end }}
 
-{{- $workersEgressNetPol := (($cluster.workers.network).defaultPolicies).egress | default "default" }}
+{{- $workersEgressNetPol := (($cluster.workers.network).policies).egress | default "default" }}
 {{- if and (ne $workersEgressNetPol "strict") (ne $workersEgressNetPol "default") (ne $workersEgressNetPol "none") }}
-{{- fail "workers.network.defaultPolicies.egress must be one of [default, strict, none]." }}
+{{- fail "workers.network.policies.egress must be one of [default, strict, none]." }}
 {{- end }}
 
 {{- $dataStore := ($cluster.controlPlane).dataStore | default dict }}

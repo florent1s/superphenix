@@ -135,7 +135,8 @@ clusters: {}
   #     network:
   #       # -- Worker networkpolicy configuration
   #       # @section -- Worker network
-  #       defaultPolicies:
+  #       # https://docs.superphenix.net/paas/kaas/network-configuration/#network-policies
+  #       policies:
   #         # -- Must be one of [default, strict, none]
   #         ingress: default
   #         # -- Must be one of [default, strict, none]
