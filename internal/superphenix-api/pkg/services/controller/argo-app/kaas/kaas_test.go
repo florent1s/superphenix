@@ -652,41 +652,43 @@ func TestCreateKaaSAppValues_AzDomains(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		azDomains map[string]config.AzDomainConfig
-		want      map[string]AzDomain
+		azDomains map[string]any
+		wantKeys  []string
 		rawWant   []string // empty means the azDomains key must be absent
 	}{
 		{
 			name: "configured with two entries",
-			azDomains: map[string]config.AzDomainConfig{
-				"az01": {Internal: "azs.az01.example.org", External: "%s.kaas.az01.example.org"},
-				"az02": {Internal: "azs.az02.example.net", External: "%s.kaas.az02.example.net"},
+			azDomains: map[string]any{
+				"az01": map[string]any{"internal": "azs.az01.example.org", "external": "%s.kaas.az01.example.org"},
+				"az02": map[string]any{"internal": "azs.az02.example.net", "external": "%s.kaas.az02.example.net"},
 			},
-			want: map[string]AzDomain{
-				"az01": {Internal: "azs.az01.example.org", External: "%s.kaas.az01.example.org"},
-				"az02": {Internal: "azs.az02.example.net", External: "%s.kaas.az02.example.net"},
+			wantKeys: []string{"az01", "az02"},
+			rawWant:  []string{"internal: azs.az01.example.org", "external: '%s.kaas.az02.example.net'"},
+		},
+		{
+			name: "mixed legacy string and object entries",
+			azDomains: map[string]any{
+				"aq01":        "example.org",
+				"aq01-test01": map[string]any{"internal": "azs.aq01.example.org", "external": "%s.kaas.aq01-test01.example.org"},
 			},
-			rawWant: []string{"internal: azs.az01.example.org", "external: '%s.kaas.az02.example.net'"},
+			wantKeys: []string{"aq01", "aq01-test01"},
+			rawWant:  []string{"aq01: example.org", "internal: azs.aq01.example.org", "external: '%s.kaas.aq01-test01.example.org'"},
 		},
 		{
 			name: "configured with one entry",
-			azDomains: map[string]config.AzDomainConfig{
-				"az01": {Internal: "azs.az01.example.org", External: "%s.kaas.az01.example.org"},
+			azDomains: map[string]any{
+				"az01": map[string]any{"internal": "azs.az01.example.org", "external": "%s.kaas.az01.example.org"},
 			},
-			want: map[string]AzDomain{
-				"az01": {Internal: "azs.az01.example.org", External: "%s.kaas.az01.example.org"},
-			},
-			rawWant: []string{"internal: azs.az01.example.org", "external: '%s.kaas.az01.example.org'"},
+			wantKeys: []string{"az01"},
+			rawWant:  []string{"internal: azs.az01.example.org", "external: '%s.kaas.az01.example.org'"},
 		},
 		{
 			name:      "unconfigured omits the key",
 			azDomains: nil,
-			want:      map[string]AzDomain{},
 		},
 		{
 			name:      "empty map omits the key",
-			azDomains: map[string]config.AzDomainConfig{},
-			want:      map[string]AzDomain{},
+			azDomains: map[string]any{},
 		},
 	}
 
@@ -711,12 +713,12 @@ func TestCreateKaaSAppValues_AzDomains(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(values), &parsed); err != nil {
 				t.Fatalf("failed to unmarshal values: %v", err)
 			}
-			if len(parsed.AzDomains) != len(tt.want) {
-				t.Fatalf("azDomains = %+v, want %+v", parsed.AzDomains, tt.want)
+			if len(parsed.AzDomains) != len(tt.wantKeys) {
+				t.Fatalf("azDomains = %+v, want keys %v", parsed.AzDomains, tt.wantKeys)
 			}
-			for k, v := range tt.want {
-				if parsed.AzDomains[k] != v {
-					t.Errorf("azDomains[%q] = %+v, want %+v", k, parsed.AzDomains[k], v)
+			for _, k := range tt.wantKeys {
+				if _, ok := parsed.AzDomains[k]; !ok {
+					t.Errorf("azDomains missing key %q in %+v", k, parsed.AzDomains)
 				}
 			}
 		})
@@ -744,11 +746,15 @@ func TestConvertAppToUpdateKaaSSpec_AzDomains(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		azDomains map[string]config.AzDomainConfig
+		azDomains map[string]any
 	}{
-		{name: "populated map", azDomains: map[string]config.AzDomainConfig{
-			"az01": {Internal: "azs.az01.example.org", External: "%s.kaas.az01.example.org"},
-			"az02": {Internal: "azs.az02.example.net", External: "%s.kaas.az02.example.net"},
+		{name: "populated map", azDomains: map[string]any{
+			"az01": map[string]any{"internal": "azs.az01.example.org", "external": "%s.kaas.az01.example.org"},
+			"az02": map[string]any{"internal": "azs.az02.example.net", "external": "%s.kaas.az02.example.net"},
+		}},
+		{name: "mixed legacy string and object entries", azDomains: map[string]any{
+			"aq01":        "example.org",
+			"aq01-test01": map[string]any{"internal": "azs.aq01.example.org", "external": "%s.kaas.aq01-test01.example.org"},
 		}},
 		{name: "empty map", azDomains: nil},
 	}

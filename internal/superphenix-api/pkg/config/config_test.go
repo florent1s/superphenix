@@ -1,8 +1,11 @@
 package config
 
 import (
+	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestValidate(t *testing.T) {
@@ -104,6 +107,102 @@ func TestResolveKubeVersionRepo(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("repo = %+v, want %+v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestKaasAzDomain(t *testing.T) {
+	azDomains := map[string]any{
+		"aq01": "example.org",
+		"aq01-test01": map[string]any{
+			"internal": "azs.aq01.example.org",
+			"external": "%s.kaas.aq01-test01.example.org",
+		},
+		"aq01-test02": map[string]any{"external": "%s.kaas.aq01-test02.example.org"},
+	}
+
+	tests := []struct {
+		name   string
+		az     string
+		want   AzDomainConfig
+		wantOk bool
+	}{
+		{name: "object entry", az: "aq01-test01", want: AzDomainConfig{Internal: "azs.aq01.example.org", External: "%s.kaas.aq01-test01.example.org"}, wantOk: true},
+		{name: "partial object entry", az: "aq01-test02", want: AzDomainConfig{External: "%s.kaas.aq01-test02.example.org"}, wantOk: true},
+		{name: "legacy string entry", az: "aq01", wantOk: false},
+		{name: "missing key", az: "zz99-test01", wantOk: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var c Config
+			c.ProductsConfig.ArgoApp.Kubernetes.AzDomains = azDomains
+			got, ok := c.KaasAzDomain(tt.az)
+			if ok != tt.wantOk {
+				t.Fatalf("ok = %v, want %v", ok, tt.wantOk)
+			}
+			if got != tt.want {
+				t.Errorf("KaasAzDomain(%q) = %+v, want %+v", tt.az, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestKaasAzDomainDecode checks the mixed azDomains shape loads through viper.
+func TestKaasAzDomainDecode(t *testing.T) {
+	tests := []struct {
+		name string
+		yaml string
+		az   string
+		want AzDomainConfig
+	}{
+		{
+			name: "mixed legacy and object entries",
+			yaml: `productsConfig:
+  argoApp:
+    kubernetes:
+      azDomains:
+        aq01: example.org
+        aq01-test01:
+          internal: azs.aq01.example.org
+          external: "%s.kaas.aq01-test01.example.org"
+`,
+			az:   "aq01-test01",
+			want: AzDomainConfig{Internal: "azs.aq01.example.org", External: "%s.kaas.aq01-test01.example.org"},
+		},
+		{
+			name: "object entries only",
+			yaml: `productsConfig:
+  argoApp:
+    kubernetes:
+      azDomains:
+        aq01-test01:
+          internal: azs.aq01.example.org
+          external: "%s.kaas.aq01-test01.example.org"
+`,
+			az:   "aq01-test01",
+			want: AzDomainConfig{Internal: "azs.aq01.example.org", External: "%s.kaas.aq01-test01.example.org"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := viper.New()
+			v.SetConfigType("yaml")
+			if err := v.ReadConfig(bytes.NewBufferString(tt.yaml)); err != nil {
+				t.Fatalf("ReadConfig() error = %v", err)
+			}
+			var c Config
+			if err := v.Unmarshal(&c); err != nil {
+				t.Fatalf("Unmarshal() error = %v", err)
+			}
+			got, ok := c.KaasAzDomain(tt.az)
+			if !ok {
+				t.Fatalf("KaasAzDomain(%q) not found in %+v", tt.az, c.ProductsConfig.ArgoApp.Kubernetes.AzDomains)
+			}
+			if got != tt.want {
+				t.Errorf("KaasAzDomain(%q) = %+v, want %+v", tt.az, got, tt.want)
 			}
 		})
 	}

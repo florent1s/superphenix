@@ -68,17 +68,10 @@ type GroupSubnet struct {
 
 }
 
-// AzDomain Internal is the host the in-VM kube-API proxy targets
-// External a URL template for the control plane FQDN where "%s"
-// is replaced by the cluster ID.
-type AzDomain struct {
-	Internal string `yaml:"internal,omitempty"`
-	External string `yaml:"external,omitempty"`
-}
-
 type Values struct {
-	AzDomains map[string]AzDomain `yaml:"azDomains,omitempty"`
-	Clusters  map[string]Cluster  `yaml:"clusters,omitempty"`
+	// AzDomains is forwarded from config as-is, see config.Config.AzDomains.
+	AzDomains map[string]any     `yaml:"azDomains,omitempty"`
+	Clusters  map[string]Cluster `yaml:"clusters,omitempty"`
 }
 
 type Cluster struct {

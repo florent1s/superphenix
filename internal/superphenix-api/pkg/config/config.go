@@ -46,6 +46,18 @@ type AzDomainConfig struct {
 	External string `yaml:"external"`
 }
 
+// KaasAzDomain returns the typed azDomains entry for az. Legacy string entries
+// and missing keys return ok=false.
+func (c *Config) KaasAzDomain(az string) (AzDomainConfig, bool) {
+	entry, ok := c.ProductsConfig.ArgoApp.Kubernetes.AzDomains[az].(map[string]any)
+	if !ok {
+		return AzDomainConfig{}, false
+	}
+	internal, _ := entry["internal"].(string)
+	external, _ := entry["external"].(string)
+	return AzDomainConfig{Internal: internal, External: external}, true
+}
+
 // ResolveKubeVersionRepo returns the effective repo for version and whether the
 // version is supported. A version's own Repo fully replaces def.
 func ResolveKubeVersionRepo(versions []KubeVersionConfig, def RepoArgoAppConfig, version string) (RepoArgoAppConfig, bool) {
@@ -188,10 +200,11 @@ type Config struct {
 			Kubernetes struct {
 				Repo         RepoArgoAppConfig   `yaml:"repo"`
 				KubeVersions []KubeVersionConfig `yaml:"kubeVersions,omitempty"`
-				// AZ code -> internal/external URLs, sent in KaaS helm values.
-				// The key must match the AZ code, which is what the chart's
-				// `location` value is set to.
-				AzDomains map[string]AzDomainConfig `yaml:"azDomains"`
+				// Sent verbatim as the sfs-kaas `azDomains` value. Two entry shapes:
+				//   <az code>: {internal, external}  sfs-kaas >= 0.7.0, see AzDomainConfig
+				//   <region>: <domain>               legacy chart (< 0.7.0), builds azs.<region>.<domain>
+				// Use KaasAzDomain for typed access.
+				AzDomains map[string]any `yaml:"azDomains"`
 			} `yaml:"kubernetes"`
 
 			Backup struct {

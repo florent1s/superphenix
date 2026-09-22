@@ -24,18 +24,13 @@ import (
 
 var nodeGroupNameRegex = regexp.MustCompile("^[a-zA-Z0-9-]*$")
 
-// azDomainValues converts the configured per-AZ URLs into the shape the
-// sfs-kaas chart expects. A nil or empty configuration yields nil so the
-// azDomains key stays out of the rendered values.
-func azDomainValues(cfg map[string]config.AzDomainConfig) map[string]AzDomain {
+// azDomainValues forwards the configured azDomains map untouched. Nil or empty
+// config returns nil so the azDomains key is omitted from the rendered values.
+func azDomainValues(cfg map[string]any) map[string]any {
 	if len(cfg) == 0 {
 		return nil
 	}
-	out := make(map[string]AzDomain, len(cfg))
-	for az, d := range cfg {
-		out[az] = AzDomain{Internal: d.Internal, External: d.External}
-	}
-	return out
+	return cfg
 }
 
 // CreateKaaSAppValues generates the Helm values YAML for a KaaS application.

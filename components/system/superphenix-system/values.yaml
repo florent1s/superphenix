@@ -1782,6 +1782,9 @@ apps:
         productsConfig:
           argoApp:
             kubernetes:
+              # sfs-kaas >= 0.7.0 reads `<az code>: {internal, external}`.
+              # Legacy charts (< 0.7.0) read `<region>: <domain>`; add those
+              # entries when such a version is pinned.
               azDomains:
                 local:
                   internal: '{{ (index $.Values.apps "superphenix-console").values.domain }}'
