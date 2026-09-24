@@ -38,10 +38,10 @@ import (
 //	@Description	Retrieve all KaaS instances
 //	@Tags			v1, SPX Argo Ctrl
 //	@Produce		json
-//	@Param			orgaId		path	string				true	"Organization ID"
-//	@Param			az			path	string				true	"AZ Code"
-//	@Param			projectId	path	string				true	"Project ID"
-//	@Success		200			{array}	KaaSFullResponse	"KaaS"
+//	@Param			orgaId		path	string			true	"Organization ID"
+//	@Param			az			path	string			true	"AZ Code"
+//	@Param			projectId	path	string			true	"Project ID"
+//	@Success		200			{array}	KaaSResponse	"KaaS"
 //	@Failure		500
 //	@Router			/{orgaId}/api/spx-ctrl/{projectId}/kaas [get]
 //	@Security		Bearer[OrganizationRead, ProjectKaaSRead]
@@ -104,11 +104,11 @@ func (h *Service) ListKaaS(w http.ResponseWriter, r *http.Request) {
 //	@Description	Get KaaS instance by effective ID
 //	@Tags			v1, SPX Argo Ctrl
 //	@Produce		json
-//	@Param			orgaId		path		string				true	"Organization ID"
-//	@Param			az			path		string				true	"AZ Code"
-//	@Param			projectId	path		string				true	"Project ID"
-//	@Param			effectiveId	path		string				true	"KaaS EID"
-//	@Success		200			{object}	KaaSFullResponse	"KaaS"
+//	@Param			orgaId		path		string			true	"Organization ID"
+//	@Param			az			path		string			true	"AZ Code"
+//	@Param			projectId	path		string			true	"Project ID"
+//	@Param			effectiveId	path		string			true	"KaaS EID"
+//	@Success		200			{object}	KaaSResponse	"KaaS"
 //	@Failure		500
 //	@Router			/{orgaId}/api/spx-ctrl/{az}/{projectId}/kaas/{effectiveId} [get]
 //	@Security		Bearer[OrganizationRead, ProjectKaaSRead]
@@ -146,9 +146,10 @@ func (h *Service) GetKaaS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := KaaSFullResponse{ProductResponse: productResponse}
+	result := KaaSResponse{KaaSFullResponse: KaaSFullResponse{ProductResponse: productResponse}}
 	if azResult != nil {
 		result.Cluster = azResult["cluster"]
+		result.Outdated = deployedOutdated(azResult)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -200,6 +201,13 @@ func (h *Service) CreateKaaS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	chart, supported := argokaas.ChartFromConfig(body.Spec.KubeVersion)
+	if !supported {
+		log.Error().Str("kubeVersion", body.Spec.KubeVersion).Msg("KubeVersion not supported")
+		httpError.Http(w, r, http.StatusBadRequest).Msg(http.StatusText(http.StatusBadRequest))
+		return
+	}
+
 	kaasDb, m, err := controller.CreateIntoDb(r.Context(), body.General.ProductName, model.ProductTypeKaaS, azDb.Code, orgDb.ID, projectDb.ID)
 	if err != nil {
 		log.Err(err).Msg("Failed to save product into database")
@@ -207,7 +215,7 @@ func (h *Service) CreateKaaS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newBody, _, err := argokaas.CreateArgoApp(r.Context(), kaasDb.ID.String(), azDb, body.Spec, m, kaasConfig, nil)
+	newBody, _, err := argokaas.CreateArgoApp(r.Context(), kaasDb.ID.String(), azDb, body.Spec, m, kaasConfig, nil, chart)
 	if err != nil {
 		ctrlutils.CleanDb(r.Context(), kaasDb.ID)
 		log.Err(err).Msg("Failed to create argo app")
@@ -235,7 +243,7 @@ func (h *Service) CreateKaaS(w http.ResponseWriter, r *http.Request) {
 //	@Param			az			path		string				true	"AZ Code"
 //	@Param			projectId	path		string				true	"Project ID"
 //	@Param			effectiveId	path		string				true	"KaaS EID"
-//	@Success		200			{object}	KaaSFullResponse	"KaaS"
+//	@Success		200			{object}	KaaSAppSpecResponse	"KaaS"
 //	@Failure		500
 //	@Router			/{orgaId}/api/spx-ctrl/{az}/{projectId}/kaas/{effectiveId}/app [get]
 //	@Security		Bearer[OrganizationRead, ProjectKaaSRead]
@@ -254,7 +262,7 @@ func (h *Service) GetForUpdateKaaS(w http.ResponseWriter, r *http.Request) {
 	resourceEId := chi.URLParam(r, "effectiveId")
 	dbProduct, dbErr := product.FindByEId(resourceEId)
 
-	spec, isGitops, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), resourceEId)
+	app, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), resourceEId)
 	if err != nil {
 		log.Err(err).Msg("Failed to fetch app")
 		httpError.Http(w, r, consts.SpxProxyToAZFailureCode).Str("eid", resourceEId).Msg(consts.SpxProxyToAZFailure)
@@ -268,16 +276,19 @@ func (h *Service) GetForUpdateKaaS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := AppSpecFullResponse{
-		ProductResponse: ProductResponse{
-			ID:            dbProduct.ID.String(),
-			EId:           dbProduct.EffectiveID,
-			ProductName:   dbProduct.ProductName,
-			CodeAZ:        azDb.Code,
-			ProductTypeId: dbProduct.ProductTypeId,
-			Gitops:        isGitops,
+	result := KaaSAppSpecResponse{
+		AppSpecFullResponse: AppSpecFullResponse{
+			ProductResponse: ProductResponse{
+				ID:            dbProduct.ID.String(),
+				EId:           dbProduct.EffectiveID,
+				ProductName:   dbProduct.ProductName,
+				CodeAZ:        azDb.Code,
+				ProductTypeId: dbProduct.ProductTypeId,
+				Gitops:        app.Gitops,
+			},
+			Spec: app.Spec,
 		},
-		Spec: spec,
+		Chart: argokaas.NewChartStatus(app.Chart, app.Spec.KubeVersion),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -344,7 +355,7 @@ func (h *Service) UpdateKaaS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	spec, _, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), productEid)
+	app, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), productEid)
 	if err != nil {
 		log.Err(err).Msg("Failed to fetch app")
 		httpError.Http(w, r, consts.SpxProxyToAZFailureCode).Str("eid", productEid).Msg(consts.SpxProxyToAZFailure)
@@ -357,7 +368,14 @@ func (h *Service) UpdateKaaS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newBody, gtr, err := argokaas.CreateArgoApp(r.Context(), kaasDb.ID.String(), azDb, body.Spec, m, kaasConfig, &spec)
+	chart, supported := argokaas.ChartForUpdate(app.Chart, app.Spec.KubeVersion, body.Spec.KubeVersion)
+	if !supported {
+		log.Error().Str("kubeVersion", body.Spec.KubeVersion).Msg("KubeVersion not supported")
+		httpError.Http(w, r, http.StatusBadRequest).Msg(http.StatusText(http.StatusBadRequest))
+		return
+	}
+
+	newBody, gtr, err := argokaas.CreateArgoApp(r.Context(), kaasDb.ID.String(), azDb, body.Spec, m, kaasConfig, &app.Spec, chart)
 	if err != nil {
 		log.Err(err).Msg("Failed to create argo app")
 		httpError.Http(w, r, http.StatusBadRequest).Msg(http.StatusText(http.StatusBadRequest))
@@ -412,73 +430,149 @@ func (h *Service) UpdateKaaS(w http.ResponseWriter, r *http.Request) {
 //	@Router			/{orgaId}/api/spx-ctrl/{az}/{projectId}/kaas/{effectiveId}/reinstall-essentials [get]
 //	@Security		Bearer[OrganizationRead, ProjectKaaSWrite]
 func (h *Service) ReinstallKaaSEssentials(w http.ResponseWriter, r *http.Request) {
+	k, ok := h.loadKaaS(w, r)
+	if !ok {
+		return
+	}
+
+	// Increment the essentials revision to trigger a reinstallation
+	spec := k.app.Spec
+	spec.KaasEssentials.Revision++
+	h.applyKaaS(w, r, k, spec, k.app.Chart)
+}
+
+// UpgradeKaaS
+//
+//	@Summary		Upgrade KaaS chart
+//	@Description	Move a KaaS cluster to the chart configured for its kube version
+//	@Tags			v1, SPX Argo Ctrl
+//	@Produce		json
+//	@Param			orgaId		path	string	true	"Organization ID"
+//	@Param			az			path	string	true	"AZ Code"
+//	@Param			projectId	path	string	true	"Project ID"
+//	@Param			effectiveId	path	string	true	"KaaS EID"
+//	@Success		200
+//	@Failure		404
+//	@Failure		409
+//	@Failure		500
+//	@Router			/{orgaId}/api/spx-ctrl/{az}/{projectId}/kaas/{effectiveId}/upgrade [post]
+//	@Security		Bearer[OrganizationRead, ProjectKaaSWrite]
+func (h *Service) UpgradeKaaS(w http.ResponseWriter, r *http.Request) {
+	log := logger.GetLogger(r.Context())
+	k, ok := h.loadKaaS(w, r)
+	if !ok {
+		return
+	}
+
+	target, supported := argokaas.ChartFromConfig(k.app.Spec.KubeVersion)
+	if !supported {
+		log.Error().Str("eid", k.eid).Str("kubeVersion", k.app.Spec.KubeVersion).Msg("No chart configured for this kube version")
+		httpError.Http(w, r, http.StatusConflict).Str("eid", k.eid).Msg("kube version is no longer supported, change it before upgrading")
+		return
+	}
+
+	if argokaas.SameSource(k.app.Chart, target) {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if h.applyKaaS(w, r, k, k.app.Spec, target) {
+		log.Info().Str("eid", k.eid).Str("from", k.app.Chart.TargetRevision).Str("to", target.TargetRevision).Msg("KaaS chart upgraded")
+	}
+}
+
+// loadedKaaS is the context shared by actions on an existing KaaS cluster.
+type loadedKaaS struct {
+	az         config.AZConfig
+	projectId  string
+	eid        string
+	product    model.Product
+	metadata   spxId.Metadata
+	kaasConfig argokaas.KaaSConfig
+	app        kaasApp
+}
+
+// loadKaaS resolves the cluster targeted by the request. It writes the error
+// response and returns false on failure.
+func (h *Service) loadKaaS(w http.ResponseWriter, r *http.Request) (loadedKaaS, bool) {
 	log := logger.GetLogger(r.Context())
 	azDb, orgDb, projectDb, code, errMsg := ctrlutils.CheckPathParams(r)
 	if code != 0 {
 		httpError.Http(w, r, code).Msg(errMsg)
-		return
+		return loadedKaaS{}, false
 	}
 
-	// Fetch kaas az config
 	kaasConfig, err := getKaaSConfig(r.Context(), azDb, orgDb.ID.String(), projectDb.ID.String())
 	if err != nil {
 		log.Err(err).Msg("Failed to get kaas configuration from AZ")
 		httpError.Http(w, r, consts.SpxResourceUpdateFailureCode).Msg(consts.SpxResourceUpdateFailure)
-		return
+		return loadedKaaS{}, false
 	}
 
 	productEid := chi.URLParam(r, "effectiveId")
-
 	kaasDb, err := product.FindByEId(productEid)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to find product in database")
 		httpError.Http(w, r, http.StatusNotFound).Str("eid", productEid).Msg(consts.SpxResourceNotFound)
-		return
+		return loadedKaaS{}, false
 	}
 
 	if kaasDb.ProjectId != projectDb.ID {
 		log.Error().Str("eid", productEid).Msg("Product does not belong to this project")
 		httpError.Http(w, r, http.StatusNotFound).Str("eid", productEid).Msg(consts.SpxResourceNotFound)
-		return
+		return loadedKaaS{}, false
 	}
 
 	m := spxId.Metadata{}
 	if err = m.GenerateMetadata(projectDb.ID.String(), orgDb.ID.String(), kaasDb.ID.String()); err != nil {
 		log.Err(err).Msg("Failed to generate metadata")
 		httpError.Http(w, r, consts.SpxResourceUpdateFailureCode).Msg(consts.SpxResourceUpdateFailure)
-		return
+		return loadedKaaS{}, false
 	}
 
-	spec, _, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), productEid)
+	app, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), productEid)
 	if err != nil {
 		log.Err(err).Msg("Failed to fetch app")
 		httpError.Http(w, r, consts.SpxProxyToAZFailureCode).Str("eid", productEid).Msg(consts.SpxProxyToAZFailure)
-		return
+		return loadedKaaS{}, false
 	}
 
 	if !appFound {
 		log.Error().Msg("App not found")
 		httpError.Http(w, r, http.StatusNotFound).Str("eid", productEid).Msg(consts.SpxResourceNotFound)
-		return
+		return loadedKaaS{}, false
 	}
 
-	// Increment the essentials revision to trigger a reinstallation
-	spec.KaasEssentials.Revision++
+	return loadedKaaS{
+		az:         azDb,
+		projectId:  projectDb.ID.String(),
+		eid:        productEid,
+		product:    kaasDb,
+		metadata:   m,
+		kaasConfig: kaasConfig,
+		app:        app,
+	}, true
+}
 
-	newBody, _, err := argokaas.CreateArgoApp(r.Context(), kaasDb.ID.String(), azDb, spec, m, kaasConfig, &spec)
+// applyKaaS rewrites the cluster's Application with spec rendered by chart
+// and writes the response. It reports whether the Application was updated.
+func (h *Service) applyKaaS(w http.ResponseWriter, r *http.Request, k loadedKaaS, spec argokaas.KaaSSpec, chart config.RepoArgoAppConfig) bool {
+	log := logger.GetLogger(r.Context())
+	newBody, _, err := argokaas.CreateArgoApp(r.Context(), k.product.ID.String(), k.az, spec, k.metadata, k.kaasConfig, &k.app.Spec, chart)
 	if err != nil {
 		log.Err(err).Msg("Failed to create argo app")
 		httpError.Http(w, r, http.StatusBadRequest).Msg(http.StatusText(http.StatusBadRequest))
-		return
+		return false
 	}
 
-	appName := fmt.Sprintf("%s-%s", argokaas.KaasPrefix, kaasDb.EffectiveID)
-	if err := h.argo.UpdateApp(r.Context(), appName, h.argo.Namespace(projectDb.ID.String()), newBody.Spec); err != nil {
+	appName := fmt.Sprintf("%s-%s", argokaas.KaasPrefix, k.product.EffectiveID)
+	if err := h.argo.UpdateApp(r.Context(), appName, h.argo.Namespace(k.projectId), newBody.Spec); err != nil {
 		ctrlutils.HandleArgoError(w, r, err, consts.SpxResourceUpdateFailureCode, consts.SpxResourceUpdateFailure)
-		return
+		return false
 	}
 
 	w.WriteHeader(http.StatusOK)
+	return true
 }
 
 // DeleteKaaS
@@ -606,7 +700,7 @@ func (h *Service) GetKaaSKubeConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The kube version is authoritative on the Argo app, not the served kubeconfig.
-	spec, _, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), effectiveId)
+	app, appFound, err := h.fetchKaaSApp(r.Context(), projectDb.ID.String(), effectiveId)
 	if err != nil {
 		log.Err(err).Msg("Failed to fetch app")
 		httpError.Http(w, r, consts.SpxProxyToAZFailureCode).Str("eid", effectiveId).Msg(consts.SpxProxyToAZFailure)
@@ -617,7 +711,7 @@ func (h *Service) GetKaaSKubeConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if argokaas.ShouldRewriteFQDN(h.cfg.ProductsConfig.ArgoApp.Kubernetes.KubeVersions, spec.KubeVersion) {
+	if argokaas.ShouldRewriteFQDN(h.cfg.ProductsConfig.ArgoApp.Kubernetes.KubeVersions, app.Spec.KubeVersion) {
 		azDomain, _ := h.cfg.KaasAzDomain(azDb.Code)
 		body, err = argokaas.RewriteFQDN(body, effectiveId, azDomain.External)
 		if err != nil {
@@ -668,59 +762,66 @@ func getKaaSConfig(ctx context.Context, az config.AZConfig, orgId, projectId str
 	return res, nil
 }
 
-// fetchKaaSApp fetch the application status and spec from argo controller
-//
-// Returns:
-//   - spec: The specification of the KaaS application.
-//   - isGitops: A string ("true" or "false") indicating if the application is managed via GitOps.
-//   - found: A boolean indicating if the application was found in the Argo controller.
-//   - err: An error object if the request failed.
-func (h *Service) fetchKaaSApp(ctx context.Context, projectId, resourceEId string) (spec argokaas.KaaSSpec, isGitops string, found bool, err error) {
+// kaasApp holds the spec, gitops flag and chart of a KaaS Argo Application.
+// Gitops is "true" or "false".
+type kaasApp struct {
+	Spec   argokaas.KaaSSpec
+	Gitops string
+	Chart  config.RepoArgoAppConfig
+}
+
+// fetchKaaSApp reads the cluster's Argo Application. found is false when it
+// does not exist.
+func (h *Service) fetchKaaSApp(ctx context.Context, projectId, resourceEId string) (app kaasApp, found bool, err error) {
 	log := logger.GetLogger(ctx)
 
 	appName := fmt.Sprintf("%s-%s", argokaas.KaasPrefix, resourceEId)
 	appView, err := h.argo.GetApp(ctx, appName, h.argo.Namespace(projectId))
 	if k8serrors.IsNotFound(err) {
-		return argokaas.KaaSSpec{}, "", false, nil
+		return kaasApp{}, false, nil
 	}
 	if err != nil {
 		log.Error().Err(err).Str("effectiveId", resourceEId).Msg("Failed to get argo app")
-		return argokaas.KaaSSpec{}, "false", false, fmt.Errorf("failed to get argo app")
+		return kaasApp{Gitops: "false"}, false, fmt.Errorf("failed to get argo app")
 	}
 
-	spec, err = argokaas.ConvertAppToUpdateKaaSSpec(appView)
+	app.Spec, err = argokaas.ConvertAppToUpdateKaaSSpec(appView)
 	if err != nil {
 		log.Error().Str("effectiveId", resourceEId).Msg("Failed to read app spec")
-		return argokaas.KaaSSpec{}, "", true, err
+		return kaasApp{}, true, err
 	}
 
-	isGitops = view.AppToResource(appView).Gitops
-	if isGitops == "" {
-		isGitops = "false"
+	app.Gitops = view.AppToResource(appView).Gitops
+	if app.Gitops == "" {
+		app.Gitops = "false"
 	}
+	app.Chart = argokaas.ChartFromApp(appView)
 
-	return spec, isGitops, true, nil
+	return app, true, nil
 }
 
 // combineListResult regroup results from db and controller
-func combineListResult(concatResults map[string][]interface{}, resources []model.Product, mapResourceCheck map[uuid.UUID]bool) []KaaSFullResponse {
-	combineResults := make([]KaaSFullResponse, 0)
+func combineListResult(concatResults map[string][]interface{}, resources []model.Product, mapResourceCheck map[uuid.UUID]bool) []KaaSResponse {
+	combineResults := make([]KaaSResponse, 0)
 	for azCode, results := range concatResults {
 		for _, result := range results {
 			mapResult := result.(map[string]interface{})
 			found := false
 			for _, p := range resources {
 				if p.ID.String() == mapResult["id"] {
-					combineResults = append(combineResults, KaaSFullResponse{
-						ProductResponse: ProductResponse{
-							ID:            p.ID.String(),
-							EId:           mapResult["eid"].(string),
-							ProductName:   p.ProductName,
-							CodeAZ:        azCode, // we use az code to handle instance under PRA
-							ProductTypeId: p.ProductTypeId,
-							Gitops:        mapResult["gitops"].(string),
+					combineResults = append(combineResults, KaaSResponse{
+						KaaSFullResponse: KaaSFullResponse{
+							ProductResponse: ProductResponse{
+								ID:            p.ID.String(),
+								EId:           mapResult["eid"].(string),
+								ProductName:   p.ProductName,
+								CodeAZ:        azCode, // we use az code to handle instance under PRA
+								ProductTypeId: p.ProductTypeId,
+								Gitops:        mapResult["gitops"].(string),
+							},
+							Cluster: mapResult["cluster"],
 						},
-						Cluster: mapResult["cluster"],
+						Outdated: deployedOutdated(mapResult),
 					})
 					mapResourceCheck[p.ID] = true
 					found = true
@@ -730,15 +831,18 @@ func combineListResult(concatResults map[string][]interface{}, resources []model
 
 			// If only gitops
 			if !found {
-				combineResults = append(combineResults, KaaSFullResponse{
-					ProductResponse: ProductResponse{
-						ID:          mapResult["id"].(string),
-						EId:         mapResult["eid"].(string),
-						ProductName: mapResult["productName"].(string),
-						CodeAZ:      azCode,
-						Gitops:      mapResult["gitops"].(string),
+				combineResults = append(combineResults, KaaSResponse{
+					KaaSFullResponse: KaaSFullResponse{
+						ProductResponse: ProductResponse{
+							ID:          mapResult["id"].(string),
+							EId:         mapResult["eid"].(string),
+							ProductName: mapResult["productName"].(string),
+							CodeAZ:      azCode,
+							Gitops:      mapResult["gitops"].(string),
+						},
+						Cluster: mapResult["cluster"],
 					},
-					Cluster: mapResult["cluster"],
+					Outdated: deployedOutdated(mapResult),
 				})
 			}
 		}
@@ -748,24 +852,38 @@ func combineListResult(concatResults map[string][]interface{}, resources []model
 	// Check for not found resources
 	for _, p := range resources {
 		if mapResourceCheck[p.ID] == false {
-			combineResults = append(combineResults, KaaSFullResponse{
-				ProductResponse: ProductResponse{
-					ID:            p.ID.String(),
-					EId:           p.EffectiveID,
-					ProductName:   p.ProductName,
-					CodeAZ:        p.CodeAZ,
-					ProductTypeId: p.ProductTypeId,
-					Gitops:        "false",
+			combineResults = append(combineResults, KaaSResponse{
+				KaaSFullResponse: KaaSFullResponse{
+					ProductResponse: ProductResponse{
+						ID:            p.ID.String(),
+						EId:           p.EffectiveID,
+						ProductName:   p.ProductName,
+						CodeAZ:        p.CodeAZ,
+						ProductTypeId: p.ProductTypeId,
+						Gitops:        "false",
+					},
 				},
 			})
 		}
 	}
 
-	slices.SortFunc(combineResults, func(a, b KaaSFullResponse) int {
+	slices.SortFunc(combineResults, func(a, b KaaSResponse) int {
 		return controller.CompareProductResult(a.ProductResponse, b.ProductResponse)
 	})
 
 	return combineResults
+}
+
+// deployedOutdated reads the chart and kube version reported by the AZ
+// controller. It returns nil when either is missing.
+func deployedOutdated(azResult map[string]interface{}) *bool {
+	chart, _ := azResult["chart"].(string)
+	kubeVersion, _ := azResult["kubeVersion"].(string)
+	outdated, known := argokaas.DeployedOutdated(chart, kubeVersion)
+	if !known {
+		return nil
+	}
+	return &outdated
 }
 
 // DTOs owned by the controller kit; aliased so handler code and swagger
@@ -775,6 +893,19 @@ type (
 	KaaSFullResponse    = controller.KaaSFullResponse
 	AppSpecFullResponse = controller.AppSpecFullResponse
 )
+
+// KaaSResponse adds Outdated to a KaaS: true when the deployed chart differs
+// from the configured one, nil when unknown.
+type KaaSResponse struct {
+	KaaSFullResponse `json:",inline"`
+	Outdated         *bool `json:"outdated,omitempty"`
+}
+
+// KaaSAppSpecResponse is the update form payload with the cluster's chart status.
+type KaaSAppSpecResponse struct {
+	AppSpecFullResponse `json:",inline"`
+	Chart               argokaas.ChartStatus `json:"chart"`
+}
 
 type CreateKaaSBody struct {
 	General struct {

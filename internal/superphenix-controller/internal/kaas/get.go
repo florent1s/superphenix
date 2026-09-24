@@ -52,6 +52,7 @@ func GetCluster(ctx context.Context, namespace, eid string) (view.Cluster, error
 		return view.Cluster{
 			Cluster:            clusterObject,
 			MachineDeployments: []view.MachineDeployment{},
+			Chart:              unstructuredCluster.GetLabels()[HelmChartLabelKey],
 		}, nil
 	}
 	if err != nil {
@@ -76,6 +77,7 @@ func GetCluster(ctx context.Context, namespace, eid string) (view.Cluster, error
 	cluster := view.Cluster{
 		Cluster:            clusterObject,
 		MachineDeployments: mdList,
+		Chart:              unstructuredCluster.GetLabels()[HelmChartLabelKey],
 	}
 
 	return cluster, nil

@@ -4517,7 +4517,7 @@ const docTemplate = `{
                     "200": {
                         "description": "KaaS",
                         "schema": {
-                            "$ref": "#/definitions/kaas.KaaSFullResponse"
+                            "$ref": "#/definitions/kaas.KaaSResponse"
                         }
                     },
                     "500": {
@@ -4710,7 +4710,7 @@ const docTemplate = `{
                     "200": {
                         "description": "KaaS",
                         "schema": {
-                            "$ref": "#/definitions/kaas.KaaSFullResponse"
+                            "$ref": "#/definitions/kaas.KaaSAppSpecResponse"
                         }
                     },
                     "500": {
@@ -4969,6 +4969,71 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/{orgaId}/api/spx-ctrl/{az}/{projectId}/kaas/{effectiveId}/upgrade": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": [
+                            "OrganizationRead",
+                            "ProjectKaaSWrite"
+                        ]
+                    }
+                ],
+                "description": "Move a KaaS cluster to the chart configured for its kube version",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1",
+                    "SPX Argo Ctrl"
+                ],
+                "summary": "Upgrade KaaS chart",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "orgaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "AZ Code",
+                        "name": "az",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "KaaS EID",
+                        "name": "effectiveId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -7573,7 +7638,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/kaas.KaaSFullResponse"
+                                "$ref": "#/definitions/kaas.KaaSResponse"
                             }
                         }
                     },
@@ -8930,6 +8995,37 @@ const docTemplate = `{
                 }
             }
         },
+        "kaas.ChartInfo": {
+            "type": "object",
+            "properties": {
+                "chart": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "repoURL": {
+                    "type": "string"
+                },
+                "targetRevision": {
+                    "type": "string"
+                }
+            }
+        },
+        "kaas.ChartStatus": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "$ref": "#/definitions/kaas.ChartInfo"
+                },
+                "outdated": {
+                    "type": "boolean"
+                },
+                "target": {
+                    "$ref": "#/definitions/kaas.ChartInfo"
+                }
+            }
+        },
         "kaas.ControlPlaneSpec": {
             "type": "object",
             "properties": {
@@ -9031,7 +9127,37 @@ const docTemplate = `{
                 }
             }
         },
-        "kaas.KaaSFullResponse": {
+        "kaas.KaaSAppSpecResponse": {
+            "type": "object",
+            "properties": {
+                "chart": {
+                    "$ref": "#/definitions/kaas.ChartStatus"
+                },
+                "codeAZ": {
+                    "type": "string"
+                },
+                "eid": {
+                    "description": "effective ID",
+                    "type": "string"
+                },
+                "gitops": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "local ID",
+                    "type": "string"
+                },
+                "productName": {
+                    "description": "human-readable name",
+                    "type": "string"
+                },
+                "productTypeId": {
+                    "type": "string"
+                },
+                "spec": {}
+            }
+        },
+        "kaas.KaaSResponse": {
             "type": "object",
             "properties": {
                 "cluster": {},
@@ -9048,6 +9174,9 @@ const docTemplate = `{
                 "id": {
                     "description": "local ID",
                     "type": "string"
+                },
+                "outdated": {
+                    "type": "boolean"
                 },
                 "productName": {
                     "description": "human-readable name",

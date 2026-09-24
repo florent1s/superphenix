@@ -9,6 +9,8 @@ import (
 type Cluster struct {
 	Cluster            v1beta2.Cluster     `json:"cluster,omitempty"`
 	MachineDeployments []MachineDeployment `json:"machineDeployments"`
+	// Chart is the helm.sh/chart label of the Cluster.
+	Chart string `json:"-"`
 }
 
 type MachineDeployment struct {
@@ -56,6 +58,16 @@ func KaaSToResource(cluster Cluster) KaaS {
 			ProductName: cluster.Cluster.Labels[spxId.SpxLabelResourceName],
 			Gitops:      cluster.Cluster.Labels[spxId.SpxLabelGitops],
 		},
-		Cluster: cluster,
+		Chart:       cluster.Chart,
+		KubeVersion: kubeVersion(cluster.MachineDeployments),
+		Cluster:     cluster,
 	}
+}
+
+// kubeVersion returns the kube version of the cluster's first machine deployment.
+func kubeVersion(mds []MachineDeployment) string {
+	if len(mds) == 0 {
+		return ""
+	}
+	return mds[0].MachineDeployment.Spec.Template.Spec.Version
 }

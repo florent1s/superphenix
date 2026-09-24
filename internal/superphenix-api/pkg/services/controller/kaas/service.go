@@ -25,6 +25,7 @@ type API interface {
 	DeleteKaaS(http.ResponseWriter, *http.Request)
 	GetForUpdateKaaS(http.ResponseWriter, *http.Request)
 	ReinstallKaaSEssentials(http.ResponseWriter, *http.Request)
+	UpgradeKaaS(http.ResponseWriter, *http.Request)
 	Instances(http.ResponseWriter, *http.Request)
 	Netpols(http.ResponseWriter, *http.Request)
 	GetKaaSKubeConfig(http.ResponseWriter, *http.Request)
@@ -73,6 +74,7 @@ func Module(cfg *config.Config, s API) router.Module {
 				router.Delete("/{az}/{projectId}/kaas/{effectiveId}", s.DeleteKaaS),
 				router.Get("/{az}/{projectId}/kaas/{effectiveId}/app", s.GetForUpdateKaaS),
 				router.Get("/{az}/{projectId}/kaas/{effectiveId}/reinstall-essentials", s.ReinstallKaaSEssentials),
+				router.Post("/{az}/{projectId}/kaas/{effectiveId}/upgrade", s.UpgradeKaaS),
 			},
 		}},
 	})

@@ -46,8 +46,8 @@ type AzDomainConfig struct {
 	External string `yaml:"external"`
 }
 
-// KaasAzDomain returns the typed azDomains entry for az. Legacy string entries
-// and missing keys return ok=false.
+// KaasAzDomain returns the azDomains entry for az. ok is false for string
+// entries and missing keys.
 func (c *Config) KaasAzDomain(az string) (AzDomainConfig, bool) {
 	entry, ok := c.ProductsConfig.ArgoApp.Kubernetes.AzDomains[az].(map[string]any)
 	if !ok {
@@ -200,10 +200,9 @@ type Config struct {
 			Kubernetes struct {
 				Repo         RepoArgoAppConfig   `yaml:"repo"`
 				KubeVersions []KubeVersionConfig `yaml:"kubeVersions,omitempty"`
-				// Sent verbatim as the sfs-kaas `azDomains` value. Two entry shapes:
-				//   <az code>: {internal, external}  sfs-kaas >= 0.7.0, see AzDomainConfig
-				//   <region>: <domain>               legacy chart (< 0.7.0), builds azs.<region>.<domain>
-				// Use KaasAzDomain for typed access.
+				// sfs-kaas `azDomains` value. Entry shapes:
+				//   <az code>: {internal, external}  sfs-kaas >= 0.7.0
+				//   <region>: <domain>               sfs-kaas < 0.7.0
 				AzDomains map[string]any `yaml:"azDomains"`
 			} `yaml:"kubernetes"`
 

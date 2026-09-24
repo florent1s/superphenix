@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/super-phenix/superphenix/internal/superphenix-controller/internal/models/view"
 	"github.com/super-phenix/superphenix/internal/superphenix-controller/pkg/config"
 
 	spxId "github.com/super-phenix/superphenix/pkg/superphenix-id"
@@ -174,5 +175,71 @@ func TestGetClusterMachineDeploymentNotFound(t *testing.T) {
 	}
 	if len(cluster.MachineDeployments) != 0 {
 		t.Errorf("expected no machine deployment, got %d", len(cluster.MachineDeployments))
+	}
+}
+
+// TestClusterChartAndKubeVersion checks the chart label and kube version reach the KaaS view
+// through both the get and list paths.
+func TestClusterChartAndKubeVersion(t *testing.T) {
+	withChart := func(chart string) *unstructured.Unstructured {
+		cluster := newCluster()
+		labels := cluster.GetLabels()
+		labels[HelmChartLabelKey] = chart
+		cluster.SetLabels(labels)
+		return cluster
+	}
+	withVersion := func(version string) *unstructured.Unstructured {
+		md := newMachineDeployment("workers", testClusterId)
+		_ = unstructured.SetNestedField(md.Object, version, "spec", "template", "spec", "version")
+		return md
+	}
+
+	tests := []struct {
+		name            string
+		objects         []runtime.Object
+		wantChart       string
+		wantKubeVersion string
+	}{
+		{
+			name:            "chart label and machine deployment",
+			objects:         []runtime.Object{withChart("sfs-kaas-0.3.8"), withVersion("v1.33.4"), newKubevirtMachineTemplate("workers")},
+			wantChart:       "sfs-kaas-0.3.8",
+			wantKubeVersion: "v1.33.4",
+		},
+		{
+			name:            "no chart label",
+			objects:         []runtime.Object{newCluster(), withVersion("v1.33.4"), newKubevirtMachineTemplate("workers")},
+			wantChart:       "",
+			wantKubeVersion: "v1.33.4",
+		},
+		{
+			name:            "no machine deployment",
+			objects:         []runtime.Object{withChart("sfs-kaas-0.3.8")},
+			wantChart:       "sfs-kaas-0.3.8",
+			wantKubeVersion: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setFakeDynamicClient(t, tt.objects...)
+
+			got, err := GetCluster(context.Background(), testNamespace, testClusterId)
+			if err != nil {
+				t.Fatalf("GetCluster() error = %v", err)
+			}
+			listed, err := ListCluster(context.Background(), testNamespace)
+			if err != nil || len(listed) != 1 {
+				t.Fatalf("ListCluster() = %d clusters, error = %v", len(listed), err)
+			}
+
+			for path, cluster := range map[string]view.Cluster{"get": got, "list": listed[0]} {
+				res := view.KaaSToResource(cluster)
+				if res.Chart != tt.wantChart || res.KubeVersion != tt.wantKubeVersion {
+					t.Errorf("%s: chart = %q, kubeVersion = %q, want %q, %q",
+						path, res.Chart, res.KubeVersion, tt.wantChart, tt.wantKubeVersion)
+				}
+			}
+		})
 	}
 }

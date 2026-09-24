@@ -39,6 +39,7 @@ func ListCluster(ctx context.Context, namespace string) ([]view.Cluster, error) 
 			clusters = append(clusters, view.Cluster{
 				Cluster:            cluster,
 				MachineDeployments: deployments,
+				Chart:              item.GetLabels()[HelmChartLabelKey],
 			})
 		}
 

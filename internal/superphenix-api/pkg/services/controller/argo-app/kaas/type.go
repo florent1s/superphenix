@@ -69,7 +69,7 @@ type GroupSubnet struct {
 }
 
 type Values struct {
-	// AzDomains is forwarded from config as-is, see config.Config.AzDomains.
+	// AzDomains is config.Config azDomains as-is.
 	AzDomains map[string]any     `yaml:"azDomains,omitempty"`
 	Clusters  map[string]Cluster `yaml:"clusters,omitempty"`
 }

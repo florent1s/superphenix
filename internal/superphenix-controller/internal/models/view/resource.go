@@ -71,8 +71,10 @@ type SecurityGroup struct {
 }
 
 type KaaS struct {
-	Resource `json:",inline"`
-	Cluster  Cluster `json:"cluster"`
+	Resource    `json:",inline"`
+	Chart       string  `json:"chart,omitempty"`
+	KubeVersion string  `json:"kubeVersion,omitempty"`
+	Cluster     Cluster `json:"cluster"`
 }
 
 type BaaS struct {

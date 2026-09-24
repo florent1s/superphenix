@@ -838,7 +838,7 @@ func TestCreateArgoApp_HelmParams(t *testing.T) {
 				WorkersNetPol: "default",
 				Groups:        []Group{group},
 			}
-			body, _, err := CreateArgoApp(context.Background(), "cluster", az, spec, metadata, KaaSConfig{StorageClasses: tt.storageClasses}, nil)
+			body, _, err := CreateArgoApp(context.Background(), "cluster", az, spec, metadata, KaaSConfig{StorageClasses: tt.storageClasses}, nil, config.RepoArgoAppConfig{})
 			if err != nil {
 				t.Fatalf("CreateArgoApp() error = %v", err)
 			}
@@ -866,22 +866,24 @@ func TestCreateArgoApp_HelmParams(t *testing.T) {
 }
 
 func TestCreateArgoApp_Repo(t *testing.T) {
-	defaultRepo := config.RepoArgoAppConfig{
+	configured := config.RepoArgoAppConfig{
 		RepoURL:        "ghcr.io/super-phenix/charts",
-		TargetRevision: "0.1.0",
+		TargetRevision: "0.7.0",
 		Chart:          "sfs-kaas",
 	}
-	overrideRepo := config.RepoArgoAppConfig{
-		RepoURL:        "ghcr.io/super-phenix/edge",
-		TargetRevision: "0.2.0",
-		Chart:          "sfs-kaas-edge",
+	pinned := config.RepoArgoAppConfig{
+		RepoURL:        "ghcr.io/super-phenix/charts",
+		TargetRevision: "0.3.8",
+		Chart:          "sfs-kaas",
+	}
+	gitPath := config.RepoArgoAppConfig{
+		RepoURL:        "https://github.com/super-phenix/superphenix",
+		TargetRevision: "main",
+		Path:           "components/dependencies/sfs-kaas",
 	}
 
-	config.Global.ProductsConfig.ArgoApp.Kubernetes.Repo = defaultRepo
-	config.Global.ProductsConfig.ArgoApp.Kubernetes.KubeVersions = []config.KubeVersionConfig{
-		{Version: "v1.35.5", Repo: &overrideRepo},
-		{Version: "v1.34.8"},
-	}
+	config.Global.ProductsConfig.ArgoApp.Kubernetes.Repo = configured
+	config.Global.ProductsConfig.ArgoApp.Kubernetes.KubeVersions = []config.KubeVersionConfig{{Version: "v1.35.5"}}
 
 	kaasConfig := KaaSConfig{
 		StorageClasses: []ClassMapping{{Shortname: "sc1", Fullname: "storage-class-1"}},
@@ -894,30 +896,69 @@ func TestCreateArgoApp_Repo(t *testing.T) {
 	metadata := spxId.Metadata{OrgId: "org", ProjectId: "proj", ResourceEffectiveId: "cluster"}
 
 	tests := []struct {
-		name        string
-		kubeVersion string
-		want        config.RepoArgoAppConfig
+		name  string
+		chart config.RepoArgoAppConfig
 	}{
-		{name: "version with override uses override repo", kubeVersion: "v1.35.5", want: overrideRepo},
-		{name: "version without override uses default repo", kubeVersion: "v1.34.8", want: defaultRepo},
+		{name: "configured chart", chart: configured},
+		{name: "pinned chart differs from config", chart: pinned},
+		{name: "path based chart", chart: gitPath},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			spec := KaaSSpec{
-				KubeVersion:   tt.kubeVersion,
+				KubeVersion:   "v1.35.5",
 				CPNetPol:      "default",
 				WorkersNetPol: "default",
 				Groups:        []Group{group},
 			}
-			body, _, err := CreateArgoApp(context.Background(), "cluster", az, spec, metadata, kaasConfig, nil)
+			body, _, err := CreateArgoApp(context.Background(), "cluster", az, spec, metadata, kaasConfig, nil, tt.chart)
 			if err != nil {
 				t.Fatalf("CreateArgoApp() error = %v", err)
 			}
 			src := body.Spec.Source
-			if src.RepoURL != tt.want.RepoURL || src.TargetRevision != tt.want.TargetRevision || src.Chart != tt.want.Chart {
-				t.Errorf("source repo = {URL:%q Rev:%q Chart:%q}, want {URL:%q Rev:%q Chart:%q}",
-					src.RepoURL, src.TargetRevision, src.Chart, tt.want.RepoURL, tt.want.TargetRevision, tt.want.Chart)
+			got := config.RepoArgoAppConfig{RepoURL: src.RepoURL, TargetRevision: src.TargetRevision, Chart: src.Chart, Path: src.Path}
+			if got != tt.chart {
+				t.Errorf("source = %+v, want %+v", got, tt.chart)
+			}
+		})
+	}
+}
+
+// TestCreateKaaSAppValues_KubeVersionSupport checks the kube version is only
+// validated against config on create and on a version change.
+func TestCreateKaaSAppValues_KubeVersionSupport(t *testing.T) {
+	config.Global.ProductsConfig.ArgoApp.Kubernetes.KubeVersions = []config.KubeVersionConfig{{Version: "v1.36.3"}}
+	kaasConfig := KaaSConfig{
+		StorageClasses: []ClassMapping{{Shortname: "sc1", Fullname: "storage-class-1"}},
+	}
+	group := Group{
+		Name: "group-1", Replicas: 1, Cpu: 2, Memory: 4, BootDiskSize: 20,
+		StorageClass: "sc1", Subnets: []GroupSubnet{{Order: 1, Id: "subnet-1"}},
+	}
+	specFor := func(version string) KaaSSpec {
+		return KaaSSpec{KubeVersion: version, CPNetPol: "default", WorkersNetPol: "default", Groups: []Group{group}}
+	}
+	removed := specFor("v1.33.4")
+
+	tests := []struct {
+		name    string
+		spec    KaaSSpec
+		oldSpec *KaaSSpec
+		wantErr bool
+	}{
+		{name: "create with supported version", spec: specFor("v1.36.3"), oldSpec: nil, wantErr: false},
+		{name: "create with removed version", spec: specFor("v1.33.4"), oldSpec: nil, wantErr: true},
+		{name: "update keeping removed version", spec: specFor("v1.33.4"), oldSpec: &removed, wantErr: false},
+		{name: "update to supported version", spec: specFor("v1.36.3"), oldSpec: &removed, wantErr: false},
+		{name: "update to unsupported version", spec: specFor("v1.34.1"), oldSpec: &removed, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, _, err := CreateKaaSAppValues(context.Background(), "test-cluster", "test-loc", tt.spec, kaasConfig, tt.oldSpec)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateKaaSAppValues() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -24,8 +24,7 @@ import (
 
 var nodeGroupNameRegex = regexp.MustCompile("^[a-zA-Z0-9-]*$")
 
-// azDomainValues forwards the configured azDomains map untouched. Nil or empty
-// config returns nil so the azDomains key is omitted from the rendered values.
+// azDomainValues returns the configured azDomains map, or nil when empty.
 func azDomainValues(cfg map[string]any) map[string]any {
 	if len(cfg) == 0 {
 		return nil
@@ -111,9 +110,12 @@ func CreateKaaSAppValues(ctx context.Context, localId, location string, spec Kaa
 		}
 	}
 
-	if _, supported := config.ResolveKubeVersionRepo(config.Global.ProductsConfig.ArgoApp.Kubernetes.KubeVersions, config.Global.ProductsConfig.ArgoApp.Kubernetes.Repo, spec.KubeVersion); !supported {
-		log.Error().Str("kubeVersion", spec.KubeVersion).Msg("KubeVersion not supported")
-		return "", nil, fmt.Errorf("KubeVersion not supported")
+	// Only a new or changed kube version must be in the config.
+	if oldSpec == nil || spec.KubeVersion != oldSpec.KubeVersion {
+		if _, supported := ChartFromConfig(spec.KubeVersion); !supported {
+			log.Error().Str("kubeVersion", spec.KubeVersion).Msg("KubeVersion not supported")
+			return "", nil, fmt.Errorf("KubeVersion not supported")
+		}
 	}
 
 	//// KaaS Essentials
@@ -309,8 +311,12 @@ func CreateKaaSAppValues(ctx context.Context, localId, location string, spec Kaa
 	return string(valuesBytes[:]), groupToRemove, nil
 }
 
-// CreateArgoApp builds the ArgoCD application body for a KaaS deployment.
-func CreateArgoApp(ctx context.Context, localId string, az config.AZConfig, spec KaaSSpec, metadata spxId.Metadata, kaasConfig KaaSConfig, oldSpec *KaaSSpec) (argo.CreateAppInfo, []string, error) {
+// CreateArgoApp builds the ArgoCD application body for a KaaS deployment
+// rendering chart.
+func CreateArgoApp(
+	ctx context.Context, localId string, az config.AZConfig, spec KaaSSpec, metadata spxId.Metadata,
+	kaasConfig KaaSConfig, oldSpec *KaaSSpec, chart config.RepoArgoAppConfig,
+) (argo.CreateAppInfo, []string, error) {
 	log := logger.GetLogger(ctx)
 	values, gtr, err := CreateKaaSAppValues(ctx, localId, az.Code, spec, kaasConfig, oldSpec)
 	if err != nil {
@@ -326,9 +332,6 @@ func CreateArgoApp(ctx context.Context, localId string, az config.AZConfig, spec
 
 	appName := fmt.Sprintf("%s-%s", KaasPrefix, metadata.GetResourceEffectiveID())
 
-	// Version support was already validated in CreateKaaSAppValues, so the repo is always resolved here.
-	repo, _ := config.ResolveKubeVersionRepo(config.Global.ProductsConfig.ArgoApp.Kubernetes.KubeVersions, config.Global.ProductsConfig.ArgoApp.Kubernetes.Repo, spec.KubeVersion)
-
 	return argo.CreateAppInfo{
 		Metadata: metadata,
 		General: argo.AppGeneral{
@@ -337,10 +340,10 @@ func CreateArgoApp(ctx context.Context, localId string, az config.AZConfig, spec
 		},
 		Spec: argo.AppSpec{
 			Source: argo.AppSource{
-				RepoURL:        repo.RepoURL,
-				TargetRevision: repo.TargetRevision,
-				Chart:          repo.Chart,
-				Path:           repo.Path,
+				RepoURL:        chart.RepoURL,
+				TargetRevision: chart.TargetRevision,
+				Chart:          chart.Chart,
+				Path:           chart.Path,
 				Plugin: v1alpha1.ApplicationSourcePlugin{
 					Name: "uuidv5",
 					Env: v1alpha1.Env{

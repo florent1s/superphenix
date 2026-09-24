@@ -13538,6 +13538,9 @@ const docTemplate = `{
         "view.KaaS": {
             "type": "object",
             "properties": {
+                "chart": {
+                    "type": "string"
+                },
                 "cluster": {
                     "$ref": "#/definitions/view.Cluster"
                 },
@@ -13553,6 +13556,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "description": "local ID",
+                    "type": "string"
+                },
+                "kubeVersion": {
                     "type": "string"
                 },
                 "productName": {
