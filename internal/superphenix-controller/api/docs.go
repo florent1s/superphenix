@@ -14673,6 +14673,10 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "linkState": {
+                    "description": "LinkState reports the current operational link state. values: up, down.",
+                    "type": "string"
+                },
                 "mac": {
                     "description": "Hardware address of a Virtual Machine interface",
                     "type": "string"
@@ -15292,10 +15296,16 @@ const docTemplate = `{
         "vm.Network": {
             "type": "object",
             "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
                 "ipv4": {
                     "type": "string"
                 },
                 "ipv6": {
+                    "type": "string"
+                },
+                "macAddress": {
                     "type": "string"
                 },
                 "model": {
