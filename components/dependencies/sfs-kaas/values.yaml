@@ -235,6 +235,10 @@ clusters: {}
   #             # @section -- Worker main disk
   #             imageTag: ""
 
+  #             # -- Url of the main disk image
+  #             # @section -- Worker main disk
+  #             imageUrl: ""
+
   #           # -- Custom taints to be set on node creation
   #           # @section -- Worker VM template
   #           # @default -- []
@@ -282,6 +286,10 @@ clusters: {}
   #     # -- Version of the kaas-essentials chart to use
   #     # @section -- Tenant essentials
   #     chartVersion: ""
+
+  #     # -- Repository URL to fetch the kaas-essentials chart from
+  #     # @section -- Tenant essentials
+  #     repoUrl: ""
 
   #     # -- Helm release revision counter
   #     # Increment this value for changes to take effect by triggering

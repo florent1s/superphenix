@@ -46,16 +46,7 @@ var ignoreDifferences = v1alpha1.IgnoreDifferences{
 			"/metadata/labels/app.kubernetes.io~1version",
 			"/metadata/labels/helm.sh~1chart",
 			"/metadata/labels/superphenix.net~1gitops",
-			"/spec/template/spec/virtualMachineTemplate/metadata/labels/app.kubernetes.io~1version",
-			"/spec/template/spec/virtualMachineTemplate/metadata/labels/helm.sh~1chart",
-			"/spec/template/spec/virtualMachineTemplate/metadata/labels/superphenix.net~1gitops",
-			"/spec/template/spec/virtualMachineTemplate/spec/template/metadata/labels/app.kubernetes.io~1version",
-			"/spec/template/spec/virtualMachineTemplate/spec/template/metadata/labels/helm.sh~1chart",
-			"/spec/template/spec/virtualMachineTemplate/spec/template/metadata/labels/superphenix.net~1gitops",
-		},
-		JQPathExpressions: []string{
-			".spec.template.spec.virtualMachineTemplate.spec.dataVolumeTemplates[].metadata.labels",
-			".spec.template.spec.virtualMachineTemplate.spec.dataVolumeTemplates[0].spec.source.registry.url",
+			"/spec",
 		},
 	},
 }

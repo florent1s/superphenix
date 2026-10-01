@@ -33,7 +33,7 @@ spec:
   {{- end }}
   {{- with $subnet.excludeIps }}
   excludeIps:
-  {{- .excludeIps | toYaml | nindent 2 }}
+  {{- . | toYaml | nindent 2 }}
   {{- end }}
 
   # DHCP enabled, we bypass Kubevirt and send replies to requests directly

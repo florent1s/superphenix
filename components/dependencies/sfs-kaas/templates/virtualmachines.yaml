@@ -6,7 +6,6 @@
 {{- $controlPlaneDefaults := $.Values.clusterDefaults.controlPlane -}}
 {{- $workers := $cluster.workers -}}
 {{- $clusterID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $preID) -}}
-{{- $imgUrl := $.Values.defaultImageUrl }}
 {{- $fqdn := ($controlPlane.network).fqdn | default (include "sfs-kaas.fqdn" (dict "root" $ "name" $clusterID)) }}
 {{- $azCount := $.Values.azCount }}
 {{- $azListUrl := (get $.Values.azDomains $.Values.location | required "Missing value for this AZ under `.azDomains`").internal | required "Missing `internal` key for this AZ under `.azDomains.<AZ>`" }}
@@ -16,6 +15,7 @@
 {{- $additionalDisks := $template.additionalDisks -}}
 {{- $kubeVersion := $pool.kubeVersion | default $cluster.kubeVersion }}
 {{- $imageTag := $template.bootDisk.imageTag | default (printf "v%s-%s" $.Chart.Version (trimPrefix "v" $kubeVersion)) }}
+{{- $imageUrl := $template.bootDisk.imageUrl | default $.Values.defaultImageUrl }}
 {{- $templateVersion := $template.version | default 1 | toString }}
 {{- $vmDeployLocalID := include "sfs-kaas.getUUIDv5" (dict "NS" $projectID "NAME" (printf "%s-%s" $preID $poolName)) -}}
 {{- $vmDeployID := include "sfs-kaas.spxEID" (dict "project" $projectID "localID" $vmDeployLocalID) -}}
@@ -260,7 +260,7 @@ spec:
                   storageClassName: {{ required "No storageclass found" $storageClass | quote }}
                 source:
                   registry:
-                    url: "{{ $imgUrl }}:{{ $imageTag }}"
+                    url: "{{ $imageUrl }}:{{ $imageTag }}"
           # additional disks defined by user
           {{- range $preID, $disk := $additionalDisks }}
             {{- $class := (required "Must provide a storage class" $disk.storageClassName) }}

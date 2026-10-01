@@ -9,6 +9,7 @@
 {{- $kubeMinor := substr 1 5 $kubeVersion -}}
 {{- $fqdn := ($controlPlane.network).fqdn | default (include "sfs-kaas.fqdn" (dict "root" $ "name" $clusterID)) }}
 {{- $controlplaneUrl := printf "https://%s:%d" $fqdn (int $controlPlaneDefaults.network.apiServer.port) }}
+{{- $repoUrl := $.Values.kaasEssentials.repoUrl | default $.Values.clusterDefaults.kaasEssentials.chartUrl }}
 
 ---
 apiVersion: v1
@@ -40,7 +41,7 @@ data:
     done
 
     echo "[+] Running helm upgrade."
-    helm upgrade --install kaas-essentials {{ $.Values.clusterDefaults.kaasEssentials.chartUrl }} \
+    helm upgrade --install kaas-essentials {{ $repoUrl }} \
       --version {{ $cluster.kaasEssentials.chartVersion | default $.Chart.Version }} \
       --namespace kube-system \
       --kubeconfig /var/run/kubeconfig \
