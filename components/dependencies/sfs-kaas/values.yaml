@@ -1,27 +1,29 @@
-# -- Superphénix organization to which this project belongs, must be a generated UUIDv4.
+# -- Superphenix organization to which this project belongs, must be a generated UUIDv4.
 # This ID must come from the SPX API, this parameter cannot be overriden by the user.
 # @section -- Organization parameters
 organizationID: "00000000-0000-0000-0000-000000000000"
-# -- Superphénix organization's friendly name.
+# -- Superphenix organization's friendly name.
 # This parameter cannot be overriden by the user.
 # @section -- Organization parameters
 organizationName: "null"
 
-# -- Superphénix project to which this project belongs, must be a project within the organization, must be a generated UUIDv4.
+# -- Superphenix project to which this project belongs, must be a project within the organization, must be a generated UUIDv4.
 # This ID must come from the SPX API, this parameter cannot be overriden by the user.
 # @section -- Organization parameters
 projectID: "00000000-0000-0000-0000-000000000000"
-# -- Superphénix project's friendly name.
+# -- Superphenix project's friendly name.
 # This ID must come from the SPX API, this parameter cannot be overriden by the user.
 # @section -- Organization parameters
 projectName: "null"
 
 # -- AZ in which we're deploying this chart.
 # This parameter cannot be overriden by the user.
+# @section -- Organization parameters
 location: ""
 
-# -- Whether this chart is deployed through GitOps or not
+# -- Whether this chart is deployed through GitOps or not.
 # This parameter cannot be overriden by the user.
+# @section -- Organization parameters
 gitops: false
 
 # -- Per AZ mapping of URLs to use in cluster configuration

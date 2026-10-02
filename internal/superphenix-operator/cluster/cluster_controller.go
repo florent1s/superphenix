@@ -67,6 +67,9 @@ type Reconciler struct {
 
 	// DisableVersionValidation disables validation of versions entirely.
 	DisableVersionValidation bool
+
+	// ToolboxEnabled controls whether the toolbox kubeconfig secrets are reconciled.
+	ToolboxEnabled bool
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -202,6 +205,16 @@ func (r *Reconciler) reconcileCluster(ctx context.Context, cluster *operatorv1al
 	if err := r.reconcileArgoCDSecret(ctx, cluster); err != nil {
 		log.Error(err, "Failed to reconcile ArgoCD connection secret")
 		reconcileErr = err
+	}
+
+	// Reconcile toolbox kubeconfig secret (always, regardless of ArgoCD secret errors)
+	if r.ToolboxEnabled {
+		if err := r.reconcileToolboxKubeconfigSecret(ctx); err != nil {
+			log.Error(err, "Failed to reconcile toolbox kubeconfig secret")
+			if reconcileErr == nil {
+				reconcileErr = err
+			}
+		}
 	}
 
 	if reconcileErr == nil {

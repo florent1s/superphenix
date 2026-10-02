@@ -21,7 +21,7 @@ projectName: "null"
 # @section -- Organization parameters
 location: ""
 
-# -- Wether this chart is deployed through GitOps or not.
+# -- Whether this chart is deployed through GitOps or not.
 # This parameter cannot be overriden by the user.
 # @section -- Organization parameters
 gitops: false

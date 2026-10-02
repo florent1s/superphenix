@@ -167,7 +167,6 @@ spec:
         ovn.kubernetes.io/logical_router: ovn-cluster
         ovn.kubernetes.io/logical_switch: ovn-default
         configmap/revision: {{ $cluster.kaasEssentials.revision | default 1 | quote }}
-        # checksum/config: {{ (printf "%s\n%s" ($cluster.kaasEssentials.storageClasses | toYaml)  ($cluster.kaasEssentials.snapshotClasses | toYaml)) | sha256sum }}
       labels:
         {{- include "sfs-kaas.labels" $ | nindent 8 }}
         superphenix.net/resourceEffectiveID: {{ $clusterID | quote }}
@@ -180,7 +179,6 @@ spec:
     spec:
       enableServiceLinks: false
       serviceAccount: kvcsi-{{ $clusterID }}
-      #priorityClassName: system-cluster-critical
       initContainers:
         - name: write-kubeconfig
           image: busybox:1.37 # https://hub.docker.com/_/busybox/tags

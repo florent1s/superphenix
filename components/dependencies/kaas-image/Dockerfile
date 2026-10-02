@@ -2,14 +2,13 @@
 # Kubernetes as a Service product. The image must contain all the tools and
 # binaries necessary to create a worker node.
 #
-# Inspiration was taken from Cozystack's images
-# https://github.com/cozystack/cozystack/blob/main/packages/apps/kubernetes/images/ubuntu-container-disk/Dockerfile
+# Inspiration was taken from the way Cozystack used to build their images
+# https://github.com/cozystack/cozystack
 #
 # And from the Kubernetes documentation on how to bootstrap a node
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
-# Currently does not work on 24.04 & 25.04
-FROM ubuntu:22.04 AS guestfish
+FROM ubuntu:26.04 AS guestfish
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -q update > /dev/null \
@@ -25,9 +24,8 @@ WORKDIR /build
 
 FROM guestfish AS builder
 
-# Component versions. These are inputs to the build and are normally
-# overridden via `--build-arg` from a file in ./versions/ driven by the
-# Makefile. The defaults below keep the Dockerfile buildable standalone.
+# Component versions. These are inputs to the build and are normally overridden
+# via `--build-arg` from a file in ./versions/ driven by the Makefile.
 ARG KUBERNETES_VERSION
 ARG CNI_PLUGINS_VERSION
 ARG CONTAINERD_VERSION
@@ -84,7 +82,6 @@ RUN qemu-img resize image.qcow2 5G \
 # Write system configuration
  && guestfish --remote sh 'printf "%s\n" net.bridge.bridge-nf-call-iptables=1 net.bridge.bridge-nf-call-ip6tables=1 net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1 net.ipv6.conf.all.disable_ipv6=0 net.ipv4.tcp_congestion_control=bbr vm.overcommit_memory=1 kernel.panic=10 kernel.panic_on_oops=1 fs.inotify.max_user_instances=8192 fs.inotify.max_user_watches=524288 | tee > /etc/sysctl.d/kubernetes.conf' \
  && guestfish --remote sh 'printf "%s\n" overlay br_netfilter | tee /etc/modules-load.d/kubernetes.conf' \
- && guestfish --remote sh "echo 'DNS=1.0.0.1' >> /etc/systemd/resolved.conf" \
  && guestfish --remote sh "systemctl enable fstrim.timer" \
 # Umount all and exit
  && guestfish --remote umount-all \

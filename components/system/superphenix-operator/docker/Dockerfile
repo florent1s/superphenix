@@ -27,7 +27,7 @@ ARG VERSION=dev
 # the docker BUILDPLATFORM arg will be linux/arm64 when for Apple x86 it will be linux/amd64. Therefore,
 # by leaving it empty we can ensure that the container and binary shipped on it will have the same platform.
 #RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager cmd/superphenix-operator/main.go
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager -ldflags "-X 'github.com/super-phenix/superphenix/internal/superphenix-operator/version.OperatorVersion=${VERSION}'" cmd/superphenix-operator/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH:-amd64} go build -a -o manager -ldflags "-X 'github.com/super-phenix/superphenix/internal/superphenix-operator/version.OperatorVersion=${VERSION}'" cmd/superphenix-operator/main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details

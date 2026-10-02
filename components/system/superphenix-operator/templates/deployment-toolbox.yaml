@@ -1,0 +1,65 @@
+{{- if .Values.toolbox.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superphenix-toolbox
+  labels:
+    {{- include "superphenix-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: toolbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "superphenix-operator.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: toolbox
+  template:
+    metadata:
+      {{- with .Values.toolbox.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "superphenix-operator.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: toolbox
+    spec:
+      {{- with .Values.toolbox.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "superphenix-operator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.toolbox.podSecurityContext | nindent 8 }}
+      containers:
+        - name: superphenix-toolbox
+          securityContext:
+            {{- toYaml .Values.toolbox.securityContext | nindent 12 }}
+          image: "{{ .Values.toolbox.image.repository }}:{{ .Values.toolbox.image.tag | default (printf "v%s" .Chart.AppVersion) }}"
+          imagePullPolicy: {{ .Values.toolbox.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.toolbox.resources | nindent 12 }}
+          volumeMounts:
+            - name: toolbox-home
+              mountPath: /root
+            - name: toolbox-kubeconfigs
+              mountPath: /etc/superphenix/toolbox
+              readOnly: true
+      volumes:
+        - name: toolbox-home
+          emptyDir: {}
+        - name: toolbox-kubeconfigs
+          secret:
+            secretName: superphenix-toolbox-kubeconfig
+            optional: true
+      {{- with .Values.toolbox.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.toolbox.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.toolbox.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

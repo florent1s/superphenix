@@ -177,6 +177,50 @@ config:
       # -- Version of the talos-manager chart.
       version: 0.1.0
 
+# -- Superphenix toolbox configuration.
+# The toolbox is an optional standalone Deployment deployed alongside the operator.
+# It provides standard tooling (bash, jq, kubectl, helm, k9s) and mounts the
+# kubeconfig of every cluster managed by the operator, allowing administrators
+# to access all clusters from a single container.
+toolbox:
+  # -- Enable the toolbox deployment. Disabled by default.
+  enabled: false
+
+  image:
+    # -- Repository for the toolbox image.
+    repository: ghcr.io/super-phenix/superphenix-toolbox
+    # -- Pull policy for the toolbox image.
+    pullPolicy: IfNotPresent
+    # -- Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- Resource limits and requests for the toolbox container.
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+  # -- Annotations for the toolbox pods.
+  podAnnotations: {}
+
+  # -- Secrets for pulling the toolbox image.
+  imagePullSecrets: []
+
+  # -- Pod-level security context for the toolbox.
+  podSecurityContext: {}
+  # -- Container-level security context for the toolbox.
+  securityContext: {}
+
+  # -- Node selector for toolbox pod assignment.
+  nodeSelector: {}
+  # -- Tolerations for toolbox pod assignment.
+  tolerations: []
+  # -- Affinity rules for toolbox pod assignment.
+  affinity: {}
+
 # -- Superphenix management cluster configuration.
 # This will create a Cluster resource for the management cluster, pointing to the Kubernetes cluster
 # where the operator is installed. Only management configuration can be defined here. If you also want

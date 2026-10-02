@@ -12,6 +12,7 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -21,7 +22,6 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,10 +32,10 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 	argov1alpha1 "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
-	"github.com/super-phenix/superphenix/internal/superphenix-operator/db"
+	operatorv1alpha1 "github.com/super-phenix/superphenix/api/operator/v1alpha1"
 	"github.com/super-phenix/superphenix/internal/superphenix-operator/cluster"
+	"github.com/super-phenix/superphenix/internal/superphenix-operator/db"
 	"github.com/super-phenix/superphenix/internal/superphenix-operator/management"
 	"github.com/super-phenix/superphenix/internal/superphenix-operator/organization"
 	"github.com/super-phenix/superphenix/internal/superphenix-operator/project"
@@ -93,6 +93,7 @@ func main() {
 	var databasePassword string
 	var databaseName string
 	var autoDatabaseConnect bool
+	var toolboxEnabled bool
 	var gitopsRepoURL string
 	var gitopsPath string
 	var gitopsTargetRevision string
@@ -138,6 +139,7 @@ func main() {
 	flag.StringVar(&databasePassword, "database-password", os.Getenv("DATABASE_PASSWORD"), "The password of the Superphenix Database")
 	flag.StringVar(&databaseName, "database-name", os.Getenv("DATABASE_NAME"), "The name of the Superphenix Database")
 	flag.BoolVar(&autoDatabaseConnect, "auto-database-connect", false, "Whether to automatically connect to the default deployed PostgreSQL by probing the 'postgres' secret")
+	flag.BoolVar(&toolboxEnabled, "toolbox-enabled", false, "Enable the toolbox deployment and reconcile kubeconfig secrets for all managed clusters")
 	flag.StringVar(&gitopsRepoURL, "gitops-repo-url", os.Getenv("GITOPS_REPO_URL"), "Default repository URL for project GitOps applications")
 	flag.StringVar(&gitopsPath, "gitops-path", cmp.Or(os.Getenv("GITOPS_PATH"), "."), "Default path for project GitOps applications")
 	flag.StringVar(&gitopsTargetRevision, "gitops-target-revision", cmp.Or(os.Getenv("GITOPS_TARGET_REVISION"), "HEAD"), "Default target revision for project GitOps applications")
@@ -281,6 +283,7 @@ func main() {
 		TalosManagerChartURL:     talosManagerChartURL,
 		TalosManagerChartVersion: talosManagerChartVersion,
 		DisableVersionValidation: disableVersionValidation,
+		ToolboxEnabled:           toolboxEnabled,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "Cluster")
 		os.Exit(1)
