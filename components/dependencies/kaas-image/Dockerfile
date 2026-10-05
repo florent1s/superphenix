@@ -70,6 +70,8 @@ RUN qemu-img resize image.qcow2 5G \
  && guestfish --remote sh "curl -sSL https://raw.githubusercontent.com/kubernetes/release/v${RELEASE_VERSION}/cmd/krel/templates/latest/kubelet/kubelet.service -o /usr/lib/systemd/system/kubelet.service" \
  && guestfish --remote sh "mkdir -p /usr/lib/systemd/system/kubelet.service.d" \
  && guestfish --remote sh "curl -sSL https://raw.githubusercontent.com/kubernetes/release/v${RELEASE_VERSION}/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf | tee /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf" \
+ # Redirect kubelet logs into dmesg
+ && guestfish --remote sh "echo -e 'StandardError=append:/dev/kmsg\nStandardOutput=append:/dev/kmsg' >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf" \
  && guestfish --remote sh "mkdir -p /etc/kubernetes/manifests" \
  && guestfish --remote sh "systemctl enable kubelet" \
 # Install CNI Plugins
