@@ -26,6 +26,12 @@ location: ""
 # @section -- Organization parameters
 gitops: false
 
+# -- Mapping between user-friendly names of storage classes and their real names.
+# The mapping is specified for the current AZ, meaning that each AZ can have a different mapping.
+# This parameter cannot be overriden by the user.
+# @section -- Organization parameters
+storageClassMapping: {}
+
 # -- Per AZ mapping of URLs to use in cluster configuration
 # This parameter cannot be overriden by the user.
 azDomains: {}
