@@ -1644,7 +1644,7 @@ const docTemplate = `{
             }
         },
         "/{orgId}/{projectId}/instance-snapshot/{effectiveId}/restore": {
-            "get": {
+            "post": {
                 "description": "Restore a VM Snapshot in place onto its source instance, which must exist",
                 "consumes": [
                     "application/json"

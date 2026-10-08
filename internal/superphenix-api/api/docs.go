@@ -4005,7 +4005,7 @@ const docTemplate = `{
             }
         },
         "/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance-snapshot/{effectiveId}/restore": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "Bearer": [

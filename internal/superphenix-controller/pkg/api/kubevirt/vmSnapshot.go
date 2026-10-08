@@ -33,7 +33,7 @@ func InstanceSnapshotEndpoint(router chi.Router) {
 		r.With(spxIdMiddleware.AddEffectiveIdToContext()).Get("/localId/{localId}", getInstanceSnapshotByLocalId)
 		r.Route("/{effectiveId}", func(r chi.Router) {
 			r.Get("/", getInstanceSnapshotByEffectiveId)
-			r.Get("/restore", restoreInstanceSnapshot)
+			r.Post("/restore", restoreInstanceSnapshot)
 			r.Post("/clone", cloneInstanceSnapshot)
 
 			r.Delete("/", deleteInstanceSnapshot)
@@ -303,7 +303,7 @@ func cloneInstanceSnapshot(w http.ResponseWriter, r *http.Request) {
 //	@Failure		404
 //	@Failure		409
 //	@Failure		500
-//	@Router			/{orgId}/{projectId}/instance-snapshot/{effectiveId}/restore [get]
+//	@Router			/{orgId}/{projectId}/instance-snapshot/{effectiveId}/restore [post]
 func restoreInstanceSnapshot(w http.ResponseWriter, r *http.Request) {
 	log := logger.GetLogger(r.Context())
 	orgId := chi.URLParam(r, "orgId")

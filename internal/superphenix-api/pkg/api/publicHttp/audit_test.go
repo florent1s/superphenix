@@ -86,7 +86,6 @@ var mutatingGets = []string{
 	"/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance/{effectiveId}/stop-force",
 	"/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance/{effectiveId}/restart",
 	"/{orgaId}/api/spx-ctrl/{az}/{projectId}/disk/{effectiveId}/unmount",
-	"/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance-snapshot/{effectiveId}/restore",
 	"/{orgaId}/api/spx-ctrl/{az}/{projectId}/kaas/{effectiveId}/reinstall-essentials",
 	"/v1/session/token",
 }

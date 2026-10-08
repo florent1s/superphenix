@@ -353,7 +353,7 @@ func (h *Service) DeleteVmSnapshot(w http.ResponseWriter, r *http.Request) {
 //	@Failure		404
 //	@Failure		409
 //	@Failure		500
-//	@Router			/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance-snapshot/{effectiveId}/restore [get]
+//	@Router			/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance-snapshot/{effectiveId}/restore [post]
 //	@Security		Bearer[OrganizationRead, ProjectSnapshotWrite, ProjectInstanceWrite]
 func (h *Service) RestoreVmSnapshot(w http.ResponseWriter, r *http.Request) {
 	log := logger.GetLogger(r.Context())
