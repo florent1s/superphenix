@@ -4005,7 +4005,7 @@ const docTemplate = `{
             }
         },
         "/{orgaId}/api/spx-ctrl/{az}/{projectId}/instance-snapshot/{effectiveId}/restore": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "Bearer": [
@@ -4015,7 +4015,7 @@ const docTemplate = `{
                         ]
                     }
                 ],
-                "description": "Restore a VM snapshot by creating a new instance from it",
+                "description": "Restore a VM snapshot in place onto its source instance, which must exist",
                 "produces": [
                     "application/json"
                 ],
@@ -4052,20 +4052,6 @@ const docTemplate = `{
                         "name": "effectiveId",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "New instance name",
-                        "name": "name",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "New instance local ID (UUID)",
-                        "name": "localId",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -4077,6 +4063,9 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict"
                     },
                     "500": {
                         "description": "Internal Server Error"
