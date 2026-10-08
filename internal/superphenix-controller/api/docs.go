@@ -1645,7 +1645,7 @@ const docTemplate = `{
         },
         "/{orgId}/{projectId}/instance-snapshot/{effectiveId}/restore": {
             "get": {
-                "description": "Restore a VM Snapshot",
+                "description": "Restore a VM Snapshot in place onto its source instance, which must exist",
                 "consumes": [
                     "application/json"
                 ],
@@ -1671,6 +1671,13 @@ const docTemplate = `{
                         "name": "projectId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Snapshot EID",
+                        "name": "effectiveId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1679,6 +1686,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict"
                     },
                     "500": {
                         "description": "Internal Server Error"
