@@ -238,11 +238,11 @@ management:
 
   # -- Override the default Superphenix system chart location.
   # This is useful if you want to use a custom chart.
-  systemLocation:
+  systemLocation: {}
     # -- Override the default Superphenix system chart repository.
-    repoURL: ""
+    # repoURL: ""
     # -- Override the default Superphenix system chart name.
-    chartName: ""
+    # chartName: ""
   # -- Override the default Superphenix system chart version.
   # This is useful if you want to use a custom chart.
   version: ""
